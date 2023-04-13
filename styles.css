@@ -1,0 +1,13 @@
+/* Устанавливаем стили для тега body */
+body {
+    font-family: Arial, sans-serif;
+    text-align: center;
+    background-color: #f0f0f0;
+}
+
+/* Устанавливаем стили для поля ввода и кнопки */
+input, button {
+    padding: 10px;
+    font-size: 1.1em;
+    margin: 5px;
+}
