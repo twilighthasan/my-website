@@ -3,12 +3,13 @@ document.getElementById("sortBtn").addEventListener("click", sortNames);
 document.getElementById("deleteBtn").addEventListener("click", deleteName);
 document.getElementById("editBtn").addEventListener("click", editName);
 
+const database = firebase.database();
+
 function addName() {
-    const name = document.getElementById("nameInput").value;
-    const listItem = document.createElement("li");
-    listItem.innerText = name;
-    document.getElementById("namesList").appendChild(listItem);
-}
+  const name = document.getElementById("nameInput").value;
+  const newItemRef = database.ref("names").push();
+  newItem
+
 
 function sortNames() {
     const namesList = document.getElementById("namesList");

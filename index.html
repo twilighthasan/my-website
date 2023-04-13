@@ -1,20 +1,54 @@
 <!DOCTYPE html>
-<html lang="ru">
+<html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Сортировка имен</title>
-    <link rel="stylesheet" href="styles.css">
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Сортировка имен</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+    }
+  </style>
+  <script src="https://www.gstatic.com/firebasejs/9.6.9/firebase-app.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.6.9/firebase-analytics.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.6.9/firebase-database.js"></script>
+  <script type="module">
+    // Import the functions you need from the SDKs you need
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/9.6.9/firebase-app.js";
+    import { getAnalytics } from "https://www.gstatic.com/firebasejs/9.6.9/firebase-analytics.js";
+    import { getDatabase } from "https://www.gstatic.com/firebasejs/9.6.9/firebase-database.js";
+    
+    // TODO: Add SDKs for Firebase products that you want to use
+    // https://firebase.google.com/docs/web/setup#available-libraries
+    
+    // Your web app's Firebase configuration
+    // For Firebase JS SDK v7.20.0 and later, measurementId is optional
+    const firebaseConfig = {
+      apiKey: "AIzaSyDSTar7GywJCFfA-9dgmzviPyE3emjEkEk",
+      authDomain: "sort-53202.firebaseapp.com",
+      databaseURL: "https://sort-53202-default-rtdb.firebaseio.com",
+      projectId: "sort-53202",
+      storageBucket: "sort-53202.appspot.com",
+      messagingSenderId: "425957679251",
+      appId: "1:425957679251:web:73653efb30d25d15fb6d66",
+      measurementId: "G-09SHMSXZ9C"
+    };
+    
+    // Initialize Firebase
+    const app = initializeApp(firebaseConfig);
+    const analytics = getAnalytics(app);
+    const database = getDatabase(app);
+  </script>
+  <script src="scripts.js" type="module"></script>
 </head>
 <body>
-    <h1>Список имен</h1>
-    <input type="text" id="nameInput" placeholder="Введите имя">
-    <button id="addBtn">Добавить имя</button>
-    <button id="sortBtn">Сортировать имена</button>
-    <button id="deleteBtn">Удалить имя</button>
-    <button id="editBtn">Изменить имя</button>
-    <input type="text" id="newNameInput" placeholder="Новое имя">
-    <ul id="namesList"></ul>
-    <script src="scripts.js"></script>
+  <h1>Сортировка имен</h1>
+  <input type="text" id="nameInput" placeholder="Введите имя">
+  <button id="addBtn">Добавить имя</button>
+  <button id="sortBtn">Сортировать имена</button>
+  <button id="deleteBtn">Удалить имя</button>
+  <button id="editBtn">Изменить имя</button>
+  <input type="text" id="newNameInput" placeholder="Новое имя">
+  <ul id="nameList"></ul>
 </body>
 </html>
