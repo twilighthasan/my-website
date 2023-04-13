@@ -6,25 +6,34 @@ document.getElementById("editBtn").addEventListener("click", editName);
 const database = firebase.database();
 
 function addName() {
-  const name = document.getElementById("nameInput").value;
-  const newItemRef = database.ref("names").push();
-  newItem
-}
+    const name = document.getElementById("nameInput").value;
+    const newItemRef = database.ref("names").push();
+    newItemRef.set({ name: name });
+    const newItemKey = newItemRef.key;
+    const nameList = document.getElementById("nameList");
+    const newListItem = document.createElement("li");
+    newListItem.textContent = name;
+    newListItem.setAttribute("data-id", newItemKey);
+    nameList.appendChild(newListItem);
+    document.getElementById("nameInput").value = "";
+  }
+  
 
-function sortNames() {
-    const namesList = document.getElementById("namesList");
-    const names = Array.from(namesList.getElementsByTagName("li"));
-
+  function sortNames() {
+    const nameList = document.getElementById("nameList");
+    const names = Array.from(nameList.getElementsByTagName("li"));
+  
     names.sort((a, b) => a.innerText.localeCompare(b.innerText));
-
-    while (namesList.firstChild) {
-        namesList.removeChild(namesList.firstChild);
+  
+    while (nameList.firstChild) {
+      nameList.removeChild(nameList.firstChild);
     }
-
+  
     for (const name of names) {
-        namesList.appendChild(name);
+      nameList.appendChild(name);
     }
-}
+  }
+  
 
 function deleteName() {
     const nameToDelete = document.getElementById("nameInput").value;
