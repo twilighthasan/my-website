@@ -1,24 +1,20 @@
-<!-- Основной документ HTML -->
 <!DOCTYPE html>
 <html lang="ru">
 <head>
-    <!-- Устанавливаем кодировку символов -->
     <meta charset="UTF-8">
-    <!-- Устанавливаем адаптивный дизайн для смартфонов и планшетов -->
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <!-- Подключаем стили CSS -->
-    <link rel="stylesheet" href="styles.css">
-    <!-- Заголовок вкладки сайта -->
     <title>Сортировка имен</title>
+    <link rel="stylesheet" href="styles.css">
 </head>
 <body>
-    <!-- Создаем поле для ввода имени -->
+    <h1>Список имен</h1>
     <input type="text" id="nameInput" placeholder="Введите имя">
-    <!-- Создаем кнопку для добавления имени -->
-    <button id="addName">Добавить имя</button>
-    <!-- Создаем список для отображения имен -->
-    <ul id="nameList"></ul>
-    <!-- Подключаем файл JavaScript -->
+    <button id="addBtn">Добавить имя</button>
+    <button id="sortBtn">Сортировать имена</button>
+    <button id="deleteBtn">Удалить имя</button>
+    <button id="editBtn">Изменить имя</button>
+    <input type="text" id="newNameInput" placeholder="Новое имя">
+    <ul id="namesList"></ul>
     <script src="scripts.js"></script>
 </body>
 </html>
