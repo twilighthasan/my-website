@@ -9,7 +9,7 @@ function addName() {
   const name = document.getElementById("nameInput").value;
   const newItemRef = database.ref("names").push();
   newItem
-
+}
 
 function sortNames() {
     const namesList = document.getElementById("namesList");
