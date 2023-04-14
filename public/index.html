@@ -20,22 +20,35 @@
     </style>
   </head>
   <body>
-    <button id="cameraButton">Open Camera</button>
+    <button id="cameraButton" onclick="toggleCamera()">Turn On Camera</button>
     <div id="result"></div>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/ml5.js/1.0.0/ml5.min.js"></script>
     <script>
+      let video;
+      let classifier;
       const cameraButton = document.getElementById("cameraButton");
       const result = document.getElementById("result");
 
       // Add event listener to camera button
-      cameraButton.addEventListener("click", () => {
+      function toggleCamera() {
+        if (cameraButton.innerHTML === "Turn On Camera") {
+          startCamera();
+          cameraButton.innerHTML = "Turn Off Camera";
+        } else {
+          stopCamera();
+          cameraButton.innerHTML = "Turn On Camera";
+        }
+      }
+
+      // Start the camera and object detection
+      function startCamera() {
         // Check if browser supports mediaDevices
         if (navigator.mediaDevices && navigator.mediaDevices.getUserMedia) {
           // Get access to camera
           navigator.mediaDevices.getUserMedia({ video: true })
             .then(stream => {
               // Create video element
-              const video = document.createElement("video");
+              video = document.createElement("video");
               video.srcObject = stream;
               video.play();
 
@@ -60,20 +73,13 @@
               // Draw video frames onto canvas
               function draw() {
                 ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
-                ml5.imageClassifier("MobileNet", (err, classifier) => {
+                classifier.classify(canvas, (err, results) => {
                   if (err) {
                     console.error(err);
                   } else {
-                    // Classify canvas image
-                    classifier.classify(canvas, (err, results) => {
-                      if (err) {
-                        console.error(err);
-                      } else {
-                        // Show result in UI
-                        result.style.display = "block";
-                        result.innerText = `Detected object: ${results[0].label}`;
-                      }
-                    });
+                    // Show result in UI
+                    result.style.display = "block";
+                    result.innerText = `Detected object: ${results[0].label}`;
                   }
                 });
                 requestAnimationFrame(draw);
@@ -89,7 +95,15 @@
         } else {
           console.error("MediaDevices not supported");
         }
-      });
+      }
+
+      // Stop the camera and object detection
+      function stopCamera() {
+        video.srcObject.getTracks().forEach(track => track.stop());
+        video.remove();
+        classifier = null;
+        result.style.display = "none";
+      }
     </script>
   </body>
 </html>
