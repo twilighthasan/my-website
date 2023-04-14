@@ -1,61 +1,30 @@
-document.getElementById("addBtn").addEventListener("click", addName);
-document.getElementById("sortBtn").addEventListener("click", sortNames);
-document.getElementById("deleteBtn").addEventListener("click", deleteName);
-document.getElementById("editBtn").addEventListener("click", editName);
+import React, { useState, useRef } from 'react';
 
-const database = firebase.database();
+function CameraApp() {
+  const [imageSrc, setImageSrc] = useState(null);
+  const videoRef = useRef(null);
 
-function addName() {
-    const name = document.getElementById("nameInput").value;
-    const newItemRef = database.ref("names").push();
-    newItemRef.set({ name: name });
-    const newItemKey = newItemRef.key;
-    const nameList = document.getElementById("nameList");
-    const newListItem = document.createElement("li");
-    newListItem.textContent = name;
-    newListItem.setAttribute("data-id", newItemKey);
-    nameList.appendChild(newListItem);
-    document.getElementById("nameInput").value = "";
-  }
-  
+  const handleCapture = () => {
+    const video = videoRef.current;
+    const canvas = document.createElement('canvas');
+    canvas.width = video.videoWidth;
+    canvas.height = video.videoHeight;
+    canvas.getContext('2d').drawImage(video, 0, 0);
+    const url = canvas.toDataURL('image/png');
+    setImageSrc(url);
+  };
 
-  function sortNames() {
-    const nameList = document.getElementById("nameList");
-    const names = Array.from(nameList.getElementsByTagName("li"));
-  
-    names.sort((a, b) => a.innerText.localeCompare(b.innerText));
-  
-    while (nameList.firstChild) {
-      nameList.removeChild(nameList.firstChild);
-    }
-  
-    for (const name of names) {
-      nameList.appendChild(name);
-    }
-  }
-  
-
-function deleteName() {
-    const nameToDelete = document.getElementById("nameInput").value;
-    const namesList = document.getElementById("namesList");
-
-    for (let i = 0; i < namesList.children.length; i++) {
-        if (namesList.children[i].innerText === nameToDelete) {
-            namesList.removeChild(namesList.children[i]);
-            break;
-        }
-    }
+  return (
+    <div>
+      <video ref={videoRef} autoPlay={true} />
+      <button onClick={handleCapture}>Capture</button>
+      {imageSrc && (
+        <a href={imageSrc} download="photo.png">
+          <img src={imageSrc} alt="captured" />
+        </a>
+      )}
+    </div>
+  );
 }
 
-function editName() {
-    const oldName = document.getElementById("nameInput").value;
-    const newName = document.getElementById("newNameInput").value;
-    const namesList = document.getElementById("namesList");
-
-    for (let i = 0; i < namesList.children.length; i++) {
-        if (namesList.children[i].innerText === oldName) {
-            namesList.children[i].innerText = newName;
-            break;
-        }
-    }
-}
+export default CameraApp;
