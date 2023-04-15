@@ -1,97 +1,78 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
-    <title>Piano</title>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Video to Audio Converter</title>
+    <link rel="stylesheet" href="styles.css">
     <style>
-        #piano {
-          display: flex;
-          justify-content: space-between;
-          align-items: center;
-          height: 200px;
-        }
+        .progress-bar {
+    width: 100%;
+    height: 20px;
+    background-color: #f3f3f3;
+    position: relative;
+}
 
-        button {
-          border: none;
-          outline: none;
-          height: 180px;
-          width: 30px;
-        }
+.progress {
+    height: 100%;
+    background-color: #4caf50;
+    position: absolute;
+    width: 0;
+}
 
-        .white {
-          background-color: white;
-        }
-
-        .black {
-          background-color: black;
-          height: 120px;
-          margin-top: -60px;
-          width: 20px;
-        }
     </style>
 </head>
 <body>
-    <div id="piano">
-        <button class="white" data-note="q"></button>
-        <button class="black" data-note="2"></button>
-        <button class="white" data-note="w"></button>
-        <button class="black" data-note="3"></button>
-        <button class="white" data-note="e"></button>
-        <button class="white" data-note="r"></button>
-        <button class="black" data-note="5"></button>
-        <button class="white" data-note="t"></button>
-        <button class="black" data-note="6"></button>
-        <button class="white" data-note="y"></button>
-        <button class="black" data-note="7"></button>
-        <button class="white" data-note="u"></button>
-        <button class="white" data-note="i"></button>
-        <button class="black" data-note="9"></button>
-        <button class="white" data-note="o"></button>
-        <button class="black" data-note="0"></button>
-        <button class="white" data-note="p"></button>
-        <button class="black" data-note="["></button>
-        <button class="black" data-note="]"></button>
+    <h1>Video to Audio Converter</h1>
+    <input type="file" id="video-input" accept="video/*">
+    <button id="convert-btn" disabled>Convert to MP3</button>
+    <a id="download-link" style="display:none;">Download MP3</a>
+    <div class="progress-bar">
+        <div class="progress"></div>
     </div>
-
+    <script src="ffmpeg.js"></script>
+    <script src="app.js"></script>
     <script>
-        const audioFiles = [
-          new Audio('C:\Users\HASAN\Downloads\piano-c-1.mp3'),
-          new Audio('path/to/audio/c-4.mp3'),
-          new Audio('path/to/audio/d4.mp3'),
-          new Audio('path/to/audio/d-4.mp3'),
-          new Audio('path/to/audio/e4.mp3'),
-          new Audio('path/to/audio/f4.mp3'),
-          new Audio('path/to/audio/f-4.mp3'),
-          new Audio('path/to/audio/g4.mp3'),
-          new Audio('path/to/audio/g-4.mp3'),
-          new Audio('path/to/audio/a4.mp3'),
-          new Audio('path/to/audio/a-4.mp3'),
-          new Audio('path/to/audio/b4.mp3'),
-          new Audio('path/to/audio/c5.mp3'),
-          new Audio('path/to/audio/c-5.mp3'),
-          new Audio('path/to/audio/d5.mp3'),
-          new Audio('path/to/audio/d-5.mp3'),
-          new Audio('path/to/audio/e5.mp3'),
-          new Audio('path/to/audio/f5.mp3'),
-        ];
+        const videoInput = document.getElementById("video-input");
+const convertBtn = document.getElementById("convert-btn");
+const downloadLink = document.getElementById("download-link");
+const progressBar = document.querySelector(".progress");
 
-        const buttons = document.querySelectorAll('#piano button');
+// Enable the Convert button when a file is selected
+videoInput.addEventListener("change", () => {
+    convertBtn.disabled = !videoInput.files.length;
+});
 
-        buttons.forEach((button, index) => {
-          button.addEventListener('click', () => {
-            const note = button.dataset.note;
-            const audio = audioFiles[index];
-            if (note === "2" || note === "3" || note === "5" || note === "6" || note === "7" || note === "9" || note === "0" || note === "[" || note === "]") {
-              audio.currentTime = 0;
-              audio.play();
-            } else {
-              audio.currentTime = 0;
-              audio.play();
-              setTimeout(() => {
-                audio.pause();
-              }, 300);
-            }
-          });
-        });
+// Start the conversion process when the Convert button is clicked
+convertBtn.addEventListener("click", async () => {
+    const videoFile = videoInput.files[0];
+    convertBtn.disabled = true;
+    const audioBlob = await extractAudio(videoFile);
+    createDownloadLink(audioBlob);
+    convertBtn.disabled = false;
+});
+
+async function extractAudio(videoFile) {
+    // Initialize FFmpeg.js
+    const ffmpeg = FFmpeg.createFFmpeg({log: true});
+    await ffmpeg.load();
+
+    // Prepare the input file
+    await ffmpeg.FS("writeFile", "input.webm", new Uint8Array(await videoFile.arrayBuffer()));
+
+    // Run FFmpeg to extract audio and convert it to MP3
+    await ffmpeg.run("-i", "input.webm", "-vn", "-b:a", "128k", "output.mp3");
+
+    // Read the output file and create a Blob
+    const audioData = ffmpeg.FS("readFile", "output.mp3");
+    const audioBlob = new Blob([audioData.buffer], {type: "audio/mp3"});
+
+    return audioBlob;
+}
+
+function updateProgress(percent) {
+    progressBar.style.width = `${percent}%`;
+}
     </script>
 </body>
 </html>
