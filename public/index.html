@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Голосовой ввод</title>
+    <title>Текст в аудио</title>
     <style>
         body {
             font-family: Arial, sans-serif;
@@ -24,7 +24,7 @@
             border-radius: 5px;
             cursor: pointer;
         }
-        #output {
+        #input {
             width: 80%;
             margin-top: 20px;
             font-size: 18px;
@@ -32,84 +32,68 @@
             border-radius: 5px;
             padding: 10px;
             background-color: white;
+            min-height: 100px;
+            resize: vertical;
         }
-        #status {
-            width: 80%;
-            height: 20px;
-            background-color: #ccc;
-            border-radius: 5px;
-            margin-top: 10px;
+        #downloadLink {
             display: none;
-        }
-        #progress {
-            height: 100%;
-            background-color: #4CAF50;
-            width: 0;
-            border-radius: 5px;
+            margin-top: 20px;
+            font-size: 18px;
+            text-decoration: none;
+            color: #4CAF50;
         }
     </style>
 </head>
 <body>
-    <button id="recordButton">Записать/Остановить</button>
-    <div id="status"><div id="progress"></div></div>
-    <div id="output" contenteditable="true">Здесь будет текст</div>
+    <textarea id="input" placeholder="Вставьте текст здесь"></textarea>
+    <button id="convertButton">Конвертировать в аудио</button>
+    <a id="downloadLink" href="#" download="audio.wav">Скачать аудио</a>
+    
     <script>
-    const recordButton = document.getElementById("recordButton");
-    const output = document.getElementById("output");
-    const status = document.getElementById("status");
-    const progress = document.getElementById("progress");
-    let isRecording = false;
-    let recognition;
+        const convertButton = document.getElementById("convertButton");
+        const input = document.getElementById("input");
+        const downloadLink = document.getElementById("downloadLink");
 
-    function updateProgress(value) {
-        progress.style.width = `${value}%`;
-    }
-
-    function showProgress() {
-        status.style.display = "block";
-    }
-
-    function hideProgress() {
-        status.style.display = "none";
-    }
-
-    function convertText() {
-        showProgress();
-        setTimeout(() => {
-            updateProgress(100);
-            hideProgress();
-        }, 2000);
-    }
-
-    if ('webkitSpeechRecognition' in window) {
-        recognition = new webkitSpeechRecognition();
-        recognition.continuous = true;
-        recognition.interimResults = true;
-        recognition.lang = 'ru-RU';
-        
-        recognition.onresult = (event) => {
-            let finalTranscript = '';
-            for (let i = event.resultIndex; i < event.results.length; i++) {
-                if (event.results[i].isFinal) {
-                    finalTranscript += event.results[i][0].transcript;
-                }
-            }
-            output.textContent = finalTranscript;
-        };
-    } else {
-        recordButton.disabled = true;
-        output.textContent = 'К сожалению, ваш браузер не поддерживает голосовой ввод.';
-    }
-
-    recordButton.addEventListener('click', () => {
-        if (!isRecording) {
-            recognition.start();
-            showProgress();
-        } else {
-            recognition.stop();
-            convertText();
+        function blobToDataURL(blob, callback) {
+            const reader = new FileReader();
+            reader.onload = (e) => callback(e.target.result);
+            reader.readAsDataURL(blob);
         }
-        isRecording = !isRecording;
+
+        async function convertTextToAudio(text) {
+            if (!window.speechSynthesis || !window.SpeechSynthesisUtterance) {
+                alert('К сожалению, ваш браузер не поддерживает синтез речи.');
+                return;
+            }
+
+            const synth = window.speechSynthesis;
+            const utterance = new SpeechSynthesisUtterance(text);
+            utterance.lang = 'ru-RU';
+
+            const recorder = new MediaRecorder(synth);
+            const chunks = [];
+
+            recorder.ondataavailable =(e) => chunks.push(e.data);
+recorder.onstop = () => {
+const audioBlob = new Blob(chunks, { type: 'audio/wav' });
+blobToDataURL(audioBlob, (dataURL) => {
+downloadLink.href = dataURL;
+downloadLink.style.display = 'block';
+});
+};        recorder.start();
+        synth.speak(utterance);
+        utterance.onend = () => {
+            recorder.stop();
+        };
+    }
+
+    convertButton.addEventListener('click', () => {
+        const text = input.value;
+        if (text.trim().length === 0) {
+            alert('Пожалуйста, вставьте текст для конвертации.');
+            return;
+        }
+        convertTextToAudio(text);
     });
 </script>
 </body>
