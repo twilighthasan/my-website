@@ -37,6 +37,8 @@
             resize: vertical;
         }
     </style>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/audiobuffer-to-wav/1.0.1/audiobuffer-to-wav.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/RecordRTC/5.6.1/RecordRTC.min.js"></script>    
 </head>
 <body>
     <textarea id="input" placeholder="Вставьте текст здесь"></textarea>
@@ -77,36 +79,33 @@
         }
 
         async function saveAudio(utterance) {
-            const synth = window.speechSynthesis;
-            const audioContext = new AudioContext();
-            const recorder = new MediaRecorder(audioContext.createMediaStreamDestination());
-            const chunks = [];
+    const synth = window.speechSynthesis;
+    const audioContext = new AudioContext();
+    const dest = audioContext.createMediaStreamDestination();
+    const recorder = new RecordRTC(dest.stream, { type: "audio", mimeType: "audio/wav" });
+    const sourceNode = audioContext.createMediaStreamSource(dest.stream);
+    sourceNode.connect(audioContext.destination);
+    const chunks = [];
 
-            synth.speak(utterance);
-            utterance.onstart = () => {
-                recorder.start();
-            };
-            utterance.onend = () => {
-                recorder.stop();
-            };
+    synth.speak(utterance);
+    utterance.onstart = () => {
+        recorder.startRecording();
+    };
+    utterance.onend = async () => {
+        await recorder.stopRecording();
+        const audioBlob = await recorder.getBlob();
+        blobToDataURL(audioBlob, (dataURL) => {
+            const downloadLink = document.createElement("a");
+            downloadLink.href = dataURL;
+            downloadLink.download = "audio.wav";
+            downloadLink.style.display = "none";
+            document.body.appendChild(downloadLink);
+            downloadLink.click();
+            document.body.removeChild(downloadLink);
+        });
+    };
+}
 
-            recorder.ondataavailable = (e) => {
-                chunks.push(e.data);
-            };
-            recorder.onstop = () => {
-                const audioBlob = new Blob(chunks, { type: 'audio/wav' });
-                blobToDataURL(audioBlob, (dataURL) => {
-                    const downloadLink = document
-                    .createElement('a');
-                    downloadLink.href = dataURL;
-                    downloadLink.download = 'audio.wav';
-                    downloadLink.style.display = 'none';
-                    document.body.appendChild(downloadLink);
-                    downloadLink.click();
-                    document.body.removeChild(downloadLink);
-                });
-            };
-        }
 
         playButton.addEventListener('click', async () => {
             const text = input.value;
