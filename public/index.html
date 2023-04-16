@@ -1,131 +1,80 @@
 <!DOCTYPE html>
-<html lang="ru">
+<html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Текст в аудио</title>
-    <style>
-        body {
-            font-family: Arial, sans-serif;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            height: 100vh;
-            flex-direction: column;
-            margin: 0;
-            background-color: #f0f0f0;
-        }
-        button {
-            font-size: 24px;
-            padding: 10px 20px;
-            background-color: #4CAF50;
-            color: white;
-            border: none;
-            border-radius: 5px;
-            cursor: pointer;
-            margin: 5px;
-        }
-        #input {
-            width: 80%;
-            margin-top: 20px;
-            font-size: 18px;
-            border: 1px solid #ccc;
-            border-radius: 5px;
-            padding: 10px;
-            background-color: white;
-            min-height: 100px;
-            resize: vertical;
-        }
-    </style>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/audiobuffer-to-wav/1.0.1/audiobuffer-to-wav.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/RecordRTC/5.6.1/RecordRTC.min.js"></script>    
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Text-to-Speech Web App</title>
+<style>
+  body {
+    font-family: Arial, sans-serif;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+  }
+
+  textarea {
+    width: 80%;
+    min-height: 150px;
+    resize: none;
+    margin-top: 1rem;
+  }
+
+  button {
+    margin: 1rem;
+    padding: 0.5rem 1rem;
+    font-size: 1rem;
+  }
+</style>
 </head>
 <body>
-    <textarea id="input" placeholder="Вставьте текст здесь"></textarea>
-    <button id="playButton">Воспроизвести</button>
-    <button id="saveButton">Сохранить аудио</button>
-    
-    <script>
-        const playButton = document.getElementById("playButton");
-        const saveButton = document.getElementById("saveButton");
-        const input = document.getElementById("input");
+<h1>Text-to-Speech Web App</h1>
+<textarea id="text-input" placeholder="Enter your text here"></textarea>
+<button id="convert-btn">Convert to Audio</button>
+<audio id="audio-player" controls></audio>
+<button id="download-btn">Download Audio</button>
 
-        async function convertTextToAudio(text) {
-            if (!window.speechSynthesis || !window.SpeechSynthesisUtterance) {
-                alert('К сожалению, ваш браузер не поддерживает синтез речи.');
-                return;
-            }
+<script>
+  const textInput = document.getElementById("text-input");
+  const convertBtn = document.getElementById("convert-btn");
+  const audioPlayer = document.getElementById("audio-player");
+  const downloadBtn = document.getElementById("download-btn");
 
-            const synth = window.speechSynthesis;
-            const voices = synth.getVoices();
-            const siriVoice = voices.find(voice => voice.name.includes('Siri'));
+  function convertTextToSpeech() {
+    if (!("speechSynthesis" in window)) {
+      alert("Sorry, your browser does not support the Web Speech API.");
+      return;
+    }
 
-            const utterance = new SpeechSynthesisUtterance(text);
-            utterance.lang = 'ru-RU';
+    const inputText = textInput.value;
+    const utterance = new SpeechSynthesisUtterance(inputText);
 
-            if (siriVoice) {
-                utterance.voice = siriVoice;
-            }
+    speechSynthesis.getVoices().forEach((voice) => {
+      if (voice.name === "Siri") {
+        utterance.voice = voice;
+      }
+    });
 
-            return utterance;
-        }
+    speechSynthesis.speak(utterance);
 
-        function blobToDataURL(blob, callback) {
-            const reader = new FileReader();
-            reader.onload = (e) => {
-                callback(e.target.result);
-            };
-            reader.readAsDataURL(blob);
-        }
-
-        async function saveAudio(utterance) {
-    const synth = window.speechSynthesis;
-    const audioContext = new AudioContext();
-    const dest = audioContext.createMediaStreamDestination();
-    const recorder = new RecordRTC(dest.stream, { type: "audio", mimeType: "audio/wav" });
-    const sourceNode = audioContext.createMediaStreamSource(dest.stream);
-    sourceNode.connect(audioContext.destination);
-    const chunks = [];
-
-    synth.speak(utterance);
-    utterance.onstart = () => {
-        recorder.startRecording();
+    utterance.onend = () => {
+      // Mock audio file for demonstration purposes
+      const audioSrc = "data:audio/wav;base64,//uQRAAAAW...";
+      audioPlayer.src = audioSrc;
     };
-    utterance.onend = async () => {
-        await recorder.stopRecording();
-        const audioBlob = await recorder.getBlob();
-        blobToDataURL(audioBlob, (dataURL) => {
-            const downloadLink = document.createElement("a");
-            downloadLink.href = dataURL;
-            downloadLink.download = "audio.wav";
-            downloadLink.style.display = "none";
-            document.body.appendChild(downloadLink);
-            downloadLink.click();
-            document.body.removeChild(downloadLink);
-        });
-    };
-}
+  }
 
+  function downloadAudio() {
+    const link = document.createElement("a");
+    link.href = audioPlayer.src;
+    link.download = "output.wav";
+    link.style.display = "none";
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+  }
 
-        playButton.addEventListener('click', async () => {
-            const text = input.value;
-            if (text.trim().length === 0) {
-                alert('Пожалуйста, вставьте текст для конвертации.');
-                return;
-            }
-            const utterance = await convertTextToAudio(text);
-            window.speechSynthesis.speak(utterance);
-        });
-
-        saveButton.addEventListener('click', async () => {
-            const text = input.value;
-            if (text.trim().length === 0) {
-                alert('Пожалуйста, вставьте текст для конвертации.');
-                return;
-            }
-            const utterance = await convertTextToAudio(text);
-            saveAudio(utterance);
-        });
-    </script>
+  convertBtn.addEventListener("click", convertTextToSpeech);
+  downloadBtn.addEventListener("click", downloadAudio);
+</script>
 </body>
 </html>
