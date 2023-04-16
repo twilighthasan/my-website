@@ -39,34 +39,38 @@
   const audioPlayer = document.getElementById("audio-player");
   const downloadBtn = document.getElementById("download-btn");
 
-  function convertTextToSpeech() {
-    if (!("speechSynthesis" in window)) {
-      alert("Sorry, your browser does not support the Web Speech API.");
+  async function convertTextToSpeech() {
+    const inputText = textInput.value;
+    const apiKey = "YOUR_GOOGLE_API_KEY";
+    const apiUrl = `https://texttospeech.googleapis.com/v1/text:synthesize?key=${apiKey}`;
+
+    const requestBody = {
+      input: { text: inputText },
+      voice: { languageCode: "en-US", name: "en-US-Wavenet-A" },
+      audioConfig: { audioEncoding: "MP3" },
+    };
+
+    const response = await fetch(apiUrl, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(requestBody),
+    });
+
+    if (!response.ok) {
+      alert("An error occurred. Please check your API key and input text.");
       return;
     }
 
-    const inputText = textInput.value;
-    const utterance = new SpeechSynthesisUtterance(inputText);
-
-    speechSynthesis.getVoices().forEach((voice) => {
-      if (voice.name === "Siri") {
-        utterance.voice = voice;
-      }
-    });
-
-    speechSynthesis.speak(utterance);
-
-    utterance.onend = () => {
-      // Mock audio file for demonstration purposes
-      const audioSrc = "data:audio/wav;base64,//uQRAAAAW...";
-      audioPlayer.src = audioSrc;
-    };
+    const responseData = await response.json();
+    const audioContent = responseData.audioContent;
+    const audioSrc = `data:audio/mp3;base64,${audioContent}`;
+    audioPlayer.src = audioSrc;
   }
 
   function downloadAudio() {
     const link = document.createElement("a");
     link.href = audioPlayer.src;
-    link.download = "output.wav";
+    link.download = "output.mp3";
     link.style.display = "none";
     document.body.appendChild(link);
     link.click();
