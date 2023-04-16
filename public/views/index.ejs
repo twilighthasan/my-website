@@ -25,18 +25,21 @@
       audio.play();
     });
 
-    saveButton.addEventListener("click", async () => {
-      const text = input.value;
-      if (text.trim().length
-      === 0) {
-        alert("Пожалуйста, введите текст для конвертации");
-        return;
-      }
-      const link = document.createElement("a");
-      link.href = `/audio?text=${encodeURIComponent(text)}`;
-      link.download = "audio.mp3";
-      link.click();
-    });
+    saveButton.addEventListener("click", () => {
+  const text = input.value;
+  if (text.trim().length === 0) {
+    alert("Пожалуйста, введите текст для конвертации");
+    return;
+  }
+  const link = document.createElement("a");
+  link.href = `/audio?text=${encodeURIComponent(text)}`;
+  link.download = "audio.mp3";
+  link.style.display = "none";
+  document.body.appendChild(link);
+  link.click();
+  document.body.removeChild(link);
+});
+
   </script>
 </body>
 </html>
