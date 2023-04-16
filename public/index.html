@@ -35,30 +35,15 @@
             min-height: 100px;
             resize: vertical;
         }
-        #downloadLink {
-            display: none;
-            margin-top: 20px;
-            font-size: 18px;
-            text-decoration: none;
-            color: #4CAF50;
-        }
     </style>
 </head>
 <body>
     <textarea id="input" placeholder="Вставьте текст здесь"></textarea>
-    <button id="convertButton">Конвертировать в аудио</button>
-    <a id="downloadLink" href="#" download="audio.wav">Скачать аудио</a>
+    <button id="convertButton">Конвертировать в аудио и сохранить</button>
     
     <script>
         const convertButton = document.getElementById("convertButton");
         const input = document.getElementById("input");
-        const downloadLink = document.getElementById("downloadLink");
-
-        function blobToDataURL(blob, callback) {
-            const reader = new FileReader();
-            reader.onload = (e) => callback(e.target.result);
-            reader.readAsDataURL(blob);
-        }
 
         async function convertTextToAudio(text) {
             if (!window.speechSynthesis || !window.SpeechSynthesisUtterance) {
@@ -67,34 +52,27 @@
             }
 
             const synth = window.speechSynthesis;
+            const voices = synth.getVoices();
+            const siriVoice = voices.find(voice => voice.name.includes('Siri'));
+
             const utterance = new SpeechSynthesisUtterance(text);
             utterance.lang = 'ru-RU';
 
-            const recorder = new MediaRecorder(synth);
-            const chunks = [];
+            if (siriVoice) {
+                utterance.voice = siriVoice;
+            }
 
-            recorder.ondataavailable =(e) => chunks.push(e.data);
-recorder.onstop = () => {
-const audioBlob = new Blob(chunks, { type: 'audio/wav' });
-blobToDataURL(audioBlob, (dataURL) => {
-downloadLink.href = dataURL;
-downloadLink.style.display = 'block';
-});
-};        recorder.start();
-        synth.speak(utterance);
-        utterance.onend = () => {
-            recorder.stop();
-        };
-    }
-
-    convertButton.addEventListener('click', () => {
-        const text = input.value;
-        if (text.trim().length === 0) {
-            alert('Пожалуйста, вставьте текст для конвертации.');
-            return;
+            // Обратите внимание: сохранение аудио непосредственно в браузере является сложной задачей.
+            // Вам, возможно, потребуется серверное решение для конвертации аудиофайлов и сохранения их на iPhone.
+            synth.speak(utterance);
         }
-        convertTextToAudio(text);
-    });
-</script>
-</body>
-</html>
+
+        convertButton.addEventListener('click', () => {
+            const text = input.value;
+            if (text.trim().length === 0) {
+                alert('Пожалуйста, вставьте текст для конвертации.');
+                return;
+            }
+            convertTextToAudio(text);
+        });
+    </script
