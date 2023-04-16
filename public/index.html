@@ -1,78 +1,116 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="ru">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Video to Audio Converter</title>
-    <link rel="stylesheet" href="styles.css">
+    <title>Голосовой ввод</title>
     <style>
-        .progress-bar {
-    width: 100%;
-    height: 20px;
-    background-color: #f3f3f3;
-    position: relative;
-}
-
-.progress {
-    height: 100%;
-    background-color: #4caf50;
-    position: absolute;
-    width: 0;
-}
-
+        body {
+            font-family: Arial, sans-serif;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            flex-direction: column;
+            margin: 0;
+            background-color: #f0f0f0;
+        }
+        button {
+            font-size: 24px;
+            padding: 10px 20px;
+            background-color: #4CAF50;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+        #output {
+            width: 80%;
+            margin-top: 20px;
+            font-size: 18px;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+            padding: 10px;
+            background-color: white;
+        }
+        #status {
+            width: 80%;
+            height: 20px;
+            background-color: #ccc;
+            border-radius: 5px;
+            margin-top: 10px;
+            display: none;
+        }
+        #progress {
+            height: 100%;
+            background-color: #4CAF50;
+            width: 0;
+            border-radius: 5px;
+        }
     </style>
 </head>
 <body>
-    <h1>Video to Audio Converter</h1>
-    <input type="file" id="video-input" accept="video/*">
-    <button id="convert-btn" disabled>Convert to MP3</button>
-    <a id="download-link" style="display:none;">Download MP3</a>
-    <div class="progress-bar">
-        <div class="progress"></div>
-    </div>
-    <script src="fluent-ffmpeg.js"></script>
-    <script src="app.js"></script>
+    <button id="recordButton">Записать/Остановить</button>
+    <div id="status"><div id="progress"></div></div>
+    <div id="output" contenteditable="true">Здесь будет текст</div>
     <script>
-        const videoInput = document.getElementById("video-input");
-const convertBtn = document.getElementById("convert-btn");
-const downloadLink = document.getElementById("download-link");
-const progressBar = document.querySelector(".progress");
+    const recordButton = document.getElementById("recordButton");
+    const output = document.getElementById("output");
+    const status = document.getElementById("status");
+    const progress = document.getElementById("progress");
+    let isRecording = false;
+    let recognition;
 
-// Enable the Convert button when a file is selected
-videoInput.addEventListener("change", () => {
-    convertBtn.disabled = !videoInput.files.length;
-});
+    function updateProgress(value) {
+        progress.style.width = `${value}%`;
+    }
 
-// Start the conversion process when the Convert button is clicked
-convertBtn.addEventListener("click", async () => {
-    const videoFile = videoInput.files[0];
-    convertBtn.disabled = true;
-    const audioBlob = await extractAudio(videoFile);
-    createDownloadLink(audioBlob);
-    convertBtn.disabled = false;
-});
+    function showProgress() {
+        status.style.display = "block";
+    }
 
-async function extractAudio(videoFile) {
-    // Initialize FFmpeg.js
-    const ffmpeg = FFmpeg.createFFmpeg({log: true});
-    await ffmpeg.load();
+    function hideProgress() {
+        status.style.display = "none";
+    }
 
-    // Prepare the input file
-    await ffmpeg.FS("writeFile", "input.webm", new Uint8Array(await videoFile.arrayBuffer()));
+    function convertText() {
+        showProgress();
+        setTimeout(() => {
+            updateProgress(100);
+            hideProgress();
+        }, 2000);
+    }
 
-    // Run FFmpeg to extract audio and convert it to MP3
-    await ffmpeg.run("-i", "input.webm", "-vn", "-b:a", "128k", "output.mp3");
+    if ('webkitSpeechRecognition' in window) {
+        recognition = new webkitSpeechRecognition();
+        recognition.continuous = true;
+        recognition.interimResults = true;
+        recognition.lang = 'ru-RU';
+        
+        recognition.onresult = (event) => {
+            let finalTranscript = '';
+            for (let i = event.resultIndex; i < event.results.length; i++) {
+                if (event.results[i].isFinal) {
+                    finalTranscript += event.results[i][0].transcript;
+                }
+            }
+            output.textContent = finalTranscript;
+        };
+    } else {
+        recordButton.disabled = true;
+        output.textContent = 'К сожалению, ваш браузер не поддерживает голосовой ввод.';
+    }
 
-    // Read the output file and create a Blob
-    const audioData = ffmpeg.FS("readFile", "output.mp3");
-    const audioBlob = new Blob([audioData.buffer], {type: "audio/mp3"});
-
-    return audioBlob;
-}
-
-function updateProgress(percent) {
-    progressBar.style.width = `${percent}%`;
-}
-    </script>
+    recordButton.addEventListener('click', () => {
+        if (!isRecording) {
+            recognition.start();
+            showProgress();
+        } else {
+            recognition.stop();
+            convertText();
+        }
+        isRecording = !isRecording;
+    });
+</script>
 </body>
 </html>
