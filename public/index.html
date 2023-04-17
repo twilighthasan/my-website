@@ -40,32 +40,33 @@
   const downloadBtn = document.getElementById("download-btn");
 
   async function convertTextToSpeech() {
-    const inputText = textInput.value;
-    const apiKey = "AIzaSyA4dC_R73Ylj-INp00FdyGWfGjiqjLCzos";
-    const apiUrl = `https://texttospeech.googleapis.com/v1/text:synthesize?key=${apiKey}`;
+  const inputText = textInput.value;
+  const apiKey = "AIzaSyA4dC_R73Ylj-INp00FdyGWfGjiqjLCzos";
+  const apiUrl = `https://texttospeech.googleapis.com/v1/text:synthesize?key=${apiKey}`;
 
-    const requestBody = {
-      input: { text: inputText },
-      voice: { languageCode: "en-US", name: "en-US-Wavenet-A" },
-      audioConfig: { audioEncoding: "MP3" },
-    };
+  const requestBody = {
+    input: { text: inputText },
+    voice: { languageCode: "ru-RU", name: "ru-RU-Standard-A" },
+    audioConfig: { audioEncoding: "MP3" },
+  };
 
-    const response = await fetch(apiUrl, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(requestBody),
-    });
+  const response = await fetch(apiUrl, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(requestBody),
+  });
 
-    if (!response.ok) {
-      alert("An error occurred. Please check your API key and input text.");
-      return;
-    }
-
-    const responseData = await response.json();
-    const audioContent = responseData.audioContent;
-    const audioSrc = `data:audio/mp3;base64,${audioContent}`;
-    audioPlayer.src = audioSrc;
+  if (!response.ok) {
+    alert("An error occurred. Please check your API key and input text.");
+    return;
   }
+
+  const responseData = await response.json();
+  const audioContent = responseData.audioContent;
+  const audioSrc = `data:audio/mp3;base64,${audioContent}`;
+  audioPlayer.src = audioSrc;
+}
+
 
   function downloadAudio() {
     const link = document.createElement("a");
