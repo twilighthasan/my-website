@@ -60,7 +60,13 @@
             display: inline-block;
         }
 
-        .transcription { font-size: 16px; font-style: italic; color: #777; }
+        .transcription { 
+            font-size: 16px; 
+            font-style: italic; 
+            color: #777; 
+            white-space: nowrap; /* Транскрипция в одну строку */
+            margin-left: 10px; /* Отступ для лучшего позиционирования */
+        }
 
         .translation { font-size: 18px; color: #000; }
 
@@ -141,31 +147,44 @@
         }
 
         let lines = inputText.split("\n").map(line => line.trim()).filter(line => line);
-        let hasError = false;
+        let wordsToAdd = [];
 
         lines.forEach(line => {
-            let parts = line.match(/^([A-Za-zА-Яа-я\s]+)\s+\[(.*?)\]\s+–\s+(.*)$/);
-            if (!parts) {
-                alert(`Некорректный формат: "${line}". Используйте формат: Слово [Транскрипция] – Перевод`);
-                hasError = true;
-                return;
-            }
+            // Удаляем цифры из строки
+            let cleanedLine = line.replace(/\d+/g, '');
+            let parts = cleanedLine.match(/^([A-Za-zА-Яа-я\s]+)\s+\[(.*?)\]\s+–\s+(.*)$/);
+            if (parts) {
+                let word = parts[1].trim();
+                let transcription = parts[2].trim();
+                let translation = parts[3].trim();
 
-            push(wordsRef, {
-                word: parts[1].trim(),
-                transcription: parts[2].trim(),
-                translation: parts[3].trim(),
-                addedAt: new Date().getTime()
-            }).catch((error) => {
-                console.error("Ошибка при добавлении слова: ", error);
-                alert("Произошла ошибка при добавлении слова. Попробуйте снова.");
-            });
+                // Проверяем, есть ли слово уже в словаре
+                onValue(wordsRef, (snapshot) => {
+                    let isDuplicate = false;
+                    snapshot.forEach(child => {
+                        let wordObj = child.val();
+                        if (wordObj.word === word && wordObj.translation === translation) {
+                            isDuplicate = true;
+                        }
+                    });
+
+                    if (!isDuplicate) {
+                        push(wordsRef, {
+                            word: word,
+                            transcription: transcription,
+                            translation: translation,
+                            addedAt: new Date().getTime()
+                        }).catch((error) => {
+                            console.error("Ошибка при добавлении слова: ", error);
+                            alert("Произошла ошибка при добавлении слова. Попробуйте снова.");
+                        });
+                    }
+                }, { onlyOnce: true });
+            }
         });
 
-        if (!hasError) {
-            document.getElementById("wordInput").value = "";
-            alert("Слова успешно добавлены!");
-        }
+        document.getElementById("wordInput").value = "";
+        alert("Слова успешно добавлены!");
     };
 
     window.deleteWord = function (key) {
@@ -206,8 +225,15 @@
         let sortType = document.getElementById("sortType").value;
         let sortOrder = document.getElementById("sortOrder").value;
 
-        words.sort((a, b) => sortType === "alpha" ? a.word.localeCompare(b.word) : a.addedAt - b.addedAt);
-        if (sortOrder === "desc") words.reverse();
+        if (sortType === "alpha") {
+            words.sort((a, b) => a.word.localeCompare(b.word));
+        } else if (sortType === "date") {
+            words.sort((a, b) => a.addedAt - b.addedAt);
+        }
+
+        if (sortOrder === "desc") {
+            words.reverse();
+        }
 
         let list = document.getElementById("wordList");
         list.innerHTML = "";
