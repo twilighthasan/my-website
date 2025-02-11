@@ -1,97 +1,71 @@
 <!DOCTYPE html>
-<html>
+<html lang="ru">
 <head>
-    <title>Piano</title>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+    <title>Кнопки для iPhone 11</title>
     <style>
-        #piano {
-          display: flex;
-          justify-content: space-between;
-          align-items: center;
-          height: 200px;
+        body {
+            font-family: Arial, sans-serif;
+            text-align: center;
+            margin: 0;
+            padding: 0;
+            background-color: #f4f4f4;
         }
-
+        .container {
+            width: 100%;
+            max-width: 400px;
+            margin: 50px auto;
+            padding: 20px;
+            background: white;
+            border-radius: 10px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+        }
+        h1 {
+            font-size: 22px;
+        }
         button {
-          border: none;
-          outline: none;
-          height: 180px;
-          width: 30px;
+            display: block;
+            width: 100%;
+            padding: 15px;
+            margin: 10px 0;
+            font-size: 18px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
         }
-
-        .white {
-          background-color: white;
-        }
-
-        .black {
-          background-color: black;
-          height: 120px;
-          margin-top: -60px;
-          width: 20px;
-        }
+        .btn-blue { background: #007bff; color: white; }
+        .btn-red { background: #dc3545; color: white; }
+        .btn-green { background: #28a745; color: white; }
+        .btn-gray { background: #6c757d; color: white; }
+        .hidden { display: none; }
     </style>
 </head>
 <body>
-    <div id="piano">
-        <button class="white" data-note="q"></button>
-        <button class="black" data-note="2"></button>
-        <button class="white" data-note="w"></button>
-        <button class="black" data-note="3"></button>
-        <button class="white" data-note="e"></button>
-        <button class="white" data-note="r"></button>
-        <button class="black" data-note="5"></button>
-        <button class="white" data-note="t"></button>
-        <button class="black" data-note="6"></button>
-        <button class="white" data-note="y"></button>
-        <button class="black" data-note="7"></button>
-        <button class="white" data-note="u"></button>
-        <button class="white" data-note="i"></button>
-        <button class="black" data-note="9"></button>
-        <button class="white" data-note="o"></button>
-        <button class="black" data-note="0"></button>
-        <button class="white" data-note="p"></button>
-        <button class="black" data-note="["></button>
-        <button class="black" data-note="]"></button>
+
+    <div class="container">
+        <h1>Кнопки на iPhone 11</h1>
+        <button class="btn-blue" onclick="changeBgColor()">Сменить фон</button>
+        <button class="btn-red" onclick="showAlert()">Показать сообщение</button>
+        <button class="btn-green" onclick="toggleText()">Показать/Скрыть текст</button>
+        <p id="text" class="hidden">Привет! Это скрытый текст.</p>
     </div>
 
     <script>
-        const audioFiles = [
-          new Audio('C:\Users\HASAN\Downloads\piano-c-1.mp3'),
-          new Audio('path/to/audio/c-4.mp3'),
-          new Audio('path/to/audio/d4.mp3'),
-          new Audio('path/to/audio/d-4.mp3'),
-          new Audio('path/to/audio/e4.mp3'),
-          new Audio('path/to/audio/f4.mp3'),
-          new Audio('path/to/audio/f-4.mp3'),
-          new Audio('path/to/audio/g4.mp3'),
-          new Audio('path/to/audio/g-4.mp3'),
-          new Audio('path/to/audio/a4.mp3'),
-          new Audio('path/to/audio/a-4.mp3'),
-          new Audio('path/to/audio/b4.mp3'),
-          new Audio('path/to/audio/c5.mp3'),
-          new Audio('path/to/audio/c-5.mp3'),
-          new Audio('path/to/audio/d5.mp3'),
-          new Audio('path/to/audio/d-5.mp3'),
-          new Audio('path/to/audio/e5.mp3'),
-          new Audio('path/to/audio/f5.mp3'),
-        ];
+        function changeBgColor() {
+            const colors = ["#ffcccc", "#ccffcc", "#ccccff", "#ffff99"];
+            document.body.style.backgroundColor = colors[Math.floor(Math.random() * colors.length)];
+        }
 
-        const buttons = document.querySelectorAll('#piano button');
+        function showAlert() {
+            alert("Привет! Это всплывающее сообщение.");
+        }
 
-        buttons.forEach((button, index) => {
-          button.addEventListener('click', () => {
-            const note = button.dataset.note;
-            const audio = audioFiles[index];
-            if (note === "2" || note === "3" || note === "5" || note === "6" || note === "7" || note === "9" || note === "0" || note === "[" || note === "]") {
-              audio.currentTime = 0;
-              audio.play();
-            } else {
-              audio.currentTime = 0;
-              audio.play();
-              setTimeout(() => {
-                audio.pause();
-              }, 300);
-            }
-          });
-        });
+        function toggleText() {
+            const textElement = document.getElementById("text");
+            textElement.classList.toggle("hidden");
+        }
     </script>
+
 </body>
 </html>
