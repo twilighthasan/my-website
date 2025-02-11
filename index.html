@@ -36,76 +36,76 @@
         <ul id="wordList"></ul>
     </div>
 
-    <script>
+    <script type="module">
+    // Импорт Firebase SDK
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/11.3.1/firebase-app.js";
+    import { getDatabase, ref, push, onValue, remove } from "https://www.gstatic.com/firebasejs/11.3.1/firebase-database.js";
+
+    // Конфигурация Firebase
+    const firebaseConfig = {
+        apiKey: "AIzaSyBmGvAZcROpJCq4Di1h1z-Amr5uH3vtgy4",
+        authDomain: "mydictionary-fca66.firebaseapp.com",
+        databaseURL: "https://mydictionary-fca66-default-rtdb.firebaseio.com",
+        projectId: "mydictionary-fca66",
+        storageBucket: "mydictionary-fca66.appspot.com",
+        messagingSenderId: "461562781840",
+        appId: "1:461562781840:web:9cfac4ad241d8a3657b815"
+    };
+
+    // Инициализируем Firebase
+    const app = initializeApp(firebaseConfig);
+    const db = getDatabase(app);
+    const wordsRef = ref(db, "words");
+
+    // Функция добавления слов в базу
+    window.addWords = function () {
+        let inputText = document.getElementById("wordInput").value.trim();
+        if (!inputText) return;
+
+        let lines = inputText.split("\n").map(line => line.trim()).filter(line => line);
+        lines.forEach(line => {
+            let parts = line.match(/^(.*?)\s+\[(.*?)\]\s+–\s+(.*)$/);
+            if (parts) {
+                push(wordsRef, {
+                    word: parts[1].trim(),
+                    transcription: parts[2].trim(),
+                    translation: parts[3].trim(),
+                    addedAt: new Date().getTime()
+                });
+            }
+        });
+
+        document.getElementById("wordInput").value = "";
+    };
+
+    // Функция рендера списка слов
+    function renderWords(snapshot) {
+        let list = document.getElementById("wordList");
+        list.innerHTML = "";
         let words = [];
 
-        function saveWords() {
-            localStorage.setItem("dictionaryWords", JSON.stringify(words));
-        }
+        snapshot.forEach(child => {
+            let wordObj = child.val();
+            words.push({ key: child.key, ...wordObj });
+        });
 
-        function loadWords() {
-            let savedWords = localStorage.getItem("dictionaryWords");
-            if (savedWords) {
-                words = JSON.parse(savedWords);
-                sortWords();
-            }
-        }
+        words.sort((a, b) => a.word.localeCompare(b.word));
 
-        function addWords() {
-            let inputText = document.getElementById("wordInput").value.trim();
-            if (!inputText) return;
+        words.forEach((wordObj, index) => {
+            let li = document.createElement("li");
+            li.innerHTML = `<b>${index + 1}.</b> ${wordObj.word} [${wordObj.transcription}] – ${wordObj.translation} 
+                            <button class="delete-btn" onclick="deleteWord('${wordObj.key}')">X</button>`;
+            list.appendChild(li);
+        });
+    }
 
-            let lines = inputText.split("\n").map(line => line.trim()).filter(line => line);
-            lines.forEach(line => {
-                let parts = line.match(/^(.*?)\s+\[(.*?)\]\s+–\s+(.*)$/);
-                if (parts) {
-                    words.push({
-                        word: parts[1].trim(),
-                        transcription: parts[2].trim(),
-                        translation: parts[3].trim(),
-                        addedAt: new Date().getTime()
-                    });
-                }
-            });
+    // Функция удаления слова
+    window.deleteWord = function (key) {
+        remove(ref(db, "words/" + key));
+    };
 
-            document.getElementById("wordInput").value = "";
-            saveWords();
-            sortWords();
-        }
-
-        function sortWords() {
-            let type = document.getElementById("sortType").value;
-            let order = document.getElementById("sortOrder").value;
-            
-            words.sort((a, b) => {
-                if (type === "alpha") {
-                    return order === "asc" ? a.word.localeCompare(b.word) : b.word.localeCompare(a.word);
-                } else {
-                    return order === "asc" ? a.addedAt - b.addedAt : b.addedAt - a.addedAt;
-                }
-            });
-
-            renderWords();
-        }
-
-        function renderWords() {
-            let list = document.getElementById("wordList");
-            list.innerHTML = "";
-            words.forEach((wordObj, index) => {
-                let li = document.createElement("li");
-                li.innerHTML = `<b>${index + 1}.</b> ${wordObj.word} [${wordObj.transcription}] – ${wordObj.translation} 
-                                <button class="delete-btn" onclick="deleteWord(${index})">X</button>`;
-                list.appendChild(li);
-            });
-        }
-
-        function deleteWord(index) {
-            words.splice(index, 1);
-            saveWords();
-            renderWords();
-        }
-
-        window.onload = loadWords;
-    </script>
+    // Обновление списка при изменении данных в базе
+    onValue(wordsRef, renderWords);
+</script>
 </body>
 </html>
