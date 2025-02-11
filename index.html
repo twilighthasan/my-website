@@ -7,7 +7,7 @@
     <style>
         :root {
             --word-font-size: 20px;
-            --word-width: auto;
+            --word-width: 100px;
         }
 
         body { 
@@ -135,22 +135,46 @@
 
     window.addWords = function () {
         let inputText = document.getElementById("wordInput").value.trim();
-        if (!inputText) return;
+        if (!inputText) {
+            alert("Пожалуйста, введите слова.");
+            return;
+        }
 
         let lines = inputText.split("\n").map(line => line.trim()).filter(line => line);
+        let hasError = false;
+
         lines.forEach(line => {
-            let parts = line.match(/^([A-Za-z\s]+)\s+\[(.*?)\]\s+–\s+(.*)$/);
-            if (parts && !/\d/.test(parts[1])) {  // Проверяем, что в слове нет цифр
-                push(wordsRef, {
-                    word: parts[1].trim(),
-                    transcription: parts[2].trim(),
-                    translation: parts[3].trim(),
-                    addedAt: new Date().getTime()
-                });
+            let parts = line.match(/^([A-Za-zА-Яа-я\s]+)\s+\[(.*?)\]\s+–\s+(.*)$/);
+            if (!parts) {
+                alert(`Некорректный формат: "${line}". Используйте формат: Слово [Транскрипция] – Перевод`);
+                hasError = true;
+                return;
             }
+
+            push(wordsRef, {
+                word: parts[1].trim(),
+                transcription: parts[2].trim(),
+                translation: parts[3].trim(),
+                addedAt: new Date().getTime()
+            }).catch((error) => {
+                console.error("Ошибка при добавлении слова: ", error);
+                alert("Произошла ошибка при добавлении слова. Попробуйте снова.");
+            });
         });
 
-        document.getElementById("wordInput").value = "";
+        if (!hasError) {
+            document.getElementById("wordInput").value = "";
+            alert("Слова успешно добавлены!");
+        }
+    };
+
+    window.deleteWord = function (key) {
+        if (confirm("Вы уверены, что хотите удалить это слово?")) {
+            remove(ref(db, `words/${key}`)).catch((error) => {
+                console.error("Ошибка при удалении слова: ", error);
+                alert("Произошла ошибка при удалении слова. Попробуйте снова.");
+            });
+        }
     };
 
     function renderWords(snapshot) {
@@ -169,7 +193,6 @@
     window.sortWords = function (words = null) {
         if (!words) {
             words = [];
-            document.getElementById("wordList").innerHTML = "";
             onValue(wordsRef, (snapshot) => {
                 snapshot.forEach(child => {
                     let wordObj = child.val();
@@ -203,16 +226,33 @@
     window.changeFontSize = (delta) => {
         let root = document.documentElement;
         let currentSize = parseInt(getComputedStyle(root).getPropertyValue('--word-font-size'));
-        root.style.setProperty('--word-font-size', `${currentSize + delta}px`);
+        let newSize = Math.max(12, Math.min(40, currentSize + delta)); // Ограничение от 12px до 40px
+        root.style.setProperty('--word-font-size', `${newSize}px`);
+        localStorage.setItem('wordFontSize', newSize);
     };
 
     window.changeWordWidth = (delta) => {
         let root = document.documentElement;
         let currentWidth = parseInt(getComputedStyle(root).getPropertyValue('--word-width')) || 100;
-        root.style.setProperty('--word-width', `${currentWidth + delta}px`);
+        let newWidth = Math.max(50, Math.min(300, currentWidth + delta)); // Ограничение от 50px до 300px
+        root.style.setProperty('--word-width', `${newWidth}px`);
+        localStorage.setItem('wordWidth', newWidth);
     };
 
-    onValue(wordsRef, renderWords);
-</script>
+    // Восстановление настроек при загрузке
+    window.onload = () => {
+        let savedFontSize = localStorage.getItem('wordFontSize');
+        if (savedFontSize) {
+            document.documentElement.style.setProperty('--word-font-size', `${savedFontSize}px`);
+        }
+
+        let savedWordWidth = localStorage.getItem('wordWidth');
+        if (savedWordWidth) {
+            document.documentElement.style.setProperty('--word-width', `${savedWordWidth}px`);
+        }
+
+        onValue(wordsRef, renderWords);
+    };
+    </script>
 </body>
 </html>
