@@ -9,10 +9,11 @@
             --word-font-size: 20px;
             --transcription-font-size: 16px;
             --translation-font-size: 18px;
+            --global-font: Arial, sans-serif;
         }
 
         body {
-            font-family: 'Arial', sans-serif;
+            font-family: var(--global-font);
             text-align: center;
             background-color: #f5f5f5;
         }
@@ -31,7 +32,7 @@
 
         .controls, .sorting, .settings { margin-bottom: 10px; }
 
-        textarea, button, select {
+        textarea, button, select, input {
             margin: 5px;
             padding: 8px;
             font-size: 16px;
@@ -50,8 +51,8 @@
 
         .word-line {
             display: flex;
-            align-items: center;
             justify-content: space-between;
+            align-items: center;
             margin-bottom: 5px;
         }
 
@@ -78,135 +79,132 @@
             <button onclick="addWords()">Добавить</button>
             <button onclick="deleteAllWords()" style="background: red; color: white;">Удалить весь словарь</button>
         </div>
+
         <div class="sorting">
             <label>Сортировать по:</label>
-            <select id="sortType" onchange="renderSortedWords()">
+            <select id="sortType">
                 <option value="alpha">Алфавиту</option>
                 <option value="date">Дате добавления</option>
             </select>
-            <select id="sortOrder" onchange="renderSortedWords()">
+            <select id="sortOrder">
                 <option value="asc">По возрастанию</option>
                 <option value="desc">По убыванию</option>
             </select>
+            <button onclick="renderSortedWords()">Сортировать</button>
         </div>
+
+        <div class="settings">
+            <label>Размер шрифтов:</label>
+            <input type="range" min="12" max="30" value="20" id="wordSize" oninput="updateFontSize('--word-font-size', this.value)">
+            <label>Слово</label>
+            <input type="range" min="12" max="30" value="16" id="transcriptionSize" oninput="updateFontSize('--transcription-font-size', this.value)">
+            <label>Транскрипция</label>
+            <input type="range" min="12" max="30" value="18" id="translationSize" oninput="updateFontSize('--translation-font-size', this.value)">
+            <label>Перевод</label>
+
+            <label>Выбор шрифта:</label>
+            <select id="fontSelect" onchange="updateFont()">
+                <option value="Arial, sans-serif">Arial</option>
+                <option value="Times New Roman, serif">Times New Roman</option>
+                <option value="Courier New, monospace">Courier New</option>
+                <option value="Verdana, sans-serif">Verdana</option>
+            </select>
+        </div>
+
         <ul id="wordList"></ul>
     </div>
 
     <script type="module">
-    import { initializeApp } from "https://www.gstatic.com/firebasejs/11.3.1/firebase-app.js";
-    import { getDatabase, ref, push, onValue, remove } from "https://www.gstatic.com/firebasejs/11.3.1/firebase-database.js";
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/11.3.1/firebase-app.js";
+        import { getDatabase, ref, push, onValue, remove } from "https://www.gstatic.com/firebasejs/11.3.1/firebase-database.js";
 
-    const firebaseConfig = {
-        apiKey: "AIzaSyBmGvAZcROpJCq4Di1h1z-Amr5uH3vtgy4",
-        authDomain: "mydictionary-fca66.firebaseapp.com",
-        databaseURL: "https://mydictionary-fca66-default-rtdb.firebaseio.com",
-        projectId: "mydictionary-fca66",
-        storageBucket: "mydictionary-fca66.appspot.com",
-        messagingSenderId: "461562781840",
-        appId: "1:461562781840:web:9cfac4ad241d8a3657b815"
-    };
+        const firebaseConfig = {
+            apiKey: "AIzaSyBmGvAZcROpJCq4Di1h1z-Amr5uH3vtgy4",
+            authDomain: "mydictionary-fca66.firebaseapp.com",
+            databaseURL: "https://mydictionary-fca66-default-rtdb.firebaseio.com",
+            projectId: "mydictionary-fca66",
+            storageBucket: "mydictionary-fca66.appspot.com",
+            messagingSenderId: "461562781840",
+            appId: "1:461562781840:web:9cfac4ad241d8a3657b815"
+        };
 
-    const app = initializeApp(firebaseConfig);
-    const db = getDatabase(app);
-    const wordsRef = ref(db, "words");
+        const app = initializeApp(firebaseConfig);
+        const db = getDatabase(app);
+        const wordsRef = ref(db, "words");
 
-    onValue(wordsRef, (snapshot) => {
-        renderWords(snapshot);
-    });
+        onValue(wordsRef, (snapshot) => {
+            renderWords(snapshot);
+        });
 
-    function addWords() {
-        let inputText = document.getElementById("wordInput").value.trim();
-        if (!inputText) {
-            alert("Введите слова.");
-            return;
+        function addWords() {
+            let inputText = document.getElementById("wordInput").value.trim();
+            if (!inputText) return alert("Введите слова.");
+
+            let lines = inputText.split("\n").map(line => line.trim()).filter(line => line);
+            lines.forEach(line => {
+                let parts = line.match(/^(.+?)\s+\[(.+?)\]\s+–\s+(.+)$/);
+                if (parts) {
+                    push(wordsRef, {
+                        word: parts[1].trim(),
+                        transcription: parts[2].trim(),
+                        translation: parts[3].trim(),
+                        addedAt: Date.now()
+                    });
+                }
+            });
+
+            document.getElementById("wordInput").value = "";
+            alert("Слова добавлены!");
         }
 
-        let lines = inputText.split("\n").map(line => line.trim()).filter(line => line);
-        lines.forEach(line => {
-            let parts = line.match(/^(.+?)\s+\[(.+?)\]\s+–\s+(.+)$/);
-            if (parts) {
-                let word = parts[1].trim();
-                let transcription = parts[2].trim();
-                let translation = parts[3].trim();
+        function deleteWord(key) {
+            remove(ref(db, `words/${key}`));
+        }
 
-                push(wordsRef, {
-                    word,
-                    transcription,
-                    translation,
-                    addedAt: Date.now()
-                });
+        function deleteAllWords() {
+            if (confirm("Удалить весь словарь?")) remove(wordsRef);
+        }
+
+        function renderWords(snapshot) {
+            let words = [];
+            snapshot.forEach(child => words.push({ key: child.key, ...child.val() }));
+            renderSortedWords(words);
+        }
+
+        function renderSortedWords(words = null) {
+            if (!words) {
+                onValue(wordsRef, snapshot => {
+                    let tempWords = [];
+                    snapshot.forEach(child => tempWords.push({ key: child.key, ...child.val() }));
+                    renderSortedWords(tempWords);
+                }, { onlyOnce: true });
+                return;
             }
-        });
 
-        document.getElementById("wordInput").value = "";
-        alert("Слова добавлены!");
-    }
+            let sortType = document.getElementById("sortType").value;
+            let sortOrder = document.getElementById("sortOrder").value;
+            words.sort((a, b) => sortType === "alpha" ? a.word.localeCompare(b.word) : a.addedAt - b.addedAt);
+            if (sortOrder === "desc") words.reverse();
 
-    function deleteWord(key) {
-        remove(ref(db, `words/${key}`));
-    }
-
-    function deleteAllWords() {
-        if (confirm("Удалить весь словарь?")) {
-            remove(wordsRef);
-        }
-    }
-
-    function renderWords(snapshot) {
-        let words = [];
-        snapshot.forEach(child => {
-            let wordObj = child.val();
-            words.push({ key: child.key, ...wordObj });
-        });
-
-        renderSortedWords(words);
-    }
-
-    function renderSortedWords(words = null) {
-        if (!words) {
-            words = [];
-            onValue(wordsRef, (snapshot) => {
-                snapshot.forEach(child => {
-                    words.push({ key: child.key, ...child.val() });
-                });
-                renderSortedWords(words);
-            }, { onlyOnce: true });
-            return;
+            document.getElementById("wordList").innerHTML = words.map((word, i) => `
+                <li>
+                    <div class="word-line">
+                        <span>${i + 1}.</span>
+                        <span class="word">${word.word}</span>
+                        <span class="transcription">[${word.transcription}]</span>
+                        <button class="delete-btn" onclick="deleteWord('${word.key}')">X</button>
+                    </div>
+                    <div class="translation">– ${word.translation}</div>
+                </li>`).join("");
         }
 
-        let sortType = document.getElementById("sortType").value;
-        let sortOrder = document.getElementById("sortOrder").value;
-
-        if (sortType === "alpha") {
-            words.sort((a, b) => a.word.localeCompare(b.word));
-        } else if (sortType === "date") {
-            words.sort((a, b) => a.addedAt - b.addedAt);
+        function updateFontSize(varName, value) {
+            document.documentElement.style.setProperty(varName, value + "px");
         }
 
-        if (sortOrder === "desc") {
-            words.reverse();
+        function updateFont() {
+            document.documentElement.style.setProperty("--global-font", document.getElementById("fontSelect").value);
         }
-
-        let list = document.getElementById("wordList");
-        list.innerHTML = "";
-
-        words.forEach((wordObj, index) => {
-            let li = document.createElement("li");
-            li.innerHTML = `
-                <div class="word-line">
-                    <span>${index + 1}. <strong>${wordObj.word}</strong> <em>[${wordObj.transcription}]</em></span>
-                    <button class="delete-btn" onclick="deleteWord('${wordObj.key}')">X</button>
-                </div>
-                <div class="translation">– ${wordObj.translation}</div>
-            `;
-            list.appendChild(li);
-        });
-    }
-
-    window.addWords = addWords;
-    window.deleteWord = deleteWord;
-    window.deleteAllWords = deleteAllWords;
-    window.renderSortedWords = renderSortedWords;
     </script>
 </body>
 </html>
