@@ -172,6 +172,11 @@
     const db = getDatabase(app);
     const wordsRef = ref(db, "words");
 
+    // Постоянное прослушивание изменений в базе данных
+    onValue(wordsRef, (snapshot) => {
+        renderWords(snapshot);
+    });
+
     window.addWords = function () {
         let inputText = document.getElementById("wordInput").value.trim();
         if (!inputText) {
