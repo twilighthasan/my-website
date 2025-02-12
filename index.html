@@ -9,7 +9,6 @@
             --word-font-size: 20px;
             --transcription-font-size: 16px;
             --translation-font-size: 18px;
-            --word-width: 100px;
         }
 
         body { 
@@ -46,21 +45,27 @@
             margin: 5px 0; 
             padding: 10px; 
             border-radius: 5px; 
-            display: flex; 
-            justify-content: space-between; 
-            align-items: center; 
             box-shadow: 0 0 5px rgba(0, 0, 0, 0.1); 
             overflow: hidden; /* Слова не выходят за рамки */
         }
 
-        .index-number { font-size: 18px; font-weight: bold; color: #555; }
+        .index-number { 
+            font-size: 18px; 
+            font-weight: bold; 
+            color: #555; 
+            margin-right: 10px; 
+        }
+
+        .word-line { 
+            display: flex; 
+            align-items: center; 
+            margin-bottom: 5px; 
+        }
 
         .word { 
             font-size: var(--word-font-size);
             font-weight: bold; 
             color: #333; 
-            width: var(--word-width);
-            display: inline-block;
             white-space: nowrap; /* Текст в одну строку */
             overflow: hidden; /* Обрезаем текст, если не помещается */
             text-overflow: ellipsis; /* Добавляем многоточие */
@@ -95,6 +100,7 @@
             display: flex; 
             align-items: center; 
             justify-content: center; 
+            margin-left: auto; /* Кнопка удаления справа */
         }
 
         .settings {
@@ -274,11 +280,15 @@
 
         words.forEach((wordObj, index) => {
             let li = document.createElement("li");
-            li.innerHTML = `<span class="index-number">${index + 1}.</span> 
-                            <span class="word">${wordObj.word}</span> 
-                            <span class="transcription">[${wordObj.transcription}]</span> 
-                            <span class="translation">– ${wordObj.translation}</span> 
-                            <button class="delete-btn" onclick="deleteWord('${wordObj.key}')">X</button>`;
+            li.innerHTML = `
+                <div class="word-line">
+                    <span class="index-number">${index + 1}.</span>
+                    <span class="word">${wordObj.word}</span>
+                    <span class="transcription">[${wordObj.transcription}]</span>
+                    <button class="delete-btn" onclick="deleteWord('${wordObj.key}')">X</button>
+                </div>
+                <div class="translation">– ${wordObj.translation}</div>
+            `;
             list.appendChild(li);
         });
     };
