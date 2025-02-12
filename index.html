@@ -7,6 +7,8 @@
     <style>
         :root {
             --word-font-size: 20px;
+            --transcription-font-size: 16px;
+            --translation-font-size: 18px;
             --word-width: 100px;
         }
 
@@ -48,6 +50,7 @@
             justify-content: space-between; 
             align-items: center; 
             box-shadow: 0 0 5px rgba(0, 0, 0, 0.1); 
+            overflow: hidden; /* Слова не выходят за рамки */
         }
 
         .index-number { font-size: 18px; font-weight: bold; color: #555; }
@@ -58,17 +61,28 @@
             color: #333; 
             width: var(--word-width);
             display: inline-block;
+            white-space: nowrap; /* Текст в одну строку */
+            overflow: hidden; /* Обрезаем текст, если не помещается */
+            text-overflow: ellipsis; /* Добавляем многоточие */
         }
 
         .transcription { 
-            font-size: 16px; 
+            font-size: var(--transcription-font-size); 
             font-style: italic; 
             color: #777; 
             white-space: nowrap; /* Транскрипция в одну строку */
             margin-left: 10px; /* Отступ для лучшего позиционирования */
+            overflow: hidden; /* Обрезаем текст, если не помещается */
+            text-overflow: ellipsis; /* Добавляем многоточие */
         }
 
-        .translation { font-size: 18px; color: #000; }
+        .translation { 
+            font-size: var(--translation-font-size); 
+            color: #000; 
+            white-space: nowrap; /* Текст в одну строку */
+            overflow: hidden; /* Обрезаем текст, если не помещается */
+            text-overflow: ellipsis; /* Добавляем многоточие */
+        }
 
         .delete-btn { 
             background: red; 
@@ -83,11 +97,19 @@
             justify-content: center; 
         }
 
-        .settings button {
-            padding: 5px 10px;
+        .settings {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+
+        .settings label {
             font-size: 14px;
-            margin: 2px;
-            cursor: pointer;
+            margin-bottom: 5px;
+        }
+
+        .settings input[type="range"] {
+            width: 100%;
         }
     </style>
 </head>
@@ -97,6 +119,7 @@
         <div class="controls">
             <textarea id="wordInput" placeholder="Введите слова (каждое с новой строки)"></textarea>
             <button onclick="addWords()">Добавить</button>
+            <button onclick="deleteAllWords()" style="background: red; color: white;">Удалить весь словарь</button>
         </div>
         <div class="sorting">
             <label>Сортировать по:</label>
@@ -111,11 +134,15 @@
         </div>
 
         <div class="settings">
-            <h3>Настройки отображения</h3>
-            <button onclick="changeFontSize(2)">Увеличить шрифт</button>
-            <button onclick="changeFontSize(-2)">Уменьшить шрифт</button>
-            <button onclick="changeWordWidth(20)">Увеличить ширину</button>
-            <button onclick="changeWordWidth(-20)">Уменьшить ширину</button>
+            <h3>Настройки шрифтов</h3>
+            <label>Размер шрифта английских слов: <span id="wordFontSizeValue">20</span>px</label>
+            <input type="range" min="12" max="40" value="20" oninput="changeFontSize('word', this.value)">
+
+            <label>Размер шрифта транскрипции: <span id="transcriptionFontSizeValue">16</span>px</label>
+            <input type="range" min="12" max="40" value="16" oninput="changeFontSize('transcription', this.value)">
+
+            <label>Размер шрифта русских слов: <span id="translationFontSizeValue">18</span>px</label>
+            <input type="range" min="12" max="40" value="18" oninput="changeFontSize('translation', this.value)">
         </div>
 
         <ul id="wordList"></ul>
@@ -188,10 +215,17 @@
     };
 
     window.deleteWord = function (key) {
-        if (confirm("Вы уверены, что хотите удалить это слово?")) {
-            remove(ref(db, `words/${key}`)).catch((error) => {
-                console.error("Ошибка при удалении слова: ", error);
-                alert("Произошла ошибка при удалении слова. Попробуйте снова.");
+        remove(ref(db, `words/${key}`)).catch((error) => {
+            console.error("Ошибка при удалении слова: ", error);
+            alert("Произошла ошибка при удалении слова. Попробуйте снова.");
+        });
+    };
+
+    window.deleteAllWords = function () {
+        if (confirm("Вы уверены, что хотите удалить весь словарь?")) {
+            remove(wordsRef).catch((error) => {
+                console.error("Ошибка при удалении словаря: ", error);
+                alert("Произошла ошибка при удалении словаря. Попробуйте снова.");
             });
         }
     };
@@ -249,34 +283,22 @@
         });
     };
 
-    window.changeFontSize = (delta) => {
+    window.changeFontSize = (type, value) => {
         let root = document.documentElement;
-        let currentSize = parseInt(getComputedStyle(root).getPropertyValue('--word-font-size'));
-        let newSize = Math.max(12, Math.min(40, currentSize + delta)); // Ограничение от 12px до 40px
-        root.style.setProperty('--word-font-size', `${newSize}px`);
-        localStorage.setItem('wordFontSize', newSize);
-    };
-
-    window.changeWordWidth = (delta) => {
-        let root = document.documentElement;
-        let currentWidth = parseInt(getComputedStyle(root).getPropertyValue('--word-width')) || 100;
-        let newWidth = Math.max(50, Math.min(300, currentWidth + delta)); // Ограничение от 50px до 300px
-        root.style.setProperty('--word-width', `${newWidth}px`);
-        localStorage.setItem('wordWidth', newWidth);
+        if (type === "word") {
+            root.style.setProperty('--word-font-size', `${value}px`);
+            document.getElementById("wordFontSizeValue").textContent = value;
+        } else if (type === "transcription") {
+            root.style.setProperty('--transcription-font-size', `${value}px`);
+            document.getElementById("transcriptionFontSizeValue").textContent = value;
+        } else if (type === "translation") {
+            root.style.setProperty('--translation-font-size', `${value}px`);
+            document.getElementById("translationFontSizeValue").textContent = value;
+        }
     };
 
     // Восстановление настроек при загрузке
     window.onload = () => {
-        let savedFontSize = localStorage.getItem('wordFontSize');
-        if (savedFontSize) {
-            document.documentElement.style.setProperty('--word-font-size', `${savedFontSize}px`);
-        }
-
-        let savedWordWidth = localStorage.getItem('wordWidth');
-        if (savedWordWidth) {
-            document.documentElement.style.setProperty('--word-width', `${savedWordWidth}px`);
-        }
-
         onValue(wordsRef, renderWords);
     };
     </script>
