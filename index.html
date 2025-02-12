@@ -93,30 +93,12 @@
             <button onclick="renderSortedWords()">Сортировать</button>
         </div>
 
-        <div class="settings">
-            <label>Размер шрифтов:</label>
-            <input type="range" min="12" max="30" value="20" id="wordSize" oninput="updateFontSize('--word-font-size', this.value)">
-            <label>Слово</label>
-            <input type="range" min="12" max="30" value="16" id="transcriptionSize" oninput="updateFontSize('--transcription-font-size', this.value)">
-            <label>Транскрипция</label>
-            <input type="range" min="12" max="30" value="18" id="translationSize" oninput="updateFontSize('--translation-font-size', this.value)">
-            <label>Перевод</label>
-
-            <label>Выбор шрифта:</label>
-            <select id="fontSelect" onchange="updateFont()">
-                <option value="Arial, sans-serif">Arial</option>
-                <option value="Times New Roman, serif">Times New Roman</option>
-                <option value="Courier New, monospace">Courier New</option>
-                <option value="Verdana, sans-serif">Verdana</option>
-            </select>
-        </div>
-
         <ul id="wordList"></ul>
     </div>
 
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/11.3.1/firebase-app.js";
-        import { getDatabase, ref, push, onValue, remove } from "https://www.gstatic.com/firebasejs/11.3.1/firebase-database.js";
+        import { getDatabase, ref, push, set, onValue, remove, get } from "https://www.gstatic.com/firebasejs/11.3.1/firebase-database.js";
 
         const firebaseConfig = {
             apiKey: "AIzaSyBmGvAZcROpJCq4Di1h1z-Amr5uH3vtgy4",
@@ -132,29 +114,33 @@
         const db = getDatabase(app);
         const wordsRef = ref(db, "words");
 
-        onValue(wordsRef, (snapshot) => {
-            renderWords(snapshot);
-        });
-
-        function addWords() {
+        async function addWords() {
             let inputText = document.getElementById("wordInput").value.trim();
             if (!inputText) return alert("Введите слова.");
 
             let lines = inputText.split("\n").map(line => line.trim()).filter(line => line);
+            let updates = {};
+
             lines.forEach(line => {
                 let parts = line.match(/^(.+?)\s+\[(.+?)\]\s+–\s+(.+)$/);
                 if (parts) {
-                    push(wordsRef, {
+                    let newKey = push(wordsRef).key;
+                    updates[newKey] = {
                         word: parts[1].trim(),
                         transcription: parts[2].trim(),
                         translation: parts[3].trim(),
                         addedAt: Date.now()
-                    });
+                    };
                 }
             });
 
-            document.getElementById("wordInput").value = "";
-            alert("Слова добавлены!");
+            if (Object.keys(updates).length > 0) {
+                await set(wordsRef, updates);
+                document.getElementById("wordInput").value = "";
+                alert("Слова добавлены!");
+            } else {
+                alert("Некорректный формат слов. Используйте: слово [транскрипция] – перевод");
+            }
         }
 
         function deleteWord(key) {
@@ -171,13 +157,16 @@
             renderSortedWords(words);
         }
 
-        function renderSortedWords(words = null) {
+        async function renderSortedWords(words = null) {
             if (!words) {
-                onValue(wordsRef, snapshot => {
+                const snapshot = await get(wordsRef);
+                if (snapshot.exists()) {
                     let tempWords = [];
                     snapshot.forEach(child => tempWords.push({ key: child.key, ...child.val() }));
                     renderSortedWords(tempWords);
-                }, { onlyOnce: true });
+                } else {
+                    document.getElementById("wordList").innerHTML = "<li>Словарь пуст.</li>";
+                }
                 return;
             }
 
@@ -198,13 +187,9 @@
                 </li>`).join("");
         }
 
-        function updateFontSize(varName, value) {
-            document.documentElement.style.setProperty(varName, value + "px");
-        }
-
-        function updateFont() {
-            document.documentElement.style.setProperty("--global-font", document.getElementById("fontSelect").value);
-        }
+        onValue(wordsRef, (snapshot) => {
+            if (snapshot.exists()) renderWords(snapshot);
+        });
     </script>
 </body>
 </html>
