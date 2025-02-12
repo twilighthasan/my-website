@@ -11,111 +11,62 @@
             --translation-font-size: 18px;
         }
 
-        body { 
-            font-family: 'Arial', sans-serif; 
-            text-align: center; 
-            background-color: #f5f5f5; 
+        body {
+            font-family: 'Arial', sans-serif;
+            text-align: center;
+            background-color: #f5f5f5;
         }
 
-        .container { 
-            width: 90%; 
-            max-width: 400px; 
-            margin: auto; 
-            background: white; 
-            padding: 20px; 
-            border-radius: 10px; 
-            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1); 
+        .container {
+            width: 90%;
+            max-width: 400px;
+            margin: auto;
+            background: white;
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
         }
 
         h1 { margin-bottom: 10px; }
 
         .controls, .sorting, .settings { margin-bottom: 10px; }
 
-        textarea, button, select { 
-            margin: 5px; 
-            padding: 8px; 
-            font-size: 16px; 
-            width: calc(100% - 20px); 
+        textarea, button, select {
+            margin: 5px;
+            padding: 8px;
+            font-size: 16px;
+            width: calc(100% - 20px);
         }
 
         ul { list-style: none; padding: 0; }
 
-        li { 
-            background: #fff; 
-            margin: 5px 0; 
-            padding: 10px; 
-            border-radius: 5px; 
-            box-shadow: 0 0 5px rgba(0, 0, 0, 0.1); 
-            overflow: hidden; /* Слова не выходят за рамки */
+        li {
+            background: #fff;
+            margin: 5px 0;
+            padding: 10px;
+            border-radius: 5px;
+            box-shadow: 0 0 5px rgba(0, 0, 0, 0.1);
         }
 
-        .index-number { 
-            font-size: 18px; 
-            font-weight: bold; 
-            color: #555; 
-            margin-right: 10px; 
-        }
-
-        .word-line { 
-            display: flex; 
-            align-items: center; 
-            margin-bottom: 5px; 
-        }
-
-        .word { 
-            font-size: var(--word-font-size);
-            font-weight: bold; 
-            color: #333; 
-            white-space: nowrap; /* Текст в одну строку */
-            overflow: hidden; /* Обрезаем текст, если не помещается */
-            text-overflow: ellipsis; /* Добавляем многоточие */
-        }
-
-        .transcription { 
-            font-size: var(--transcription-font-size); 
-            font-style: italic; 
-            color: #777; 
-            white-space: nowrap; /* Транскрипция в одну строку */
-            margin-left: 10px; /* Отступ для лучшего позиционирования */
-            overflow: hidden; /* Обрезаем текст, если не помещается */
-            text-overflow: ellipsis; /* Добавляем многоточие */
-        }
-
-        .translation { 
-            font-size: var(--translation-font-size); 
-            color: #000; 
-            white-space: nowrap; /* Текст в одну строку */
-            overflow: hidden; /* Обрезаем текст, если не помещается */
-            text-overflow: ellipsis; /* Добавляем многоточие */
-        }
-
-        .delete-btn { 
-            background: red; 
-            color: white; 
-            border: none; 
-            width: 25px; 
-            height: 25px; 
-            cursor: pointer; 
-            border-radius: 5px; 
-            display: flex; 
-            align-items: center; 
-            justify-content: center; 
-            margin-left: auto; /* Кнопка удаления справа */
-        }
-
-        .settings {
+        .word-line {
             display: flex;
-            flex-direction: column;
-            gap: 10px;
-        }
-
-        .settings label {
-            font-size: 14px;
+            align-items: center;
+            justify-content: space-between;
             margin-bottom: 5px;
         }
 
-        .settings input[type="range"] {
-            width: 100%;
+        .word { font-size: var(--word-font-size); font-weight: bold; }
+        .transcription { font-size: var(--transcription-font-size); font-style: italic; }
+        .translation { font-size: var(--translation-font-size); }
+
+        .delete-btn {
+            background: red;
+            color: white;
+            border: none;
+            width: 25px;
+            height: 25px;
+            cursor: pointer;
+            border-radius: 5px;
         }
     </style>
 </head>
@@ -129,28 +80,15 @@
         </div>
         <div class="sorting">
             <label>Сортировать по:</label>
-            <select id="sortType" onchange="sortWords()">
+            <select id="sortType" onchange="renderSortedWords()">
                 <option value="alpha">Алфавиту</option>
                 <option value="date">Дате добавления</option>
             </select>
-            <select id="sortOrder" onchange="sortWords()">
+            <select id="sortOrder" onchange="renderSortedWords()">
                 <option value="asc">По возрастанию</option>
                 <option value="desc">По убыванию</option>
             </select>
         </div>
-
-        <div class="settings">
-            <h3>Настройки шрифтов</h3>
-            <label>Размер шрифта английских слов: <span id="wordFontSizeValue">20</span>px</label>
-            <input type="range" min="12" max="40" value="20" oninput="changeFontSize('word', this.value)">
-
-            <label>Размер шрифта транскрипции: <span id="transcriptionFontSizeValue">16</span>px</label>
-            <input type="range" min="12" max="40" value="16" oninput="changeFontSize('transcription', this.value)">
-
-            <label>Размер шрифта русских слов: <span id="translationFontSizeValue">18</span>px</label>
-            <input type="range" min="12" max="40" value="18" oninput="changeFontSize('translation', this.value)">
-        </div>
-
         <ul id="wordList"></ul>
     </div>
 
@@ -172,97 +110,66 @@
     const db = getDatabase(app);
     const wordsRef = ref(db, "words");
 
-    // Постоянное прослушивание изменений в базе данных
     onValue(wordsRef, (snapshot) => {
         renderWords(snapshot);
     });
 
-    window.addWords = function () {
+    function addWords() {
         let inputText = document.getElementById("wordInput").value.trim();
         if (!inputText) {
-            alert("Пожалуйста, введите слова.");
+            alert("Введите слова.");
             return;
         }
 
         let lines = inputText.split("\n").map(line => line.trim()).filter(line => line);
-        let wordsToAdd = [];
-
         lines.forEach(line => {
-            // Удаляем цифры из строки
-            let cleanedLine = line.replace(/\d+/g, '');
-            let parts = cleanedLine.match(/^([A-Za-zА-Яа-я\s]+)\s+\[(.*?)\]\s+–\s+(.*)$/);
+            let parts = line.match(/^(.+?)\s+\[(.+?)\]\s+–\s+(.+)$/);
             if (parts) {
                 let word = parts[1].trim();
                 let transcription = parts[2].trim();
                 let translation = parts[3].trim();
 
-                // Проверяем, есть ли слово уже в словаре
-                onValue(wordsRef, (snapshot) => {
-                    let isDuplicate = false;
-                    snapshot.forEach(child => {
-                        let wordObj = child.val();
-                        if (wordObj.word === word && wordObj.translation === translation) {
-                            isDuplicate = true;
-                        }
-                    });
-
-                    if (!isDuplicate) {
-                        push(wordsRef, {
-                            word: word,
-                            transcription: transcription,
-                            translation: translation,
-                            addedAt: new Date().getTime()
-                        }).catch((error) => {
-                            console.error("Ошибка при добавлении слова: ", error);
-                            alert("Произошла ошибка при добавлении слова. Попробуйте снова.");
-                        });
-                    }
-                }, { onlyOnce: true });
+                push(wordsRef, {
+                    word,
+                    transcription,
+                    translation,
+                    addedAt: Date.now()
+                });
             }
         });
 
         document.getElementById("wordInput").value = "";
-        alert("Слова успешно добавлены!");
-    };
+        alert("Слова добавлены!");
+    }
 
-    window.deleteWord = function (key) {
-        remove(ref(db, `words/${key}`)).catch((error) => {
-            console.error("Ошибка при удалении слова: ", error);
-            alert("Произошла ошибка при удалении слова. Попробуйте снова.");
-        });
-    };
+    function deleteWord(key) {
+        remove(ref(db, `words/${key}`));
+    }
 
-    window.deleteAllWords = function () {
-        if (confirm("Вы уверены, что хотите удалить весь словарь?")) {
-            remove(wordsRef).catch((error) => {
-                console.error("Ошибка при удалении словаря: ", error);
-                alert("Произошла ошибка при удалении словаря. Попробуйте снова.");
-            });
+    function deleteAllWords() {
+        if (confirm("Удалить весь словарь?")) {
+            remove(wordsRef);
         }
-    };
+    }
 
     function renderWords(snapshot) {
-        let list = document.getElementById("wordList");
-        list.innerHTML = "";
         let words = [];
-
         snapshot.forEach(child => {
             let wordObj = child.val();
             words.push({ key: child.key, ...wordObj });
         });
 
-        sortWords(words);
+        renderSortedWords(words);
     }
 
-    window.sortWords = function (words = null) {
+    function renderSortedWords(words = null) {
         if (!words) {
             words = [];
             onValue(wordsRef, (snapshot) => {
                 snapshot.forEach(child => {
-                    let wordObj = child.val();
-                    words.push({ key: child.key, ...wordObj });
+                    words.push({ key: child.key, ...child.val() });
                 });
-                sortWords(words);
+                renderSortedWords(words);
             }, { onlyOnce: true });
             return;
         }
@@ -287,35 +194,19 @@
             let li = document.createElement("li");
             li.innerHTML = `
                 <div class="word-line">
-                    <span class="index-number">${index + 1}.</span>
-                    <span class="word">${wordObj.word}</span>
-                    <span class="transcription">[${wordObj.transcription}]</span>
+                    <span>${index + 1}. <strong>${wordObj.word}</strong> <em>[${wordObj.transcription}]</em></span>
                     <button class="delete-btn" onclick="deleteWord('${wordObj.key}')">X</button>
                 </div>
                 <div class="translation">– ${wordObj.translation}</div>
             `;
             list.appendChild(li);
         });
-    };
+    }
 
-    window.changeFontSize = (type, value) => {
-        let root = document.documentElement;
-        if (type === "word") {
-            root.style.setProperty('--word-font-size', `${value}px`);
-            document.getElementById("wordFontSizeValue").textContent = value;
-        } else if (type === "transcription") {
-            root.style.setProperty('--transcription-font-size', `${value}px`);
-            document.getElementById("transcriptionFontSizeValue").textContent = value;
-        } else if (type === "translation") {
-            root.style.setProperty('--translation-font-size', `${value}px`);
-            document.getElementById("translationFontSizeValue").textContent = value;
-        }
-    };
-
-    // Восстановление настроек при загрузке
-    window.onload = () => {
-        onValue(wordsRef, renderWords);
-    };
+    window.addWords = addWords;
+    window.deleteWord = deleteWord;
+    window.deleteAllWords = deleteAllWords;
+    window.renderSortedWords = renderSortedWords;
     </script>
 </body>
 </html>
