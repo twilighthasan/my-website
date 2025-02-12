@@ -3,193 +3,106 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Словарь</title>
+    <title>Умный Поиск</title>
     <style>
-        :root {
-            --word-font-size: 20px;
-            --transcription-font-size: 16px;
-            --translation-font-size: 18px;
-            --global-font: Arial, sans-serif;
-        }
-
         body {
-            font-family: var(--global-font);
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 0;
             text-align: center;
-            background-color: #f5f5f5;
+            background-color: #f4f4f4;
         }
-
-        .container {
-            width: 90%;
-            max-width: 400px;
-            margin: auto;
-            background: white;
-            padding: 20px;
-            border-radius: 10px;
-            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+        header {
+            background-color: #007bff;
+            color: white;
+            padding: 15px;
+            font-size: 20px;
         }
-
-        h1 { margin-bottom: 10px; }
-
-        .controls, .sorting, .settings { margin-bottom: 10px; }
-
-        textarea, button, select, input {
-            margin: 5px;
-            padding: 8px;
-            font-size: 16px;
-            width: calc(100% - 20px);
-        }
-
-        ul { list-style: none; padding: 0; }
-
-        li {
-            background: #fff;
-            margin: 5px 0;
+        main {
+            margin-top: 20px;
             padding: 10px;
+        }
+        input {
+            width: 80%;
+            padding: 10px;
+            margin: 10px 0;
+            border: 1px solid #ccc;
             border-radius: 5px;
-            box-shadow: 0 0 5px rgba(0, 0, 0, 0.1);
         }
-
-        .word-line {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: 5px;
-        }
-
-        .word { font-size: var(--word-font-size); font-weight: bold; }
-        .transcription { font-size: var(--transcription-font-size); font-style: italic; }
-        .translation { font-size: var(--translation-font-size); }
-
-        .delete-btn {
-            background: red;
+        button {
+            padding: 10px 20px;
+            background-color: #007bff;
             color: white;
             border: none;
-            width: 25px;
-            height: 25px;
             cursor: pointer;
             border-radius: 5px;
+        }
+        #results {
+            margin-top: 20px;
+            text-align: left;
+            padding: 10px;
+        }
+        .result-item {
+            background: white;
+            padding: 10px;
+            margin: 10px 0;
+            border-radius: 5px;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+        }
+        .result-item a {
+            color: #007bff;
+            font-weight: bold;
+            text-decoration: none;
         }
     </style>
 </head>
 <body>
-    <div class="container">
-        <h1>Словарь</h1>
-        <div class="controls">
-            <textarea id="wordInput" placeholder="Введите слова (каждое с новой строки)"></textarea>
-            <button onclick="addWords()">Добавить</button>
-            <button onclick="deleteAllWords()" style="background: red; color: white;">Удалить весь словарь</button>
-        </div>
-
-        <div class="sorting">
-            <label>Сортировать по:</label>
-            <select id="sortType">
-                <option value="alpha">Алфавиту</option>
-                <option value="date">Дате добавления</option>
-            </select>
-            <select id="sortOrder">
-                <option value="asc">По возрастанию</option>
-                <option value="desc">По убыванию</option>
-            </select>
-            <button onclick="renderSortedWords()">Сортировать</button>
-        </div>
-
-        <ul id="wordList"></ul>
-    </div>
-
-    <script type="module">
-        import { initializeApp } from "https://www.gstatic.com/firebasejs/11.3.1/firebase-app.js";
-        import { getDatabase, ref, push, set, onValue, remove, get } from "https://www.gstatic.com/firebasejs/11.3.1/firebase-database.js";
-
-        const firebaseConfig = {
-            apiKey: "AIzaSyBmGvAZcROpJCq4Di1h1z-Amr5uH3vtgy4",
-            authDomain: "mydictionary-fca66.firebaseapp.com",
-            databaseURL: "https://mydictionary-fca66-default-rtdb.firebaseio.com",
-            projectId: "mydictionary-fca66",
-            storageBucket: "mydictionary-fca66.appspot.com",
-            messagingSenderId: "461562781840",
-            appId: "1:461562781840:web:9cfac4ad241d8a3657b815"
-        };
-
-        const app = initializeApp(firebaseConfig);
-        const db = getDatabase(app);
-        const wordsRef = ref(db, "words");
-
-        async function addWords() {
-            let inputText = document.getElementById("wordInput").value.trim();
-            if (!inputText) return alert("Введите слова.");
-
-            let lines = inputText.split("\n").map(line => line.trim()).filter(line => line);
-            let updates = {};
-
-            lines.forEach(line => {
-                let parts = line.match(/^(.+?)\s+\[(.+?)\]\s+–\s+(.+)$/);
-                if (parts) {
-                    let newKey = push(wordsRef).key;
-                    updates[newKey] = {
-                        word: parts[1].trim(),
-                        transcription: parts[2].trim(),
-                        translation: parts[3].trim(),
-                        addedAt: Date.now()
-                    };
-                }
-            });
-
-            if (Object.keys(updates).length > 0) {
-                await set(wordsRef, updates);
-                document.getElementById("wordInput").value = "";
-                alert("Слова добавлены!");
-            } else {
-                alert("Некорректный формат слов. Используйте: слово [транскрипция] – перевод");
+    <header>Умный Поиск</header>
+    <main>
+        <input type="text" id="searchQuery" placeholder="Введите запрос..." onkeypress="handleKeyPress(event)">
+        <button onclick="search()">Искать</button>
+        <div id="results"></div>
+    </main>
+    <script>
+        function handleKeyPress(event) {
+            if (event.key === 'Enter') {
+                search();
             }
         }
 
-        function deleteWord(key) {
-            remove(ref(db, `words/${key}`));
-        }
-
-        function deleteAllWords() {
-            if (confirm("Удалить весь словарь?")) remove(wordsRef);
-        }
-
-        function renderWords(snapshot) {
-            let words = [];
-            snapshot.forEach(child => words.push({ key: child.key, ...child.val() }));
-            renderSortedWords(words);
-        }
-
-        async function renderSortedWords(words = null) {
-            if (!words) {
-                const snapshot = await get(wordsRef);
-                if (snapshot.exists()) {
-                    let tempWords = [];
-                    snapshot.forEach(child => tempWords.push({ key: child.key, ...child.val() }));
-                    renderSortedWords(tempWords);
-                } else {
-                    document.getElementById("wordList").innerHTML = "<li>Словарь пуст.</li>";
-                }
+        async function search() {
+            let query = document.getElementById("searchQuery").value.trim();
+            let resultsDiv = document.getElementById("results");
+            
+            if (!query) {
+                resultsDiv.innerHTML = "<p>Введите поисковый запрос.</p>";
                 return;
             }
 
-            let sortType = document.getElementById("sortType").value;
-            let sortOrder = document.getElementById("sortOrder").value;
-            words.sort((a, b) => sortType === "alpha" ? a.word.localeCompare(b.word) : a.addedAt - b.addedAt);
-            if (sortOrder === "desc") words.reverse();
+            resultsDiv.innerHTML = "<p>Идет поиск...</p>";
 
-            document.getElementById("wordList").innerHTML = words.map((word, i) => `
-                <li>
-                    <div class="word-line">
-                        <span>${i + 1}.</span>
-                        <span class="word">${word.word}</span>
-                        <span class="transcription">[${word.transcription}]</span>
-                        <button class="delete-btn" onclick="deleteWord('${word.key}')">X</button>
-                    </div>
-                    <div class="translation">– ${word.translation}</div>
-                </li>`).join("");
+            try {
+                let response = await fetch("https://api.duckduckgo.com/?q=" + encodeURIComponent(query) + "&format=json&no_html=1");
+                let data = await response.json();
+
+                resultsDiv.innerHTML = "";
+                if (data.RelatedTopics.length === 0) {
+                    resultsDiv.innerHTML = "<p>Ничего не найдено.</p>";
+                    return;
+                }
+
+                data.RelatedTopics.forEach(item => {
+                    if (item.Text && item.FirstURL) {
+                        let div = document.createElement("div");
+                        div.className = "result-item";
+                        div.innerHTML = `<a href="${item.FirstURL}" target="_blank">${item.Text}</a>`;
+                        resultsDiv.appendChild(div);
+                    }
+                });
+            } catch (error) {
+                resultsDiv.innerHTML = "<p>Ошибка при выполнении запроса.</p>";
+            }
         }
-
-        onValue(wordsRef, (snapshot) => {
-            if (snapshot.exists()) renderWords(snapshot);
-        });
     </script>
 </body>
 </html>
