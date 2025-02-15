@@ -3,106 +3,130 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Умный Поиск</title>
+    <title>Крестики-нолики</title>
     <style>
         body {
             font-family: Arial, sans-serif;
+            text-align: center;
+            background: #f0f0f0;
             margin: 0;
             padding: 0;
-            text-align: center;
-            background-color: #f4f4f4;
         }
-        header {
-            background-color: #007bff;
-            color: white;
-            padding: 15px;
-            font-size: 20px;
-        }
-        main {
+        h1 {
             margin-top: 20px;
-            padding: 10px;
         }
-        input {
-            width: 80%;
-            padding: 10px;
-            margin: 10px 0;
-            border: 1px solid #ccc;
-            border-radius: 5px;
+        .board {
+            display: grid;
+            grid-template-columns: repeat(3, 100px);
+            grid-template-rows: repeat(3, 100px);
+            gap: 5px;
+            margin: 20px auto;
+            width: 315px;
         }
-        button {
+        .cell {
+            width: 100px;
+            height: 100px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 36px;
+            font-weight: bold;
+            background: #fff;
+            border: 2px solid #000;
+            cursor: pointer;
+        }
+        .cell.taken {
+            cursor: default;
+        }
+        .message {
+            font-size: 20px;
+            margin: 15px;
+        }
+        .reset-btn {
             padding: 10px 20px;
-            background-color: #007bff;
-            color: white;
+            font-size: 18px;
             border: none;
+            background: #28a745;
+            color: white;
             cursor: pointer;
             border-radius: 5px;
         }
-        #results {
-            margin-top: 20px;
-            text-align: left;
-            padding: 10px;
-        }
-        .result-item {
-            background: white;
-            padding: 10px;
-            margin: 10px 0;
-            border-radius: 5px;
-            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
-        }
-        .result-item a {
-            color: #007bff;
-            font-weight: bold;
-            text-decoration: none;
+        .reset-btn:hover {
+            background: #218838;
         }
     </style>
 </head>
 <body>
-    <header>Умный Поиск</header>
-    <main>
-        <input type="text" id="searchQuery" placeholder="Введите запрос..." onkeypress="handleKeyPress(event)">
-        <button onclick="search()">Искать</button>
-        <div id="results"></div>
-    </main>
+    <h1>Крестики-нолики</h1>
+    <div class="message">Ход: X</div>
+    <div class="board" id="board"></div>
+    <button class="reset-btn" onclick="resetGame()">Сбросить игру</button>
+
     <script>
-        function handleKeyPress(event) {
-            if (event.key === 'Enter') {
-                search();
-            }
+        const board = document.getElementById("board");
+        const message = document.querySelector(".message");
+        let currentPlayer = "X";
+        let gameBoard = ["", "", "", "", "", "", "", "", ""];
+        let gameActive = true;
+
+        function createBoard() {
+            board.innerHTML = "";
+            gameBoard.forEach((cell, index) => {
+                const cellElement = document.createElement("div");
+                cellElement.classList.add("cell");
+                cellElement.dataset.index = index;
+                cellElement.textContent = cell;
+                cellElement.addEventListener("click", handleMove);
+                board.appendChild(cellElement);
+            });
         }
 
-        async function search() {
-            let query = document.getElementById("searchQuery").value.trim();
-            let resultsDiv = document.getElementById("results");
-            
-            if (!query) {
-                resultsDiv.innerHTML = "<p>Введите поисковый запрос.</p>";
+        function handleMove(event) {
+            const index = event.target.dataset.index;
+            if (!gameActive || gameBoard[index] !== "") return;
+
+            gameBoard[index] = currentPlayer;
+            event.target.textContent = currentPlayer;
+            event.target.classList.add("taken");
+
+            if (checkWinner()) {
+                message.textContent = `Победил ${currentPlayer}!`;
+                gameActive = false;
                 return;
             }
 
-            resultsDiv.innerHTML = "<p>Идет поиск...</p>";
-
-            try {
-                let response = await fetch("https://api.duckduckgo.com/?q=" + encodeURIComponent(query) + "&format=json&no_html=1");
-                let data = await response.json();
-
-                resultsDiv.innerHTML = "";
-                if (data.RelatedTopics.length === 0) {
-                    resultsDiv.innerHTML = "<p>Ничего не найдено.</p>";
-                    return;
-                }
-
-                data.RelatedTopics.forEach(item => {
-                    if (item.Text && item.FirstURL) {
-                        let div = document.createElement("div");
-                        div.className = "result-item";
-                        div.innerHTML = `<a href="${item.FirstURL}" target="_blank">${item.Text}</a>`;
-                        resultsDiv.appendChild(div);
-                    }
-                });
-            } catch (error) {
-                resultsDiv.innerHTML = "<p>Ошибка при выполнении запроса.</p>";
+            if (gameBoard.every(cell => cell !== "")) {
+                message.textContent = "Ничья!";
+                gameActive = false;
+                return;
             }
+
+            currentPlayer = currentPlayer === "X" ? "O" : "X";
+            message.textContent = `Ход: ${currentPlayer}`;
         }
+
+        function checkWinner() {
+            const winPatterns = [
+                [0, 1, 2], [3, 4, 5], [6, 7, 8], 
+                [0, 3, 6], [1, 4, 7], [2, 5, 8], 
+                [0, 4, 8], [2, 4, 6]
+            ];
+
+            return winPatterns.some(pattern => {
+                const [a, b, c] = pattern;
+                return gameBoard[a] && gameBoard[a] === gameBoard[b] && gameBoard[a] === gameBoard[c];
+            });
+        }
+
+        function resetGame() {
+            gameBoard = ["", "", "", "", "", "", "", "", ""];
+            currentPlayer = "X";
+            gameActive = true;
+            message.textContent = "Ход: X";
+            createBoard();
+        }
+
+        createBoard();
     </script>
 </body>
 </html>
