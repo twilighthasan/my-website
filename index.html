@@ -3,130 +3,95 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Крестики-нолики</title>
+    <title>Параллельный мир</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/phaser/3.55.2/phaser.min.js"></script>
     <style>
-        body {
-            font-family: Arial, sans-serif;
-            text-align: center;
-            background: #f0f0f0;
-            margin: 0;
-            padding: 0;
-        }
-        h1 {
-            margin-top: 20px;
-        }
-        .board {
-            display: grid;
-            grid-template-columns: repeat(3, 100px);
-            grid-template-rows: repeat(3, 100px);
-            gap: 5px;
-            margin: 20px auto;
-            width: 315px;
-        }
-        .cell {
-            width: 100px;
-            height: 100px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 36px;
-            font-weight: bold;
-            background: #fff;
-            border: 2px solid #000;
-            cursor: pointer;
-        }
-        .cell.taken {
-            cursor: default;
-        }
-        .message {
-            font-size: 20px;
-            margin: 15px;
-        }
-        .reset-btn {
-            padding: 10px 20px;
-            font-size: 18px;
-            border: none;
-            background: #28a745;
-            color: white;
-            cursor: pointer;
-            border-radius: 5px;
-        }
-        .reset-btn:hover {
-            background: #218838;
-        }
+        body { margin: 0; overflow: hidden; background: black; }
+        canvas { display: block; }
     </style>
 </head>
 <body>
-    <h1>Крестики-нолики</h1>
-    <div class="message">Ход: X</div>
-    <div class="board" id="board"></div>
-    <button class="reset-btn" onclick="resetGame()">Сбросить игру</button>
+<script>
+const config = {
+    type: Phaser.AUTO,
+    width: 800,
+    height: 600,
+    physics: { default: 'arcade', arcade: { gravity: { y: 500 }, debug: false }},
+    scene: { preload, create, update }
+};
 
-    <script>
-        const board = document.getElementById("board");
-        const message = document.querySelector(".message");
-        let currentPlayer = "X";
-        let gameBoard = ["", "", "", "", "", "", "", "", ""];
-        let gameActive = true;
+let player1, player2, platforms1, platforms2, cursors, keyW, keyA, keyD, lever, door, levelComplete = false;
 
-        function createBoard() {
-            board.innerHTML = "";
-            gameBoard.forEach((cell, index) => {
-                const cellElement = document.createElement("div");
-                cellElement.classList.add("cell");
-                cellElement.dataset.index = index;
-                cellElement.textContent = cell;
-                cellElement.addEventListener("click", handleMove);
-                board.appendChild(cellElement);
-            });
-        }
+const game = new Phaser.Game(config);
 
-        function handleMove(event) {
-            const index = event.target.dataset.index;
-            if (!gameActive || gameBoard[index] !== "") return;
+function preload() {}
 
-            gameBoard[index] = currentPlayer;
-            event.target.textContent = currentPlayer;
-            event.target.classList.add("taken");
+function create() {
+    this.add.text(250, 20, "ПАРАЛЛЕЛЬНЫЙ МИР", { fontSize: '32px', fill: '#fff' });
 
-            if (checkWinner()) {
-                message.textContent = `Победил ${currentPlayer}!`;
-                gameActive = false;
-                return;
-            }
+    platforms1 = this.physics.add.staticGroup();
+    platforms2 = this.physics.add.staticGroup();
+    
+    platforms1.create(400, 550, 'platform').setSize(200, 20).refreshBody();
+    this.add.text(330, 540, "Платформа 1", { fontSize: '16px', fill: '#fff' });
 
-            if (gameBoard.every(cell => cell !== "")) {
-                message.textContent = "Ничья!";
-                gameActive = false;
-                return;
-            }
+    platforms1.create(600, 400, 'platform').setSize(150, 20).refreshBody();
+    this.add.text(530, 390, "Платформа 1", { fontSize: '16px', fill: '#fff' });
 
-            currentPlayer = currentPlayer === "X" ? "O" : "X";
-            message.textContent = `Ход: ${currentPlayer}`;
-        }
+    platforms2.create(200, 400, 'platform').setSize(150, 20).setAlpha(0.5);
+    this.add.text(130, 390, "Платформа 2", { fontSize: '16px', fill: '#00f' });
 
-        function checkWinner() {
-            const winPatterns = [
-                [0, 1, 2], [3, 4, 5], [6, 7, 8], 
-                [0, 3, 6], [1, 4, 7], [2, 5, 8], 
-                [0, 4, 8], [2, 4, 6]
-            ];
+    player1 = this.physics.add.sprite(100, 500, 'player').setDisplaySize(30, 30).setTint(0xff0000);
+    this.add.text(70, 490, "Игрок 1", { fontSize: '16px', fill: '#ff0000' });
 
-            return winPatterns.some(pattern => {
-                const [a, b, c] = pattern;
-                return gameBoard[a] && gameBoard[a] === gameBoard[b] && gameBoard[a] === gameBoard[c];
-            });
-        }
+    player2 = this.physics.add.sprite(100, 500, 'player').setDisplaySize(30, 30).setTint(0x00ff00);
+    this.add.text(70, 520, "Игрок 2", { fontSize: '16px', fill: '#00ff00' });
 
-        function resetGame() {
-            gameBoard = ["", "", "", "", "", "", "", "", ""];
-            currentPlayer = "X";
-            gameActive = true;
-            message.textContent = "Ход: X";
-            createBoard();
-        }
+    this.physics.add.collider(player1, platforms1);
+    this.physics.add.collider(player2, platforms2);
 
-        createBoard();
-    </script>
+    lever = this.physics.add.sprite(600, 370, 'lever').setSize(40, 40).setTint(0xffff00);
+    this.add.text(570, 360, "РЫЧАГ", { fontSize: '16px', fill: '#ffff00' });
+
+    door = this.physics.add.sprite(750, 450, 'door').setSize(50, 50).setTint(0xffffff);
+    this.add.text(720, 440, "ВЫХОД", { fontSize: '16px', fill: '#fff' });
+
+    this.physics.add.overlap(player1, lever, activateLever, null, this);
+    this.physics.add.overlap(player1, door, checkWin, null, this);
+    this.physics.add.overlap(player2, door, checkWin, null, this);
+
+    cursors = this.input.keyboard.createCursorKeys();
+    keyW = this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.W);
+    keyA = this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.A);
+    keyD = this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.D);
+}
+
+function update() {
+    if (cursors.left.isDown) player1.setVelocityX(-160);
+    else if (cursors.right.isDown) player1.setVelocityX(160);
+    else player1.setVelocityX(0);
+
+    if (cursors.up.isDown && player1.body.touching.down) player1.setVelocityY(-350);
+
+    if (keyA.isDown) player2.setVelocityX(-160);
+    else if (keyD.isDown) player2.setVelocityX(160);
+    else player2.setVelocityX(0);
+
+    if (keyW.isDown && player2.body.touching.down) player2.setVelocityY(-350);
+}
+
+function activateLever(player, lever) {
+    lever.setTint(0xff0000);
+    platforms2.create(600, 300, 'platform').setSize(150, 20).setAlpha(0.5);
+    this.add.text(530, 290, "Платформа 2", { fontSize: '16px', fill: '#00f' });
+}
+
+function checkWin(player, door) {
+    if (!levelComplete) {
+        levelComplete = true;
+        alert("Поздравляем! Вы прошли уровень!");
+    }
+}
+</script>
 </body>
 </html>
