@@ -13,10 +13,13 @@
 <body>
     <h2>RAR Распаковщик</h2>
     <input type="file" id="rarFile" accept=".rar">
+    <br>
+    <input type="password" id="rarPassword" placeholder="Введите пароль (если нужен)">
+    <br>
     <button onclick="extractFiles()">Разархивировать</button>
     <div id="fileList"></div>
     
-    <script src="https://cdn.jsdelivr.net/gh/K-S-V/unrar.js/unrar.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/gh/GamesMaxed/unrar.js/unrar.min.js"></script>
     <script>
         async function extractFiles() {
             const fileInput = document.getElementById("rarFile");
@@ -31,23 +34,28 @@
 
                 if (!archive) return alert("Ошибка при открытии архива!");
 
+                let password = document.getElementById("rarPassword").value || null;
                 let fileList = document.getElementById("fileList");
                 fileList.innerHTML = "<h3>Содержимое архива:</h3>";
 
-                archive.extractAll().files.forEach(file => {
-                    const blob = new Blob([file.extract()], { type: "application/octet-stream" });
-                    const url = URL.createObjectURL(blob);
+                try {
+                    archive.extractAll(password).files.forEach(file => {
+                        const blob = new Blob([file.extract()], { type: "application/octet-stream" });
+                        const url = URL.createObjectURL(blob);
 
-                    let link = document.createElement("a");
-                    link.href = url;
-                    link.download = file.name;
-                    link.textContent = `📂 ${file.name}`;
-                    link.style.display = "block";
+                        let link = document.createElement("a");
+                        link.href = url;
+                        link.download = file.name;
+                        link.textContent = `📂 ${file.name}`;
+                        link.style.display = "block";
 
-                    fileList.appendChild(link);
-                });
+                        fileList.appendChild(link);
+                    });
 
-                alert("Файлы извлечены. Нажмите на ссылки, чтобы скачать их.");
+                    alert("Файлы извлечены. Нажмите на ссылки, чтобы скачать их.");
+                } catch (err) {
+                    alert("Ошибка извлечения. Возможно, требуется пароль.");
+                }
             };
             reader.readAsArrayBuffer(file);
         }
