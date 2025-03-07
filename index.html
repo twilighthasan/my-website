@@ -1,54 +1,56 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="ru">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>iPhone 11 Dual Camera</title>
+    <title>RAR Распаковщик</title>
     <style>
-        body {
-            margin: 0;
-            display: flex;
-            flex-direction: column;
-            height: 100vh;
-            overflow: hidden;
-        }
-        video {
-            width: 100%;
-            height: 50%;
-            object-fit: cover;
-        }
+        body { font-family: Arial, sans-serif; text-align: center; padding: 20px; }
+        input, button { margin: 10px; padding: 10px; font-size: 16px; }
+        #fileList { margin-top: 20px; text-align: left; }
     </style>
 </head>
 <body>
-
-    <!-- Видео с фронтальной камеры -->
-    <video id="frontCamera" autoplay playsinline></video>
+    <h2>RAR Распаковщик</h2>
+    <input type="file" id="rarFile" accept=".rar">
+    <button onclick="extractFiles()">Разархивировать</button>
+    <div id="fileList"></div>
     
-    <!-- Видео с основной камеры -->
-    <video id="backCamera" autoplay playsinline></video>
-
+    <script src="https://cdn.jsdelivr.net/gh/K-S-V/unrar.js/unrar.min.js"></script>
     <script>
-        async function startCameras() {
-            try {
-                // Запрашиваем фронтальную камеру
-                const frontStream = await navigator.mediaDevices.getUserMedia({ 
-                    video: { facingMode: "user" }, audio: false 
-                });
-                document.getElementById('frontCamera').srcObject = frontStream;
+        async function extractFiles() {
+            const fileInput = document.getElementById("rarFile");
+            if (!fileInput.files.length) return alert("Выберите файл!");
 
-                // Запрашиваем основную (заднюю) камеру
-                const backStream = await navigator.mediaDevices.getUserMedia({ 
-                    video: { facingMode: "environment" }, audio: false 
-                });
-                document.getElementById('backCamera').srcObject = backStream;
+            const file = fileInput.files[0];
+            const reader = new FileReader();
+            reader.onload = async function() {
+                const data = new Uint8Array(reader.result);
+                const extractor = await Unrar();
+                const archive = extractor.open(data);
 
-            } catch (error) {
-                console.error("Ошибка доступа к камерам:", error);
-            }
+                if (!archive) return alert("Ошибка при открытии архива!");
+
+                let fileList = document.getElementById("fileList");
+                fileList.innerHTML = "<h3>Содержимое архива:</h3>";
+
+                archive.extractAll().files.forEach(file => {
+                    const blob = new Blob([file.extract()], { type: "application/octet-stream" });
+                    const url = URL.createObjectURL(blob);
+
+                    let link = document.createElement("a");
+                    link.href = url;
+                    link.download = file.name;
+                    link.textContent = `📂 ${file.name}`;
+                    link.style.display = "block";
+
+                    fileList.appendChild(link);
+                });
+
+                alert("Файлы извлечены. Нажмите на ссылки, чтобы скачать их.");
+            };
+            reader.readAsArrayBuffer(file);
         }
-
-        startCameras();
     </script>
-
 </body>
 </html>
