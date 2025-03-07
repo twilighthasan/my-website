@@ -29,7 +29,8 @@
         <div id="output"></div>
     </div>
 
-    <script src="https://cdn.jsdelivr.net/npm/unrar.js@0.4.0/unrar.min.js"></script>
+    <!-- Подключаем библиотеку 7z-wasm -->
+    <script src="https://cdn.jsdelivr.net/npm/7z-wasm@2.1.0/7z.wasm.js"></script>
     <script>
         document.getElementById('unpackButton').addEventListener('click', async () => {
             const fileInput = document.getElementById('fileInput');
@@ -46,15 +47,18 @@
 
             try {
                 const arrayBuffer = await file.arrayBuffer();
-                const unrar = new Unrar(arrayBuffer);
+                const sevenZ = new SevenZ();
 
+                // Устанавливаем пароль, если он есть
                 if (password) {
-                    unrar.setPassword(password);
+                    sevenZ.setPassword(password);
                 }
 
-                const extractedFiles = unrar.extractFiles();
+                // Распаковываем архив
+                const extractedFiles = await sevenZ.extract(arrayBuffer);
                 output.innerHTML = '';
 
+                // Создаем ссылки для скачивания файлов
                 extractedFiles.forEach((file) => {
                     const blob = new Blob([file.content], { type: 'application/octet-stream' });
                     const url = URL.createObjectURL(blob);
