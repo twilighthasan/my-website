@@ -18,28 +18,30 @@
     <br>
     <button onclick="extractFiles()">Разархивировать</button>
     <div id="fileList"></div>
-    
-    <script src="https://cdn.jsdelivr.net/gh/GamesMaxed/unrar.js/unrar.min.js"></script>
-    <script>
+
+    <script type="module">
+        import initUnrar, { extract } from "https://cdn.jsdelivr.net/npm/unrar-wasm@latest/unrar.min.js";
+
         async function extractFiles() {
             const fileInput = document.getElementById("rarFile");
             if (!fileInput.files.length) return alert("Выберите файл!");
 
+            await initUnrar(); // Инициализируем библиотеку
+
             const file = fileInput.files[0];
             const reader = new FileReader();
-            reader.onload = async function() {
-                const data = new Uint8Array(reader.result);
-                const extractor = await Unrar();
-                const archive = extractor.open(data);
 
-                if (!archive) return alert("Ошибка при открытии архива!");
-
-                let password = document.getElementById("rarPassword").value || null;
-                let fileList = document.getElementById("fileList");
-                fileList.innerHTML = "<h3>Содержимое архива:</h3>";
-
+            reader.onload = async function () {
                 try {
-                    archive.extractAll(password).files.forEach(file => {
+                    const data = new Uint8Array(reader.result);
+                    let password = document.getElementById("rarPassword").value || null;
+
+                    const extractedFiles = await extract(data, { password });
+
+                    let fileList = document.getElementById("fileList");
+                    fileList.innerHTML = "<h3>Содержимое архива:</h3>";
+
+                    extractedFiles.files.forEach(file => {
                         const blob = new Blob([file.extract()], { type: "application/octet-stream" });
                         const url = URL.createObjectURL(blob);
 
@@ -53,8 +55,8 @@
                     });
 
                     alert("Файлы извлечены. Нажмите на ссылки, чтобы скачать их.");
-                } catch (err) {
-                    alert("Ошибка извлечения. Возможно, требуется пароль.");
+                } catch (error) {
+                    alert("Ошибка извлечения. Проверьте файл или пароль.");
                 }
             };
             reader.readAsArrayBuffer(file);
