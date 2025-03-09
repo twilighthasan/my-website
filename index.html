@@ -34,7 +34,7 @@
     // Инициализация переменных
     let stepCount = 0;
     let lastAcceleration = 0;
-    let threshold = 10; // Порог для распознавания шага
+    let threshold = 12; // Порог для распознавания шага
 
     // Функция для обновления счета шагов
     function updateStepCount() {
@@ -42,8 +42,31 @@
       document.getElementById('stepCounter').textContent = stepCount;
     }
 
-    // Обработчик события изменения устройства
+    // Проверка на доступность акселерометра
     if (window.DeviceMotionEvent) {
+      // Запрос разрешения для работы с акселерометром
+      if (typeof DeviceMotionEvent.requestPermission === 'function') {
+        // Если на iOS 13+ необходимо запросить разрешение на использование акселерометра
+        DeviceMotionEvent.requestPermission().then(response => {
+          if (response === 'granted') {
+            startTracking();
+          } else {
+            document.getElementById('status').textContent = 'Разрешение на доступ к акселерометру не предоставлено.';
+          }
+        }).catch(error => {
+          console.error(error);
+          document.getElementById('status').textContent = 'Ошибка при запросе разрешения на акселерометр.';
+        });
+      } else {
+        // Для более старых версий iOS или Android разрешение не требуется
+        startTracking();
+      }
+    } else {
+      document.getElementById('status').textContent = 'Ваше устройство не поддерживает акселерометр.';
+    }
+
+    // Функция для отслеживания данных акселерометра
+    function startTracking() {
       window.addEventListener('devicemotion', (event) => {
         const acceleration = event.accelerationIncludingGravity;
         const x = acceleration.x;
@@ -62,8 +85,6 @@
       }, false);
 
       document.getElementById('status').textContent = 'Отслеживание шагов началось!';
-    } else {
-      document.getElementById('status').textContent = 'Ваше устройство не поддерживает акселерометр.';
     }
   </script>
 </body>
