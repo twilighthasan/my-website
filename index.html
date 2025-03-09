@@ -1,264 +1,70 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="ru">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>RAR Extractor</title>
-    <style>
-        * {box-sizing: border-box; margin: 0; padding: 0; font-family: -apple-system, system-ui, sans-serif;}
-        body {background: #f5f5f7; color: #333; padding: 12px; min-height: 100vh; display: flex; flex-direction: column;}
-        .container {max-width: 414px; margin: 0 auto; width: 100%;}
-        header {text-align: center; margin-bottom: 12px;}
-        h1 {font-size: 22px; color: #0D47A1; margin-bottom: 4px;}
-        .card {background: #fff; border-radius: 10px; padding: 14px; margin-bottom: 14px; box-shadow: 0 2px 8px rgba(0,0,0,0.05);}
-        .upload-area {border: 2px dashed #2196F3; border-radius: 8px; padding: 16px; text-align: center; cursor: pointer; margin-bottom: 12px;}
-        .upload-area:hover, .upload-area.dragover {background-color: rgba(33,150,243,0.1);}
-        .btn {background: #2196F3; color: white; border: none; border-radius: 6px; padding: 10px; font-size: 16px; cursor: pointer; width: 100%; margin-top: 8px;}
-        .btn:disabled {background: #ccc; cursor: not-allowed;}
-        .input-group {margin-bottom: 12px;}
-        .input-group label {display: block; margin-bottom: 6px; font-weight: 500;}
-        .input-group input {width: 100%; padding: 10px; border: 1px solid #ddd; border-radius: 6px; font-size: 16px;}
-        .file-list {margin-top: 12px; max-height: 280px; overflow-y: auto; border: 1px solid #eee; border-radius: 6px; padding: 6px;}
-        .file-item {display: flex; justify-content: space-between; align-items: center; padding: 8px; border-bottom: 1px solid #eee;}
-        .file-item:last-child {border-bottom: none;}
-        .file-name {word-break: break-all; flex: 1;}
-        .file-actions {margin-left: 8px;}
-        .file-actions button {background: #2196F3; color: white; border: none; border-radius: 4px; padding: 4px 8px; cursor: pointer; font-size: 12px;}
-        .status {margin-top: 12px; padding: 8px; border-radius: 4px; text-align: center;}
-        .status.success {background: rgba(76,175,80,0.1); color: #4CAF50;}
-        .status.error {background: rgba(244,67,54,0.1); color: #F44336;}
-        .progress-bar {height: 8px; background: #eee; border-radius: 4px; margin: 8px 0; overflow: hidden;}
-        .progress-bar-fill {height: 100%; background: #2196F3; width: 0%;}
-        footer {text-align: center; margin-top: auto; padding: 12px 0; font-size: 12px; color: #666;}
-        .hidden {display: none;}
-    </style>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Шагомер</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      text-align: center;
+      padding: 50px;
+      background-color: #f0f0f0;
+    }
+    h1 {
+      font-size: 36px;
+    }
+    .counter {
+      font-size: 48px;
+      font-weight: bold;
+      color: #4caf50;
+    }
+    .status {
+      font-size: 18px;
+      color: #555;
+    }
+  </style>
 </head>
 <body>
-    <div class="container">
-        <header>
-            <h1>RAR Extractor</h1>
-            <p>Extract RAR files in your browser</p>
-        </header>
+  <h1>Шагомер в реальном времени</h1>
+  <div class="counter" id="stepCounter">0</div>
+  <div class="status" id="status">Подождите, пока датчики включатся...</div>
 
-        <div class="card">
-            <div id="upload-area" class="upload-area">
-                <p>Tap to select a RAR file or drag and drop here</p>
-                <input type="file" id="file-input" accept=".rar" style="display: none;">
-            </div>
-            
-            <div id="password-section" class="input-group hidden">
-                <label for="password">Password (if required):</label>
-                <input type="password" id="password" placeholder="Enter password">
-            </div>
-            
-            <button id="extract-btn" class="btn" disabled>Extract Files</button>
-            
-            <div id="progress-container" class="hidden">
-                <p>Extracting...</p>
-                <div class="progress-bar">
-                    <div id="progress-bar-fill" class="progress-bar-fill"></div>
-                </div>
-            </div>
-            
-            <div id="status" class="status hidden"></div>
-        </div>
-        
-        <div id="results-card" class="card hidden">
-            <h2>Extracted Files</h2>
-            <div id="file-list" class="file-list"></div>
-            <button id="save-all-btn" class="btn">Save All Files</button>
-        </div>
-        
-        <footer>
-            <p>All extraction happens locally. No data is sent to any server.</p>
-        </footer>
-    </div>
-    
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/unrar-js/0.2.3/unrar.min.js"></script>
-    
-    <script>
-        document.addEventListener('DOMContentLoaded', () => {
-            // DOM Elements
-            const els = {
-                fileInput: document.getElementById('file-input'),
-                uploadArea: document.getElementById('upload-area'),
-                passwordSection: document.getElementById('password-section'),
-                passwordInput: document.getElementById('password'),
-                extractBtn: document.getElementById('extract-btn'),
-                progressContainer: document.getElementById('progress-container'),
-                progressBarFill: document.getElementById('progress-bar-fill'),
-                status: document.getElementById('status'),
-                resultsCard: document.getElementById('results-card'),
-                fileList: document.getElementById('file-list'),
-                saveAllBtn: document.getElementById('save-all-btn')
-            };
-            
-            // Variables
-            let selectedFile = null;
-            let extractedFiles = [];
-            
-            // Event Listeners
-            els.uploadArea.addEventListener('click', () => els.fileInput.click());
-            
-            els.fileInput.addEventListener('change', (e) => {
-                if (e.target.files.length > 0) {
-                    selectedFile = e.target.files[0];
-                    els.uploadArea.innerHTML = `<p>Selected: ${selectedFile.name}</p>`;
-                    els.passwordSection.classList.remove('hidden');
-                    els.extractBtn.disabled = false;
-                }
-            });
-            
-            // Drag and drop handlers
-            ['dragover', 'dragleave', 'drop'].forEach(event => {
-                els.uploadArea.addEventListener(event, (e) => {
-                    e.preventDefault();
-                    if (event === 'dragover') els.uploadArea.classList.add('dragover');
-                    else if (event === 'dragleave') els.uploadArea.classList.remove('dragover');
-                    else if (event === 'drop') {
-                        els.uploadArea.classList.remove('dragover');
-                        if (e.dataTransfer.files.length > 0) {
-                            selectedFile = e.dataTransfer.files[0];
-                            els.uploadArea.innerHTML = `<p>Selected: ${selectedFile.name}</p>`;
-                            els.passwordSection.classList.remove('hidden');
-                            els.extractBtn.disabled = false;
-                        }
-                    }
-                });
-            });
-            
-            els.extractBtn.addEventListener('click', extractRarFile);
-            els.saveAllBtn.addEventListener('click', () => {
-                extractedFiles.forEach((_, i) => setTimeout(() => saveFile(i), i * 100));
-            });
-            
-            // Helper functions
-            function showStatus(message, type) {
-                els.status.textContent = message;
-                els.status.className = `status ${type}`;
-                els.status.classList.remove('hidden');
-            }
-            
-            function saveFile(index) {
-                const file = extractedFiles[index];
-                const blob = new Blob([file.data], {type: getMimeType(file.name)});
-                const url = URL.createObjectURL(blob);
-                const a = document.createElement('a');
-                a.href = url;
-                a.download = file.name;
-                document.body.appendChild(a);
-                a.click();
-                document.body.removeChild(a);
-                URL.revokeObjectURL(url);
-            }
-            
-            function getMimeType(fileName) {
-                const ext = fileName.split('.').pop().toLowerCase();
-                const types = {
-                    txt: 'text/plain', html: 'text/html', css: 'text/css', 
-                    js: 'text/javascript', json: 'application/json', pdf: 'application/pdf',
-                    jpg: 'image/jpeg', jpeg: 'image/jpeg', png: 'image/png', 
-                    gif: 'image/gif', svg: 'image/svg+xml', mp3: 'audio/mpeg',
-                    mp4: 'video/mp4', doc: 'application/msword', 
-                    docx: 'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
-                    xls: 'application/vnd.ms-excel',
-                    xlsx: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
-                    zip: 'application/zip'
-                };
-                return types[ext] || 'application/octet-stream';
-            }
-            
-            // Main extraction function
-            function extractRarFile() {
-                if (!selectedFile) {
-                    showStatus('Please select a RAR file first', 'error');
-                    return;
-                }
-                
-                // Reset UI
-                els.status.classList.add('hidden');
-                els.progressContainer.classList.remove('hidden');
-                els.extractBtn.disabled = true;
-                els.fileList.innerHTML = '';
-                extractedFiles = [];
-                
-                const reader = new FileReader();
-                
-                reader.onload = (e) => {
-                    try {
-                        const uint8Array = new Uint8Array(e.target.result);
-                        const unrar = new Module.UnrarCallback();
-                        const password = els.passwordInput.value.trim();
-                        
-                        if (password) unrar.setPassword(password);
-                        
-                        try {
-                            unrar.openArchive(uint8Array);
-                            const headers = unrar.readHeaders();
-                            let processed = 0;
-                            
-                            headers.forEach((header) => {
-                                try {
-                                    const fileData = unrar.extract(header);
-                                    extractedFiles.push({
-                                        name: header.name,
-                                        data: fileData
-                                    });
-                                    
-                                    // Update progress
-                                    processed++;
-                                    els.progressBarFill.style.width = `${(processed / headers.length) * 100}%`;
-                                } catch (err) {
-                                    console.error(`Error extracting ${header.name}:`, err);
-                                }
-                            });
-                            
-                            // Show results
-                            if (extractedFiles.length > 0) {
-                                els.resultsCard.classList.remove('hidden');
-                                els.fileList.innerHTML = extractedFiles.map((file, i) => `
-                                    <div class="file-item">
-                                        <div class="file-name">${file.name}</div>
-                                        <div class="file-actions">
-                                            <button onclick="(${saveFile.toString()})(${i})">Save</button>
-                                        </div>
-                                    </div>
-                                `).join('');
-                                
-                                showStatus(`Extracted ${extractedFiles.length} files`, 'success');
-                            } else {
-                                showStatus('No files extracted. Archive might be empty.', 'error');
-                            }
-                            
-                        } catch (archiveErr) {
-                            if (archiveErr.message.includes('password')) {
-                                showStatus('Incorrect password. Please try again.', 'error');
-                                els.extractBtn.disabled = false;
-                            } else {
-                                showStatus('Invalid RAR file or corrupted archive.', 'error');
-                            }
-                        }
-                        
-                        unrar.close();
-                        
-                    } catch (err) {
-                        console.error('Error:', err);
-                        showStatus('Error during extraction.', 'error');
-                        els.extractBtn.disabled = false;
-                    }
-                    
-                    els.progressContainer.classList.add('hidden');
-                };
-                
-                reader.onerror = () => {
-                    showStatus('Failed to read the file.', 'error');
-                    els.progressContainer.classList.add('hidden');
-                    els.extractBtn.disabled = false;
-                };
-                
-                reader.readAsArrayBuffer(selectedFile);
-            }
-        });
-    </script>
+  <script>
+    // Инициализация переменных
+    let stepCount = 0;
+    let lastAcceleration = 0;
+    let threshold = 10; // Порог для распознавания шага
+
+    // Функция для обновления счета шагов
+    function updateStepCount() {
+      stepCount++;
+      document.getElementById('stepCounter').textContent = stepCount;
+    }
+
+    // Обработчик события изменения устройства
+    if (window.DeviceMotionEvent) {
+      window.addEventListener('devicemotion', (event) => {
+        const acceleration = event.accelerationIncludingGravity;
+        const x = acceleration.x;
+        const y = acceleration.y;
+        const z = acceleration.z;
+
+        // Используем Pythagorean теорему для получения общей силы ускорения
+        const currentAcceleration = Math.sqrt(x * x + y * y + z * z);
+
+        // Определяем, был ли шаг
+        if (Math.abs(currentAcceleration - lastAcceleration) > threshold) {
+          updateStepCount();
+        }
+
+        lastAcceleration = currentAcceleration;
+      }, false);
+
+      document.getElementById('status').textContent = 'Отслеживание шагов началось!';
+    } else {
+      document.getElementById('status').textContent = 'Ваше устройство не поддерживает акселерометр.';
+    }
+  </script>
 </body>
 </html>
