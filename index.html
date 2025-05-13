@@ -1,91 +1,337 @@
 <!DOCTYPE html>
-<html lang="ru">
+<html lang="tr">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Шагомер</title>
-  <style>
-    body {
-      font-family: Arial, sans-serif;
-      text-align: center;
-      padding: 50px;
-      background-color: #f0f0f0;
-    }
-    h1 {
-      font-size: 36px;
-    }
-    .counter {
-      font-size: 48px;
-      font-weight: bold;
-      color: #4caf50;
-    }
-    .status {
-      font-size: 18px;
-      color: #555;
-    }
-  </style>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>İçecek Menüsü</title>
+    <style>
+        * {
+            box-sizing: border-box;
+            font-family: Arial, sans-serif;
+        }
+        body {
+            margin: 0;
+            padding: 10px;
+            background-color: #f5f5f5;
+        }
+        h1 {
+            text-align: center;
+            color: #333;
+            font-size: 22px;
+            margin-bottom: 15px;
+        }
+        .table-container {
+            overflow-x: auto;
+            background-color: white;
+            border-radius: 8px;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+            margin-bottom: 20px;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+        th, td {
+            padding: 12px 8px;
+            text-align: left;
+            border-bottom: 1px solid #ddd;
+            font-size: 14px;
+        }
+        th {
+            background-color: #f8f8f8;
+            font-weight: bold;
+            position: sticky;
+            top: 0;
+        }
+        tr:nth-child(even) {
+            background-color: #f9f9f9;
+        }
+        tr:hover {
+            background-color: #f1f1f1;
+        }
+        .group-header {
+            background-color: #e0e0e0;
+            font-weight: bold;
+        }
+        .volume {
+            white-space: nowrap;
+        }
+        .price {
+            font-weight: bold;
+            color: #2a6496;
+        }
+    </style>
 </head>
 <body>
-  <h1>Шагомер в реальном времени</h1>
-  <div class="counter" id="stepCounter">0</div>
-  <div class="status" id="status">Подождите, пока датчики включатся...</div>
-
-  <script>
-    // Инициализация переменных
-    let stepCount = 0;
-    let lastAcceleration = 0;
-    let threshold = 12; // Порог для распознавания шага
-
-    // Функция для обновления счета шагов
-    function updateStepCount() {
-      stepCount++;
-      document.getElementById('stepCounter').textContent = stepCount;
-    }
-
-    // Проверка на доступность акселерометра
-    if (window.DeviceMotionEvent) {
-      // Запрос разрешения для работы с акселерометром
-      if (typeof DeviceMotionEvent.requestPermission === 'function') {
-        // Если на iOS 13+ необходимо запросить разрешение на использование акселерометра
-        DeviceMotionEvent.requestPermission().then(response => {
-          if (response === 'granted') {
-            startTracking();
-          } else {
-            document.getElementById('status').textContent = 'Разрешение на доступ к акселерометру не предоставлено.';
-          }
-        }).catch(error => {
-          console.error(error);
-          document.getElementById('status').textContent = 'Ошибка при запросе разрешения на акселерометр.';
-        });
-      } else {
-        // Для более старых версий iOS или Android разрешение не требуется
-        startTracking();
-      }
-    } else {
-      document.getElementById('status').textContent = 'Ваше устройство не поддерживает акселерометр.';
-    }
-
-    // Функция для отслеживания данных акселерометра
-    function startTracking() {
-      window.addEventListener('devicemotion', (event) => {
-        const acceleration = event.accelerationIncludingGravity;
-        const x = acceleration.x;
-        const y = acceleration.y;
-        const z = acceleration.z;
-
-        // Используем Pythagorean теорему для получения общей силы ускорения
-        const currentAcceleration = Math.sqrt(x * x + y * y + z * z);
-
-        // Определяем, был ли шаг
-        if (Math.abs(currentAcceleration - lastAcceleration) > threshold) {
-          updateStepCount();
-        }
-
-        lastAcceleration = currentAcceleration;
-      }, false);
-
-      document.getElementById('status').textContent = 'Отслеживание шагов началось!';
-    }
-  </script>
+    <h1>İçecek Menüsü</h1>
+    
+    <div class="table-container">
+        <table>
+            <thead>
+                <tr>
+                    <th>№</th>
+                    <th>İçecek Adı</th>
+                    <th class="volume">Hacim</th>
+                    <th>T</th>
+                    <th class="price">€</th>
+                    <th>S</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr class="group-header">
+                    <td>1</td>
+                    <td>Powerade Mavi</td>
+                    <td>0.5 L</td>
+                    <td>80</td>
+                    <td>3</td>
+                    <td>2</td>
+                </tr>
+                <tr>
+                    <td></td>
+                    <td>Damla Su</td>
+                    <td>0.5 L</td>
+                    <td>15</td>
+                    <td>1</td>
+                    <td></td>
+                </tr>
+                <tr>
+                    <td></td>
+                    <td>Red Bull</td>
+                    <td>0.25 L</td>
+                    <td>80</td>
+                    <td>2</td>
+                    <td></td>
+                </tr>
+                <tr>
+                    <td></td>
+                    <td>Coca-Cola (teneke)</td>
+                    <td>0.2 L</td>
+                    <td>40</td>
+                    <td>1</td>
+                    <td></td>
+                </tr>
+                <tr>
+                    <td></td>
+                    <td>Coca-Cola (teneke)</td>
+                    <td>0.33 L</td>
+                    <td>80</td>
+                    <td>3</td>
+                    <td>2</td>
+                </tr>
+                <tr>
+                    <td></td>
+                    <td>Coca-Cola (plastik)</td>
+                    <td>0.45 L</td>
+                    <td>70</td>
+                    <td>2</td>
+                    <td></td>
+                </tr>
+                <tr>
+                    <td></td>
+                    <td>Coca-Cola (cam şişe)</td>
+                    <td>0.2 L</td>
+                    <td>30</td>
+                    <td>1</td>
+                    <td></td>
+                </tr>
+                
+                <tr class="group-header">
+                    <td>2</td>
+                    <td>Burn (teneke)</td>
+                    <td>0.25 L</td>
+                    <td>80</td>
+                    <td>2</td>
+                    <td></td>
+                </tr>
+                <tr>
+                    <td></td>
+                    <td>Burn (teneke)</td>
+                    <td>0.5 L</td>
+                    <td>100</td>
+                    <td>3</td>
+                    <td></td>
+                </tr>
+                <tr>
+                    <td></td>
+                    <td>Monster (teneke)</td>
+                    <td>0.5 L</td>
+                    <td>80</td>
+                    <td>3</td>
+                    <td>2</td>
+                </tr>
+                <tr>
+                    <td></td>
+                    <td>Soda meyve (cam)</td>
+                    <td>0.2 L</td>
+                    <td>20</td>
+                    <td>1</td>
+                    <td></td>
+                </tr>
+                <tr>
+                    <td></td>
+                    <td>Soda sade (cam)</td>
+                    <td>0.2 L</td>
+                    <td>15</td>
+                    <td>1</td>
+                    <td></td>
+                </tr>
+                
+                <tr class="group-header">
+                    <td>3</td>
+                    <td>Sprite</td>
+                    <td>0.33 L</td>
+                    <td>80</td>
+                    <td>3</td>
+                    <td>2</td>
+                </tr>
+                <tr>
+                    <td></td>
+                    <td>Fanta</td>
+                    <td>0.33 L</td>
+                    <td>80</td>
+                    <td>3</td>
+                    <td>2</td>
+                </tr>
+                <tr>
+                    <td></td>
+                    <td>Cappy</td>
+                    <td>0.33 L</td>
+                    <td>80</td>
+                    <td>3</td>
+                    <td>2</td>
+                </tr>
+                <tr>
+                    <td></td>
+                    <td>Fuse Tea</td>
+                    <td>0.33 L</td>
+                    <td>80</td>
+                    <td>3</td>
+                    <td>2</td>
+                </tr>
+                <tr>
+                    <td></td>
+                    <td>Bubble tea</td>
+                    <td>—</td>
+                    <td>80</td>
+                    <td>3</td>
+                    <td></td>
+                </tr>
+                
+                <tr class="group-header">
+                    <td>4</td>
+                    <td>Fuse Tea</td>
+                    <td>1 L</td>
+                    <td>80</td>
+                    <td>3</td>
+                    <td></td>
+                </tr>
+                <tr>
+                    <td></td>
+                    <td>Cappy Karışık Meyve</td>
+                    <td>1 L</td>
+                    <td>80</td>
+                    <td>3</td>
+                    <td></td>
+                </tr>
+                <tr>
+                    <td></td>
+                    <td>Cappy Vişne</td>
+                    <td>1 L</td>
+                    <td>80</td>
+                    <td>3</td>
+                    <td></td>
+                </tr>
+                <tr>
+                    <td></td>
+                    <td>Cappy Ananas</td>
+                    <td>1 L</td>
+                    <td>80</td>
+                    <td>3</td>
+                    <td></td>
+                </tr>
+                <tr>
+                    <td></td>
+                    <td>Cappy %100 Elma Suyu</td>
+                    <td>1 L</td>
+                    <td>80</td>
+                    <td>3</td>
+                    <td></td>
+                </tr>
+                <tr>
+                    <td></td>
+                    <td>Cappy Şeftali</td>
+                    <td>1 L</td>
+                    <td>80</td>
+                    <td>3</td>
+                    <td></td>
+                </tr>
+                
+                <tr class="group-header">
+                    <td>5</td>
+                    <td>Damla Su</td>
+                    <td>1.5 L</td>
+                    <td>25</td>
+                    <td>2</td>
+                    <td></td>
+                </tr>
+                <tr>
+                    <td></td>
+                    <td>Schweppes Tonic Water</td>
+                    <td>1 L</td>
+                    <td>80</td>
+                    <td>3</td>
+                    <td></td>
+                </tr>
+                <tr>
+                    <td></td>
+                    <td>Schweppes Mandarin</td>
+                    <td>1 L</td>
+                    <td>80</td>
+                    <td>3</td>
+                    <td></td>
+                </tr>
+                <tr>
+                    <td></td>
+                    <td>Coca-Cola</td>
+                    <td>1 L</td>
+                    <td>80</td>
+                    <td>3</td>
+                    <td></td>
+                </tr>
+                <tr>
+                    <td></td>
+                    <td>Coca-Cola (şekersiz)</td>
+                    <td>1 L</td>
+                    <td>80</td>
+                    <td>3</td>
+                    <td></td>
+                </tr>
+                <tr>
+                    <td></td>
+                    <td>Sprite</td>
+                    <td>1 L</td>
+                    <td>80</td>
+                    <td>3</td>
+                    <td></td>
+                </tr>
+                <tr>
+                    <td></td>
+                    <td>Fanta</td>
+                    <td>1 L</td>
+                    <td>80</td>
+                    <td>3</td>
+                    <td></td>
+                </tr>
+                <tr>
+                    <td></td>
+                    <td>Cappy Pulpy Portakal</td>
+                    <td>1 L</td>
+                    <td>80</td>
+                    <td>3</td>
+                    <td></td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
 </body>
 </html>
