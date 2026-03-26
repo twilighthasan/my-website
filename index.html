@@ -3,648 +3,215 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no, viewport-fit=cover">
-    <title>Unity Physics & Components Demo | Transform | Rigidbody | Raycast</title>
+    <title>Unity Demo: Transform | Rigidbody | Physics | Raycast</title>
     <style>
         * {
             margin: 0;
             padding: 0;
             box-sizing: border-box;
-            user-select: none; /* Улучшение для тач-интерфейса */
             -webkit-tap-highlight-color: transparent;
         }
 
         body {
-            background: #0a0f1e;
-            font-family: system-ui, -apple-system, 'Segoe UI', 'SF Pro Text', 'Inter', sans-serif;
+            background: #0a0c15;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, sans-serif;
             display: flex;
             justify-content: center;
             align-items: center;
             min-height: 100vh;
-            padding: 16px;
+            padding: 12px;
         }
 
-        /* Контейнер, имитирующий экран iPhone 13 (адаптив) */
-        .phone-container {
-            max-width: 430px;
+        /* Контейнер под iPhone 13 (390px ширина контента) */
+        .app-container {
+            max-width: 390px;
             width: 100%;
             margin: 0 auto;
-            background: #11161f;
+            background: #10131f;
             border-radius: 44px;
-            box-shadow: 0 25px 45px rgba(0,0,0,0.5), 0 0 0 6px #2c2f36;
             overflow: hidden;
-            position: relative;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.4);
+            border: 1px solid rgba(255,255,255,0.08);
         }
 
-        /* Основной контент */
-        .app {
-            padding: 20px 16px 24px;
+        .content {
+            padding: 18px 16px 24px;
             display: flex;
             flex-direction: column;
-            gap: 20px;
+            gap: 18px;
         }
 
         /* Заголовок */
-        .header {
+        .title {
             text-align: center;
         }
-        .header h1 {
+        .title h1 {
             font-size: 1.6rem;
             font-weight: 600;
-            background: linear-gradient(135deg, #d9e2ff, #9ab3f5);
+            background: linear-gradient(135deg, #c0d4ff, #7c9cff);
             -webkit-background-clip: text;
             background-clip: text;
             color: transparent;
             letter-spacing: -0.3px;
         }
-        .header p {
-            font-size: 0.75rem;
-            color: #7e8aa2;
-            margin-top: 6px;
+        .title p {
+            font-size: 0.7rem;
+            color: #8e9bb5;
+            margin-top: 5px;
         }
 
-        /* Область Canvas с 3D-сценой */
-        .canvas-wrapper {
-            background: #01040c;
-            border-radius: 32px;
+        /* Canvas область */
+        .canvas-area {
+            background: #06080f;
+            border-radius: 28px;
             overflow: hidden;
-            box-shadow: 0 8px 20px rgba(0,0,0,0.4);
-            aspect-ratio: 1 / 0.85;
+            aspect-ratio: 1 / 0.9;
             position: relative;
-            border: 1px solid rgba(90, 120, 200, 0.3);
+            box-shadow: 0 8px 20px rgba(0,0,0,0.5);
+            border: 1px solid #2a2f3f;
         }
         canvas {
             width: 100%;
             height: 100%;
             display: block;
-            touch-action: none; /* чтобы не мешать скроллу */
         }
 
-        /* Инфо-панель (координаты, статус) */
-        .info-panel {
-            background: rgba(18, 25, 40, 0.8);
-            backdrop-filter: blur(10px);
+        /* Инфо панель: координаты + статус */
+        .info-bar {
+            background: rgba(20, 26, 40, 0.9);
+            backdrop-filter: blur(12px);
             border-radius: 28px;
-            padding: 12px 16px;
+            padding: 10px 14px;
             display: flex;
             justify-content: space-between;
             align-items: center;
             flex-wrap: wrap;
-            gap: 10px;
-            font-size: 0.75rem;
+            gap: 8px;
+            font-size: 0.7rem;
             font-weight: 500;
-            border: 1px solid rgba(255,255,255,0.1);
+            border: 1px solid rgba(255,255,255,0.05);
         }
-        .coord {
-            background: #0f1422;
-            padding: 6px 12px;
+        .coord-box {
+            background: #0c1020;
+            padding: 5px 12px;
             border-radius: 30px;
-            color: #b7e0ff;
+            color: #b8d0ff;
             font-family: monospace;
+            font-size: 0.7rem;
         }
-        .coord span {
-            color: #5f7fbf;
+        .coord-box span {
+            color: #6d8ae0;
         }
-        .status-badge {
-            background: #1e2a3a;
-            padding: 6px 12px;
+        .status {
+            background: #1a1f2e;
+            padding: 5px 12px;
             border-radius: 30px;
-            color: #8bbfff;
+            color: #a5c1ff;
         }
 
-        /* Кнопочная сетка */
-        .button-grid {
+        /* Кнопки */
+        .button-panel {
             display: flex;
             flex-wrap: wrap;
             gap: 10px;
             justify-content: center;
         }
         .btn {
-            background: #1f2a3f;
+            background: #1e243b;
             border: none;
-            padding: 12px 18px;
-            border-radius: 60px;
-            font-size: 0.85rem;
+            padding: 10px 16px;
+            border-radius: 50px;
+            font-size: 0.75rem;
             font-weight: 600;
-            color: #f0f3ff;
-            backdrop-filter: blur(4px);
-            transition: all 0.2s ease;
-            box-shadow: 0 2px 6px rgba(0,0,0,0.2);
+            color: #eef3ff;
+            cursor: pointer;
+            transition: all 0.15s ease;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.2);
             flex: 1 0 auto;
             min-width: 70px;
-            cursor: pointer;
             font-family: inherit;
         }
         .btn:active {
-            transform: scale(0.96);
-            background: #2e3c58;
+            transform: scale(0.95);
+            background: #2d3552;
         }
         .btn-primary {
-            background: #3b4e8c;
-            box-shadow: 0 2px 8px rgba(59, 78, 140, 0.4);
+            background: #3d5a9c;
         }
         .btn-primary:active {
-            background: #2c3c6e;
-        }
-        .btn-warning {
-            background: #8f5e2c;
+            background: #2d4680;
         }
         .btn-reset {
-            background: #2c2f3a;
-            border: 1px solid #5f6a80;
+            background: #2c2f3e;
+            border: 1px solid #4a526c;
+        }
+        .btn-warning {
+            background: #8b5a2b;
         }
 
-        /* Список классов Unity (теги) */
+        /* Теги классов Unity */
         .class-tags {
             display: flex;
             flex-wrap: wrap;
-            gap: 8px;
+            gap: 6px;
             justify-content: center;
             margin-top: 4px;
         }
         .tag {
-            background: rgba(60, 80, 120, 0.3);
-            padding: 4px 10px;
-            border-radius: 40px;
-            font-size: 0.65rem;
+            background: rgba(70, 100, 150, 0.25);
+            padding: 3px 8px;
+            border-radius: 20px;
+            font-size: 0.6rem;
             font-weight: 500;
-            color: #aab9e6;
-            letter-spacing: 0.2px;
+            color: #a5bbf0;
         }
 
-        .footnote {
-            font-size: 0.65rem;
+        .footer-note {
+            font-size: 0.6rem;
             text-align: center;
-            color: #5c6a86;
-        }
-
-        @media (max-width: 450px) {
-            .btn {
-                padding: 10px 12px;
-                font-size: 0.75rem;
-            }
-            .coord {
-                font-size: 0.7rem;
-            }
+            color: #5b6885;
         }
     </style>
 </head>
 <body>
-<div class="phone-container">
-    <div class="app">
-        <div class="header">
-            <h1>Unity Components Live</h1>
+<div class="app-container">
+    <div class="content">
+        <div class="title">
+            <h1>Unity Components</h1>
             <p>Transform · Rigidbody · Physics · Raycast · Colliders</p>
         </div>
 
-        <div class="canvas-wrapper">
-            <canvas id="unityCanvas" width="600" height="500" style="width:100%; height:auto; aspect-ratio:600/500"></canvas>
+        <div class="canvas-area">
+            <canvas id="gameCanvas" width="500" height="450"></canvas>
         </div>
 
-        <div class="info-panel">
-            <div class="coord"><span>📍 Local:</span> <span id="localPos">0.00, 0.00, 0.00</span></div>
-            <div class="coord"><span>🌍 World:</span> <span id="worldPos">0.00, 0.00, 0.00</span></div>
-            <div class="status-badge" id="statusMsg">⚡ Ready</div>
+        <div class="info-bar">
+            <div class="coord-box">📍 Local: <span id="localPosTxt">0.00, 0.00, 0.00</span></div>
+            <div class="coord-box">🌍 World: <span id="worldPosTxt">0.00, 0.00, 0.00</span></div>
+            <div class="status" id="statusLabel">⚡ Готов</div>
         </div>
 
-        <div class="button-grid">
-            <button class="btn btn-primary" id="moveBtn">⬆️ Move (Transform)</button>
-            <button class="btn btn-primary" id="rotateBtn">🔄 Rotate (Quaternion)</button>
-            <button class="btn btn-primary" id="forceBtn">💥 AddForce (ForceMode)</button>
-            <button class="btn" id="jumpBtn">🦘 Jump (CharacterController)</button>
-            <button class="btn" id="raycastBtn">🔍 Raycast (RaycastHit)</button>
-            <button class="btn btn-reset" id="resetBtn">⟳ Reset Scene</button>
+        <div class="button-panel">
+            <button class="btn btn-primary" id="btnMove">⬆️ Move</button>
+            <button class="btn btn-primary" id="btnRotate">🔄 Rotate</button>
+            <button class="btn btn-primary" id="btnForce">💥 AddForce</button>
+            <button class="btn" id="btnJump">🦘 Jump</button>
+            <button class="btn" id="btnRaycast">🔍 Raycast</button>
+            <button class="btn btn-reset" id="btnReset">⟳ Reset</button>
         </div>
 
         <div class="class-tags">
-            <span class="tag">Transform</span> <span class="tag">Rigidbody</span> <span class="tag">Rigidbody2D</span>
-            <span class="tag">CharacterController</span> <span class="tag">Vector3/Vector2</span> <span class="tag">Quaternion</span>
-            <span class="tag">Time.deltaTime</span> <span class="tag">Input</span> <span class="tag">Mathf.SmoothDamp</span>
-            <span class="tag">Collider/Collider2D</span> <span class="tag">Box/Sphere/CapsuleCollider</span>
-            <span class="tag">MeshCollider</span> <span class="tag">ForceMode.Impulse</span> <span class="tag">Physics.Raycast</span>
-            <span class="tag">Physics2D.Raycast</span>
+            <span class="tag">Transform</span> <span class="tag">Rigidbody</span> <span class="tag">Vector3</span>
+            <span class="tag">Quaternion</span> <span class="tag">Time.deltaTime</span> <span class="tag">ForceMode</span>
+            <span class="tag">CharacterController</span> <span class="tag">Physics.Raycast</span> <span class="tag">RaycastHit</span>
+            <span class="tag">Collider/Box/Sphere</span> <span class="tag">Mathf.SmoothDamp</span> <span class="tag">Physics2D</span>
         </div>
-        <div class="footnote">
-            ⚡ Авто-сброс через 2.5с | Слежение камеры | 2D/3D гибрид
+        <div class="footer-note">
+            🔄 Авто-сброс через 2.5 сек | Камера следит | Демо: 3D + 2D
         </div>
     </div>
 </div>
 
-<script>
-    (function(){
-        // ---- ИНИЦИАЛИЗАЦИЯ CANVAS и 3D-сцены (Three.js) ----
-        const canvas = document.getElementById('unityCanvas');
-        const scene = new THREE.Scene();
-        scene.background = new THREE.Color(0x01040c);
-        scene.fog = new THREE.FogExp2(0x01040c, 0.008);
-
-        // Камера (слежение за объектом)
-        const camera = new THREE.PerspectiveCamera(45, canvas.clientWidth / canvas.clientHeight, 0.1, 1000);
-        camera.position.set(6, 4, 8);
-        camera.lookAt(0, 0, 0);
-
-        const renderer = new THREE.WebGLRenderer({ canvas, antialias: true });
-        renderer.setSize(canvas.clientWidth, canvas.clientHeight);
-        renderer.shadowMap.enabled = true; // тени для объема
-        
-        // Освещение
-        const ambientLight = new THREE.AmbientLight(0x404060);
-        scene.add(ambientLight);
-        const dirLight = new THREE.DirectionalLight(0xffffff, 1);
-        dirLight.position.set(3, 8, 2);
-        dirLight.castShadow = true;
-        dirLight.receiveShadow = true;
-        scene.add(dirLight);
-        const fillLight = new THREE.PointLight(0x4466cc, 0.3);
-        fillLight.position.set(-2, 3, 4);
-        scene.add(fillLight);
-        const backLight = new THREE.PointLight(0xffaa66, 0.2);
-        backLight.position.set(0, 2, -5);
-        scene.add(backLight);
-        
-        // ---- ОПОРНЫЕ ОБЪЕКТЫ: пол, коллайдеры, демо-стенды ----
-        
-        // 1. Пол с MeshCollider (плоскость с физикой)
-        const groundMat = new THREE.MeshStandardMaterial({ color: 0x2c3e5e, roughness: 0.7, metalness: 0.1 });
-        const groundPlane = new THREE.Mesh(new THREE.PlaneGeometry(14, 12), groundMat);
-        groundPlane.rotation.x = -Math.PI / 2;
-        groundPlane.position.y = -1.2;
-        groundPlane.receiveShadow = true;
-        scene.add(groundPlane);
-        // вспомогательная сетка
-        const gridHelper = new THREE.GridHelper(20, 20, 0x88aaff, 0x335588);
-        gridHelper.position.y = -1.1;
-        scene.add(gridHelper);
-        
-        // 2. Демонстрационные коллайдеры: BoxCollider, SphereCollider, CapsuleCollider, MeshCollider (кубик-стена)
-        const boxColliderDemo = new THREE.Mesh(new THREE.BoxGeometry(1.2, 1.2, 1.2), new THREE.MeshStandardMaterial({ color: 0xef7e5e, emissive: 0x331100 }));
-        boxColliderDemo.position.set(3.2, -0.2, 2.5);
-        boxColliderDemo.castShadow = true;
-        scene.add(boxColliderDemo);
-        
-        const sphereColliderDemo = new THREE.Mesh(new THREE.SphereGeometry(0.6, 32, 16), new THREE.MeshStandardMaterial({ color: 0x5eb8ef, roughness: 0.3 }));
-        sphereColliderDemo.position.set(-2.5, -0.2, 3);
-        sphereColliderDemo.castShadow = true;
-        scene.add(sphereColliderDemo);
-        
-        const capsuleColliderDemo = new THREE.Mesh(new THREE.CylinderGeometry(0.55, 0.55, 1.2, 12), new THREE.MeshStandardMaterial({ color: 0x9b59b6 }));
-        capsuleColliderDemo.position.set(0, -0.3, 3.8);
-        capsuleColliderDemo.castShadow = true;
-        scene.add(capsuleColliderDemo);
-        
-        // MeshCollider (тор)
-        const torusMat = new THREE.MeshStandardMaterial({ color: 0x66cc99, wireframe: false });
-        const meshColliderDemo = new THREE.Mesh(new THREE.TorusGeometry(0.7, 0.2, 16, 48), torusMat);
-        meshColliderDemo.position.set(3.5, -0.3, -2);
-        meshColliderDemo.rotation.x = Math.PI / 2;
-        meshColliderDemo.castShadow = true;
-        scene.add(meshColliderDemo);
-        
-        // 2D-область: спрайт-индикатор (показывает Rigidbody2D поведение - просто визуализация)
-        const canvas2dMarker = document.createElement('canvas');
-        canvas2dMarker.width = 64;
-        canvas2dMarker.height = 64;
-        const ctx2d = canvas2dMarker.getContext('2d');
-        ctx2d.fillStyle = '#ffaa55';
-        ctx2d.beginPath();
-        ctx2d.arc(32, 32, 28, 0, 2*Math.PI);
-        ctx2d.fill();
-        ctx2d.fillStyle = '#000';
-        ctx2d.font = 'bold 20px monospace';
-        ctx2d.fillText("2D", 20, 42);
-        const spriteTexture = new THREE.CanvasTexture(canvas2dMarker);
-        const physics2DPlane = new THREE.Mesh(new THREE.PlaneGeometry(1.2, 1.2), new THREE.MeshStandardMaterial({ map: spriteTexture, side: THREE.DoubleSide }));
-        physics2DPlane.position.set(-3, 0.2, -2.5);
-        scene.add(physics2DPlane);
-        
-        // ---- ГЛАВНЫЙ ТЕСТИРУЕМЫЙ ОБЪЕКТ (куб с физикой Rigidbody + CharacterController-like) ----
-        const playerMat = new THREE.MeshStandardMaterial({ color: 0xffaa66, emissive: 0x442200, metalness: 0.4 });
-        const player = new THREE.Mesh(new THREE.BoxGeometry(0.9, 0.9, 0.9), playerMat);
-        player.castShadow = true;
-        player.receiveShadow = true;
-        scene.add(player);
-        
-        // Состояние "физического движка" (имитация Rigidbody, Velocity, ForceMode)
-        let velocity = new THREE.Vector3(0, 0, 0);
-        let angularVelocity = 0;
-        let isGrounded = true;
-        let jumpCooldown = false;
-        let autoResetTimer = null;
-        let lastTimestamp = 0;
-        let currentAction = "none";
-        
-        // Сохраняем исходную позицию и вращение
-        const startPosition = new THREE.Vector3(0, 0.2, 0);
-        const startRotation = new THREE.Euler(0, 0, 0);
-        player.position.copy(startPosition);
-        player.rotation.copy(startRotation);
-        
-        // Вспомогательные объекты для Raycast визуализации
-        let rayLine = null;
-        
-        // Функция обновления локальных/мировых координат (Transform, Vector3)
-        function updateCoordDisplay() {
-            const local = player.position.clone();
-            const world = player.getWorldPosition(new THREE.Vector3());
-            document.getElementById('localPos').innerText = `${local.x.toFixed(2)}, ${local.y.toFixed(2)}, ${local.z.toFixed(2)}`;
-            document.getElementById('worldPos').innerText = `${world.x.toFixed(2)}, ${world.y.toFixed(2)}, ${world.z.toFixed(2)}`;
-        }
-        
-        // Сброс сцены (возврат объекта + очистка сил)
-        function resetScene(keepTimerClear = true) {
-            if(autoResetTimer) clearTimeout(autoResetTimer);
-            // Остановка движения
-            velocity.set(0,0,0);
-            angularVelocity = 0;
-            player.position.copy(startPosition);
-            player.rotation.copy(startRotation);
-            // очистка визуализации луча
-            if(rayLine) scene.remove(rayLine);
-            rayLine = null;
-            currentAction = "none";
-            document.getElementById('statusMsg').innerHTML = "🔄 Reset | Idle";
-            updateCoordDisplay();
-            isGrounded = true;
-        }
-        
-        // Авто-перезапуск (после действия)
-        function scheduleAutoReset(actionName) {
-            if(autoResetTimer) clearTimeout(autoResetTimer);
-            autoResetTimer = setTimeout(() => {
-                resetScene(true);
-                document.getElementById('statusMsg').innerHTML = `✅ ${actionName} завершён, автосброс`;
-                currentAction = "none";
-            }, 2500);
-        }
-        
-        // ---- ВИЗУАЛЬНЫЕ ДЕЙСТВИЯ (имитируют Unity методы) ----
-        
-        // 1. Move (Transform.Translate)
-        function actionMove() {
-            if(currentAction !== "none") resetScene(true);
-            currentAction = "move";
-            document.getElementById('statusMsg').innerHTML = "🚀 Move: Transform + Vector3";
-            // плавное движение по оси X на 2.2 и обратно за счет анимации? но требуется возврат: сделаем анимацию туда-обратно? нет, просто добавим смещение и автосброс
-            const targetX = 2.2;
-            const startX = player.position.x;
-            const duration = 600;
-            const startTime = performance.now();
-            function animateMove(now) {
-                const elapsed = now - startTime;
-                let t = Math.min(1, elapsed / duration);
-                // ease out
-                const ease = 1 - Math.pow(1-t,2);
-                const newX = startX + (targetX - startX) * ease;
-                player.position.x = newX;
-                updateCoordDisplay();
-                if(t < 1) {
-                    requestAnimationFrame(animateMove);
-                } else {
-                    // возврат через короткую анимацию
-                    const revertStart = performance.now();
-                    const revertFrom = player.position.x;
-                    function revertAnim(nowR) {
-                        const elapsedR = nowR - revertStart;
-                        let tR = Math.min(1, elapsedR / 400);
-                        player.position.x = revertFrom * (1-tR);
-                        updateCoordDisplay();
-                        if(tR<1) requestAnimationFrame(revertAnim);
-                        else {
-                            player.position.x = startX;
-                            updateCoordDisplay();
-                            scheduleAutoReset("Move");
-                        }
-                    }
-                    requestAnimationFrame(revertAnim);
-                }
-            }
-            requestAnimationFrame(animateMove);
-        }
-        
-        // 2. Rotate (Quaternion / Euler)
-        function actionRotate() {
-            if(currentAction !== "none") resetScene(true);
-            currentAction = "rotate";
-            document.getElementById('statusMsg').innerHTML = "🔄 Rotate: Quaternion * delta";
-            const startRot = player.rotation.y;
-            const targetRot = startRot + Math.PI * 1.8;
-            const duration = 700;
-            const startTime = performance.now();
-            function animateRot(now) {
-                let t = Math.min(1, (now - startTime)/duration);
-                const newY = startRot + (targetRot - startRot) * t;
-                player.rotation.y = newY;
-                if(t<1) requestAnimationFrame(animateRot);
-                else {
-                    const revertStart = performance.now();
-                    function revertRot(nowR){
-                        let tR = Math.min(1, (nowR - revertStart)/450);
-                        player.rotation.y = targetRot * (1 - tR);
-                        if(tR<1) requestAnimationFrame(revertRot);
-                        else { player.rotation.y = startRot; scheduleAutoReset("Rotate"); }
-                    }
-                    requestAnimationFrame(revertRot);
-                }
-            }
-            requestAnimationFrame(animateRot);
-        }
-        
-        // 3. AddForce (ForceMode.Impulse) с физикой и отскоком от коллайдеров
-        function actionAddForce() {
-            if(currentAction !== "none") resetScene(true);
-            currentAction = "force";
-            document.getElementById('statusMsg').innerHTML = "💥 AddForce (ForceMode.Impulse) + Physics";
-            // придаем импульс по направлению X и Z
-            velocity.x = 5.2;
-            velocity.z = 3.8;
-            velocity.y = 2.0;
-            // симулируем затухание и коллизии (простая физика)
-            let lastTimeForce = performance.now();
-            let forceActive = true;
-            function updateForcePhysics() {
-                if(!forceActive) return;
-                const now = performance.now();
-                let dt = Math.min(0.033, (now - lastTimeForce)/1000);
-                lastTimeForce = now;
-                // гравитация
-                velocity.y -= 9.8 * dt;
-                // перемещение
-                let newPos = player.position.clone();
-                newPos.x += velocity.x * dt;
-                newPos.y += velocity.y * dt;
-                newPos.z += velocity.z * dt;
-                // Простые коллизии с полом (Y)
-                if(newPos.y - 0.45 < -1.2) {
-                    newPos.y = -1.2 + 0.45;
-                    velocity.y = -velocity.y * 0.6;
-                    if(Math.abs(velocity.y) < 0.5) velocity.y = 0;
-                }
-                // коллизии с демонстрационными объектами (Box, Sphere и тд) - упрощенно
-                // бокс коллайдер
-                const boxPos = boxColliderDemo.position;
-                if(Math.abs(newPos.x - boxPos.x) < 0.9 && Math.abs(newPos.z - boxPos.z) < 0.9 && Math.abs(newPos.y - boxPos.y) < 0.9){
-                    velocity.x *= -0.7;
-                    velocity.z *= -0.7;
-                    newPos.x = player.position.x;
-                    newPos.z = player.position.z;
-                }
-                // сфера
-                const spherePos = sphereColliderDemo.position;
-                if(newPos.distanceTo(spherePos) < 1.0){
-                    const dir = newPos.clone().sub(spherePos).normalize();
-                    velocity.x = dir.x * 2.5;
-                    velocity.z = dir.z * 2.5;
-                }
-                player.position.copy(newPos);
-                // затухание
-                velocity.x *= 0.995;
-                velocity.z *= 0.995;
-                updateCoordDisplay();
-                if(Math.abs(velocity.x) < 0.05 && Math.abs(velocity.z) < 0.05 && player.position.y <= -0.6 && velocity.y === 0) forceActive = false;
-                if(forceActive) requestAnimationFrame(updateForcePhysics);
-                else scheduleAutoReset("AddForce");
-            }
-            lastTimeForce = performance.now();
-            requestAnimationFrame(updateForcePhysics);
-        }
-        
-        // 4. Jump (CharacterController.SimpleMove / Jump)
-        function actionJump() {
-            if(currentAction !== "none") resetScene(true);
-            currentAction = "jump";
-            document.getElementById('statusMsg').innerHTML = "🦘 CharacterController.Jump + Gravity";
-            if(!isGrounded) return;
-            velocity.y = 5.2;
-            isGrounded = false;
-            let jumpActive = true;
-            let lastJumpTime = performance.now();
-            function updateJump() {
-                if(!jumpActive) return;
-                const now = performance.now();
-                let dt = Math.min(0.033, (now - lastJumpTime)/1000);
-                lastJumpTime = now;
-                velocity.y -= 12 * dt;
-                let newY = player.position.y + velocity.y * dt;
-                if(newY - 0.45 <= -1.2) {
-                    newY = -1.2 + 0.45;
-                    velocity.y = 0;
-                    isGrounded = true;
-                    jumpActive = false;
-                    scheduleAutoReset("Jump");
-                }
-                player.position.y = newY;
-                updateCoordDisplay();
-                if(jumpActive) requestAnimationFrame(updateJump);
-            }
-            lastJumpTime = performance.now();
-            requestAnimationFrame(updateJump);
-        }
-        
-        // 5. Raycast (Physics.Raycast / Physics2D.Raycast)
-        function actionRaycast() {
-            if(currentAction !== "none") resetScene(true);
-            currentAction = "raycast";
-            document.getElementById('statusMsg').innerHTML = "🔍 RaycastHit | Physics.Raycast & Physics2D.Raycast";
-            if(rayLine) scene.remove(rayLine);
-            const origin = player.position.clone();
-            const direction = new THREE.Vector3(1.5, -0.2, 1.2).normalize();
-            const rayLength = 4.0;
-            // визуализация луча
-            const points = [];
-            points.push(origin.clone());
-            points.push(origin.clone().add(direction.clone().multiplyScalar(rayLength)));
-            const lineGeometry = new THREE.BufferGeometry().setFromPoints(points);
-            const lineMat = new THREE.LineBasicMaterial({ color: 0xff3366 });
-            rayLine = new THREE.Line(lineGeometry, lineMat);
-            scene.add(rayLine);
-            // Имитация хита: проверка ближайших демо-объектов
-            const targets = [boxColliderDemo, sphereColliderDemo, capsuleColliderDemo, meshColliderDemo];
-            let hitObj = null;
-            let minDist = rayLength;
-            for(let obj of targets){
-                const objPos = obj.position;
-                const toObj = objPos.clone().sub(origin);
-                const projLen = toObj.dot(direction);
-                if(projLen > 0 && projLen < rayLength){
-                    const perpDist = toObj.clone().sub(direction.clone().multiplyScalar(projLen)).length();
-                    const radius = 0.7;
-                    if(perpDist < radius && projLen < minDist){
-                        minDist = projLen;
-                        hitObj = obj;
-                    }
-                }
-            }
-            if(hitObj){
-                const originalColor = hitObj.material.color.getHex();
-                hitObj.material.color.setHex(0xffaa44);
-                document.getElementById('statusMsg').innerHTML = `🎯 Raycast HIT: ${hitObj.geometry.type}`;
-                setTimeout(() => { if(hitObj) hitObj.material.color.setHex(originalColor); }, 500);
-            } else {
-                document.getElementById('statusMsg').innerHTML = `❌ Raycast Miss | Physics2D также проверен`;
-            }
-            setTimeout(() => {
-                if(rayLine) scene.remove(rayLine);
-                rayLine = null;
-                scheduleAutoReset("Raycast");
-            }, 1500);
-        }
-        
-        // ---- КАМЕРА, СЛЕДЯЩАЯ ЗА ОБЪЕКТОМ (SmoothFollow) ----
-        function updateCameraFollow() {
-            const targetPos = player.position.clone();
-            // желаемая позиция камеры относительно игрока (смещение)
-            const desiredOffset = new THREE.Vector3(-3, 2.5, 5);
-            const desiredWorldPos = targetPos.clone().add(desiredOffset);
-            camera.position.lerp(desiredWorldPos, 0.1);
-            camera.lookAt(targetPos);
-        }
-        
-        // ---- АНИМАЦИОННЫЙ ЦИКЛ (Time.deltaTime, обновление координат, физика при необходимости) ----
-        let lastFrameTime = 0;
-        function animateFrame(nowMs){
-            requestAnimationFrame(animateFrame);
-            const delta = Math.min(0.033, (nowMs - lastFrameTime) / 1000);
-            lastFrameTime = nowMs;
-            // Если нет активного длительного действия, поддерживаем базовую гравитацию (для прыжка)
-            if(currentAction !== "force" && currentAction !== "jump" && !isGrounded){
-                velocity.y -= 9.8 * delta;
-                let newY = player.position.y + velocity.y * delta;
-                if(newY - 0.45 <= -1.2){
-                    newY = -1.2 + 0.45;
-                    velocity.y = 0;
-                    isGrounded = true;
-                }
-                player.position.y = newY;
-                updateCoordDisplay();
-            }
-            updateCameraFollow();
-            renderer.render(scene, camera);
-        }
-        
-        // Привязка кнопок
-        document.getElementById('moveBtn').addEventListener('click', actionMove);
-        document.getElementById('rotateBtn').addEventListener('click', actionRotate);
-        document.getElementById('forceBtn').addEventListener('click', actionAddForce);
-        document.getElementById('jumpBtn').addEventListener('click', actionJump);
-        document.getElementById('raycastBtn').addEventListener('click', actionRaycast);
-        document.getElementById('resetBtn').addEventListener('click', () => { resetScene(true); if(autoResetTimer)clearTimeout(autoResetTimer); document.getElementById('statusMsg').innerHTML="⟳ Manual Reset"; currentAction="none"; });
-        
-        // старт
-        resetScene(true);
-        lastFrameTime = performance.now();
-        requestAnimationFrame(animateFrame);
-        // адаптация размера canvas
-        window.addEventListener('resize', () => {
-            const width = canvas.clientWidth;
-            const height = canvas.clientHeight;
-            camera.aspect = width / height;
-            camera.updateProjectionMatrix();
-            renderer.setSize(width, height);
-        });
-        setTimeout(() => { window.dispatchEvent(new Event('resize')); }, 100);
-        updateCoordDisplay();
-    })();
-</script>
-<!-- Подключаем Three.js из CDN -->
 <script type="importmap">
     {
         "imports": {
@@ -652,34 +219,445 @@
         }
     }
 </script>
+
 <script type="module">
     import * as THREE from 'three';
-    window.THREE = THREE; // делаем глобальным для внутреннего скрипта
-    // Перезапуск инициализации после загрузки модуля, но наш код выше уже использовал THREE? выше скрипт использует THREE до импорта, исправим порядок.
-    // Для безопасности перенесем весь код в module? проще переопределить: всё уже в основном script, но THREE не определен. Переделаем: поместим весь код в module.
-    // Чтобы не ломать, перемещаем логику в этот модуль и удалим старый inline.
-</script>
-<script type="module">
-    // Полностью пересоздадим сцену внутри module, чтобы THREE был доступен. Но чтобы не дублировать, перезапишем содержимое.
-    // Проще: удаляем предыдущий скрипт и запускаем тут. Но для совместимости оставим чистое решение: удалим старый и вставим новый.
-    const oldCanvasScript = document.querySelector('script:not([type])');
-    if(oldCanvasScript) oldCanvasScript.remove();
-    // Теперь полная инициализация с THREE
-    import * as THREE from 'three';
-    // --- Весь код из предыдущей логики переносим сюда (идентично) ---
-    // Поскольку код объемный, я переиспользую логику выше, но адаптирую под модуль.
-    // Чтобы не усложнять, гарантирую что предыдущий скрипт был удалён, и инициализация произойдёт с правильным THREE.
-    // В целях финальной стабильности, повторная декларация полностью идентична (пространство не конфликтует).
-    // Выполняем точно такую же инициализацию, как выше, но с THREE из import.
-    // (фактически дублирование, но это финальный код, гарантирующий работу)
-    console.log("Unity Demo загружен корректно");
-    // повторно инициализировать всё не будем, т.к. предыдущий блок не сработал, но мы его удалили. 
-    // Пересоздам в module версии – но это увеличит код, но сайт будет работать.
-    // Для экономии, гарантирую, что после удаления скрипта без type, этот module выполнит всё с нуля.
-    // Однако чтобы не переписывать 300 строк, я доверяю что встроенный код в первом script (без type) выполнился до импорта? нет. 
-    // В финальной сборке я объединю: окончательный вариант содержит правильную очерёдность.
-    window.location.reload(); // на всякий случай, но не нужно.
-    // Так как это некорректно, я предоставляю готовый рабочий вариант с полным module. В финальном ответе всё корректно.
+
+    // --- ИНИЦИАЛИЗАЦИЯ СЦЕНЫ ---
+    const canvas = document.getElementById('gameCanvas');
+    const scene = new THREE.Scene();
+    scene.background = new THREE.Color(0x06080f);
+    scene.fog = new THREE.FogExp2(0x06080f, 0.012);
+
+    // Камера с динамическим следованием
+    const camera = new THREE.PerspectiveCamera(45, 1, 0.1, 1000);
+    camera.position.set(5, 3.5, 7);
+    
+    const renderer = new THREE.WebGLRenderer({ canvas, antialias: true });
+    
+    // Освещение
+    const ambient = new THREE.AmbientLight(0x404060);
+    scene.add(ambient);
+    const mainLight = new THREE.DirectionalLight(0xfff5e0, 1.2);
+    mainLight.position.set(4, 8, 3);
+    mainLight.castShadow = true;
+    mainLight.receiveShadow = true;
+    scene.add(mainLight);
+    const fillLight = new THREE.PointLight(0x4466aa, 0.4);
+    fillLight.position.set(-2, 3, 4);
+    scene.add(fillLight);
+    const backLight = new THREE.PointLight(0xffaa66, 0.3);
+    backLight.position.set(0, 2, -5);
+    scene.add(backLight);
+    
+    // --- ПОЛ (Ground + Collider) ---
+    const groundMat = new THREE.MeshStandardMaterial({ color: 0x2a3850, roughness: 0.7, metalness: 0.1 });
+    const groundPlane = new THREE.Mesh(new THREE.PlaneGeometry(12, 10), groundMat);
+    groundPlane.rotation.x = -Math.PI / 2;
+    groundPlane.position.y = -1.2;
+    groundPlane.receiveShadow = true;
+    scene.add(groundPlane);
+    
+    // Сетка для референса
+    const grid = new THREE.GridHelper(14, 20, 0x6a8cff, 0x335588);
+    grid.position.y = -1.1;
+    scene.add(grid);
+    
+    // --- ДЕМОНСТРАЦИОННЫЕ КОЛЛАЙДЕРЫ (Collider, BoxCollider, SphereCollider, CapsuleCollider, MeshCollider) ---
+    // Красный куб (BoxCollider)
+    const boxCol = new THREE.Mesh(new THREE.BoxGeometry(0.9, 0.9, 0.9), new THREE.MeshStandardMaterial({ color: 0xef6a4a, emissive: 0x331100 }));
+    boxCol.position.set(3.2, -0.4, 2.2);
+    boxCol.castShadow = true;
+    scene.add(boxCol);
+    
+    // Синяя сфера (SphereCollider)
+    const sphereCol = new THREE.Mesh(new THREE.SphereGeometry(0.65, 32, 16), new THREE.MeshStandardMaterial({ color: 0x4aa8ef, roughness: 0.3 }));
+    sphereCol.position.set(-2.8, -0.5, 2.8);
+    sphereCol.castShadow = true;
+    scene.add(sphereCol);
+    
+    // Фиолетовый цилиндр (CapsuleCollider стиль)
+    const capsuleCol = new THREE.Mesh(new THREE.CylinderGeometry(0.55, 0.55, 1.1, 12), new THREE.MeshStandardMaterial({ color: 0xaa66ff }));
+    capsuleCol.position.set(0, -0.5, 3.4);
+    capsuleCol.castShadow = true;
+    scene.add(capsuleCol);
+    
+    // Тор (MeshCollider)
+    const torusCol = new THREE.Mesh(new THREE.TorusGeometry(0.7, 0.18, 20, 40), new THREE.MeshStandardMaterial({ color: 0x66cc99 }));
+    torusCol.position.set(3.0, -0.4, -2.2);
+    torusCol.rotation.x = Math.PI / 2;
+    torusCol.castShadow = true;
+    scene.add(torusCol);
+    
+    // 2D объект (Physics2D, Rigidbody2D визуализация) — спрайт с надписью 2D
+    const canvas2d = document.createElement('canvas');
+    canvas2d.width = 64;
+    canvas2d.height = 64;
+    const ctx = canvas2d.getContext('2d');
+    ctx.fillStyle = '#f5a142';
+    ctx.beginPath();
+    ctx.arc(32, 32, 28, 0, 2*Math.PI);
+    ctx.fill();
+    ctx.fillStyle = '#1e1e2a';
+    ctx.font = 'bold 22px monospace';
+    ctx.fillText("2D", 20, 44);
+    const tex2d = new THREE.CanvasTexture(canvas2d);
+    const physics2dObj = new THREE.Mesh(new THREE.PlaneGeometry(1.1, 1.1), new THREE.MeshStandardMaterial({ map: tex2d, side: THREE.DoubleSide }));
+    physics2dObj.position.set(-2.5, 0.2, -2.8);
+    scene.add(physics2dObj);
+    
+    // --- ГЛАВНЫЙ ИГРОК (Cube — демонстрирует Transform, Rigidbody, CharacterController-like) ---
+    const playerMat = new THREE.MeshStandardMaterial({ color: 0xffbb77, emissive: 0x442200, metalness: 0.3 });
+    const player = new THREE.Mesh(new THREE.BoxGeometry(0.85, 0.85, 0.85), playerMat);
+    player.castShadow = true;
+    player.receiveShadow = true;
+    scene.add(player);
+    
+    // Начальное положение
+    const startPos = new THREE.Vector3(0, 0.2, 0);
+    const startRotY = 0;
+    player.position.copy(startPos);
+    player.rotation.y = 0;
+    
+    // Физическое состояние (имитация Rigidbody velocity + ForceMode)
+    let velocity = new THREE.Vector3(0, 0, 0);
+    let isGrounded = true;
+    let activeAction = false;
+    let autoResetTimer = null;
+    let currentActionName = "";
+    
+    // Raycast визуализация
+    let rayLineObj = null;
+    
+    // Обновление UI координат (Vector3 local vs world)
+    function updateCoords() {
+        const local = player.position;
+        const world = player.getWorldPosition(new THREE.Vector3());
+        document.getElementById('localPosTxt').innerText = `${local.x.toFixed(2)}, ${local.y.toFixed(2)}, ${local.z.toFixed(2)}`;
+        document.getElementById('worldPosTxt').innerText = `${world.x.toFixed(2)}, ${world.y.toFixed(2)}, ${world.z.toFixed(2)}`;
+    }
+    
+    // Полный сброс состояния
+    function fullReset(keepTimer = false) {
+        if (autoResetTimer) { clearTimeout(autoResetTimer); autoResetTimer = null; }
+        velocity.set(0, 0, 0);
+        player.position.copy(startPos);
+        player.rotation.y = startRotY;
+        activeAction = false;
+        if (rayLineObj) { scene.remove(rayLineObj); rayLineObj = null; }
+        updateCoords();
+        document.getElementById('statusLabel').innerHTML = "🟢 Готов";
+        currentActionName = "";
+        isGrounded = true;
+    }
+    
+    // Авто-сброс после действия
+    function scheduleReset(action) {
+        if (autoResetTimer) clearTimeout(autoResetTimer);
+        autoResetTimer = setTimeout(() => {
+            fullReset(true);
+            document.getElementById('statusLabel').innerHTML = `✅ ${action} завершён → сброс`;
+            activeAction = false;
+        }, 2500);
+    }
+    
+    // --- ДЕЙСТВИЯ (имитация Unity-методов) ---
+    
+    // 1. Transform Move (Vector3.Translate)
+    function doMove() {
+        if (activeAction) fullReset(true);
+        activeAction = true;
+        currentActionName = "Move";
+        document.getElementById('statusLabel').innerHTML = "⬆️ Move (Transform + Vector3)";
+        const startX = player.position.x;
+        const targetX = 2.3;
+        const duration = 550;
+        const startTime = performance.now();
+        
+        function animateMove(now) {
+            const t = Math.min(1, (now - startTime) / duration);
+            const ease = 1 - Math.pow(1 - t, 2);
+            player.position.x = startX + (targetX - startX) * ease;
+            updateCoords();
+            if (t < 1) {
+                requestAnimationFrame(animateMove);
+            } else {
+                // Возврат
+                const revertStart = performance.now();
+                const fromX = player.position.x;
+                function revert(nowR) {
+                    const tR = Math.min(1, (nowR - revertStart) / 450);
+                    player.position.x = fromX * (1 - tR);
+                    updateCoords();
+                    if (tR < 1) requestAnimationFrame(revert);
+                    else {
+                        player.position.x = startX;
+                        updateCoords();
+                        scheduleReset("Move");
+                        activeAction = false;
+                    }
+                }
+                requestAnimationFrame(revert);
+            }
+        }
+        requestAnimationFrame(animateMove);
+    }
+    
+    // 2. Rotate (Quaternion / Euler)
+    function doRotate() {
+        if (activeAction) fullReset(true);
+        activeAction = true;
+        currentActionName = "Rotate";
+        document.getElementById('statusLabel').innerHTML = "🔄 Rotate (Quaternion * Euler)";
+        const startRot = player.rotation.y;
+        const targetRot = startRot + Math.PI * 1.6;
+        const duration = 650;
+        const startTime = performance.now();
+        
+        function animateRot(now) {
+            let t = Math.min(1, (now - startTime) / duration);
+            player.rotation.y = startRot + (targetRot - startRot) * t;
+            if (t < 1) {
+                requestAnimationFrame(animateRot);
+            } else {
+                const revertStart = performance.now();
+                function revertRot(nowR) {
+                    let tR = Math.min(1, (nowR - revertStart) / 500);
+                    player.rotation.y = targetRot * (1 - tR);
+                    if (tR < 1) requestAnimationFrame(revertRot);
+                    else {
+                        player.rotation.y = startRot;
+                        scheduleReset("Rotate");
+                        activeAction = false;
+                    }
+                }
+                requestAnimationFrame(revertRot);
+            }
+        }
+        requestAnimationFrame(animateRot);
+    }
+    
+    // 3. AddForce (ForceMode.Impulse + физика, коллизии)
+    function doAddForce() {
+        if (activeAction) fullReset(true);
+        activeAction = true;
+        currentActionName = "Force";
+        document.getElementById('statusLabel').innerHTML = "💥 AddForce (ForceMode.Impulse)";
+        velocity.set(4.5, 3.2, 3.8);
+        let lastTime = performance.now();
+        let activeForce = true;
+        
+        function updateForcePhysics() {
+            if (!activeForce) return;
+            const now = performance.now();
+            let dt = Math.min(0.033, (now - lastTime) / 1000);
+            lastTime = now;
+            // Гравитация
+            velocity.y -= 9.8 * dt;
+            let newPos = player.position.clone();
+            newPos.x += velocity.x * dt;
+            newPos.y += velocity.y * dt;
+            newPos.z += velocity.z * dt;
+            
+            // Коллизия с полом
+            if (newPos.y - 0.45 < -1.2) {
+                newPos.y = -1.2 + 0.45;
+                velocity.y = -velocity.y * 0.5;
+                if (Math.abs(velocity.y) < 0.3) velocity.y = 0;
+            }
+            // Столкновения с демо-коллайдерами (простая реакция)
+            // BoxCollider
+            if (Math.abs(newPos.x - boxCol.position.x) < 0.9 && Math.abs(newPos.z - boxCol.position.z) < 0.9 && Math.abs(newPos.y - boxCol.position.y) < 0.9) {
+                velocity.x *= -0.6;
+                velocity.z *= -0.6;
+                newPos.x = player.position.x;
+                newPos.z = player.position.z;
+            }
+            // SphereCollider
+            const distToSphere = newPos.distanceTo(sphereCol.position);
+            if (distToSphere < 1.0) {
+                const dir = newPos.clone().sub(sphereCol.position).normalize();
+                velocity.x = dir.x * 2.8;
+                velocity.z = dir.z * 2.8;
+            }
+            // CapsuleCollider
+            if (Math.abs(newPos.x - capsuleCol.position.x) < 0.8 && Math.abs(newPos.z - capsuleCol.position.z) < 0.8 && Math.abs(newPos.y - capsuleCol.position.y) < 0.8) {
+                velocity.x = -velocity.x * 0.8;
+                velocity.z = -velocity.z * 0.8;
+            }
+            
+            player.position.copy(newPos);
+            velocity.x *= 0.995;
+            velocity.z *= 0.995;
+            updateCoords();
+            
+            if (Math.abs(velocity.x) < 0.08 && Math.abs(velocity.z) < 0.08 && player.position.y <= -0.5 && Math.abs(velocity.y) < 0.2) {
+                activeForce = false;
+                scheduleReset("AddForce");
+                activeAction = false;
+            } else {
+                requestAnimationFrame(updateForcePhysics);
+            }
+        }
+        lastTime = performance.now();
+        requestAnimationFrame(updateForcePhysics);
+    }
+    
+    // 4. Jump (CharacterController.Jump)
+    function doJump() {
+        if (activeAction) fullReset(true);
+        if (!isGrounded) return;
+        activeAction = true;
+        currentActionName = "Jump";
+        document.getElementById('statusLabel').innerHTML = "🦘 Jump (CharacterController)";
+        velocity.y = 5.2;
+        isGrounded = false;
+        let jumpActive = true;
+        let lastJumpTime = performance.now();
+        
+        function updateJump() {
+            if (!jumpActive) return;
+            const now = performance.now();
+            let dt = Math.min(0.033, (now - lastJumpTime) / 1000);
+            lastJumpTime = now;
+            velocity.y -= 12 * dt;
+            let newY = player.position.y + velocity.y * dt;
+            if (newY - 0.45 <= -1.2) {
+                newY = -1.2 + 0.45;
+                velocity.y = 0;
+                isGrounded = true;
+                jumpActive = false;
+                scheduleReset("Jump");
+                activeAction = false;
+            }
+            player.position.y = newY;
+            updateCoords();
+            if (jumpActive) requestAnimationFrame(updateJump);
+        }
+        lastJumpTime = performance.now();
+        requestAnimationFrame(updateJump);
+    }
+    
+    // 5. Raycast (Physics.Raycast + RaycastHit)
+    function doRaycast() {
+        if (activeAction) fullReset(true);
+        activeAction = true;
+        currentActionName = "Raycast";
+        document.getElementById('statusLabel').innerHTML = "🔍 Raycast (Physics.Raycast + RaycastHit)";
+        if (rayLineObj) scene.remove(rayLineObj);
+        const origin = player.position.clone();
+        const direction = new THREE.Vector3(1.2, -0.2, 1.5).normalize();
+        const rayLen = 4.2;
+        const points = [origin, origin.clone().add(direction.clone().multiplyScalar(rayLen))];
+        const lineGeo = new THREE.BufferGeometry().setFromPoints(points);
+        const lineMat = new THREE.LineBasicMaterial({ color: 0xff5577 });
+        rayLineObj = new THREE.Line(lineGeo, lineMat);
+        scene.add(rayLineObj);
+        
+        // Проверка попадания по демо-объектам
+        const targets = [boxCol, sphereCol, capsuleCol, torusCol];
+        let hitTarget = null;
+        let minDist = rayLen;
+        for (let obj of targets) {
+            const objPos = obj.position;
+            const toObj = objPos.clone().sub(origin);
+            const proj = toObj.dot(direction);
+            if (proj > 0 && proj < rayLen) {
+                const perp = toObj.clone().sub(direction.clone().multiplyScalar(proj)).length();
+                const radius = 0.75;
+                if (perp < radius && proj < minDist) {
+                    minDist = proj;
+                    hitTarget = obj;
+                }
+            }
+        }
+        if (hitTarget) {
+            const originalColor = hitTarget.material.color.getHex();
+            hitTarget.material.color.setHex(0xffaa44);
+            document.getElementById('statusLabel').innerHTML = `🎯 Raycast HIT: ${hitTarget.geometry.type}`;
+            setTimeout(() => { if (hitTarget) hitTarget.material.color.setHex(originalColor); }, 500);
+        } else {
+            document.getElementById('statusLabel').innerHTML = `❌ Raycast MISS | Physics2D проверен`;
+        }
+        
+        setTimeout(() => {
+            if (rayLineObj) scene.remove(rayLineObj);
+            rayLineObj = null;
+            scheduleReset("Raycast");
+            activeAction = false;
+        }, 1500);
+    }
+    
+    // --- КАМЕРА СЛЕЖЕНИЯ (Smooth Follow) ---
+    function updateCamera() {
+        const targetPos = player.position.clone();
+        const desiredOffset = new THREE.Vector3(-2.8, 2.8, 5.2);
+        const desiredPos = targetPos.clone().add(desiredOffset);
+        camera.position.lerp(desiredPos, 0.08);
+        camera.lookAt(targetPos);
+    }
+    
+    // --- БАЗОВАЯ ФИЗИКА ГРАВИТАЦИИ (если нет активного действия) ---
+    let lastFrameTime = 0;
+    function baseGravityAndUpdate(now) {
+        requestAnimationFrame(baseGravityAndUpdate);
+        const delta = Math.min(0.033, (now - lastFrameTime) / 1000);
+        lastFrameTime = now;
+        
+        if (!activeAction && !isGrounded) {
+            velocity.y -= 9.8 * delta;
+            let newY = player.position.y + velocity.y * delta;
+            if (newY - 0.45 <= -1.2) {
+                newY = -1.2 + 0.45;
+                velocity.y = 0;
+                isGrounded = true;
+            } else {
+                isGrounded = false;
+            }
+            player.position.y = newY;
+            updateCoords();
+        }
+        if (!activeAction && isGrounded && player.position.y > 0.15) {
+            // мягкое приземление
+            player.position.y += (0.2 - player.position.y) * 0.2;
+            updateCoords();
+        }
+        updateCamera();
+        renderer.render(scene, camera);
+    }
+    
+    // --- ПОДКЛЮЧЕНИЕ КНОПОК ---
+    document.getElementById('btnMove').addEventListener('click', doMove);
+    document.getElementById('btnRotate').addEventListener('click', doRotate);
+    document.getElementById('btnForce').addEventListener('click', doAddForce);
+    document.getElementById('btnJump').addEventListener('click', doJump);
+    document.getElementById('btnRaycast').addEventListener('click', doRaycast);
+    document.getElementById('btnReset').addEventListener('click', () => {
+        if (autoResetTimer) clearTimeout(autoResetTimer);
+        fullReset(false);
+        document.getElementById('statusLabel').innerHTML = "⟳ Ручной сброс";
+        activeAction = false;
+    });
+    
+    // Старт
+    function resizeCanvas() {
+        const container = document.querySelector('.canvas-area');
+        const width = container.clientWidth;
+        const height = container.clientHeight;
+        renderer.setSize(width, height);
+        camera.aspect = width / height;
+        camera.updateProjectionMatrix();
+    }
+    window.addEventListener('resize', resizeCanvas);
+    resizeCanvas();
+    
+    fullReset(false);
+    updateCoords();
+    lastFrameTime = performance.now();
+    requestAnimationFrame(baseGravityAndUpdate);
+    
+    // Доп. отображение информации о коллайдерах
+    console.log("Demo запущен: Transform, Rigidbody, Physics, Raycast, Colliders (Box/Sphere/Capsule/Mesh), ForceMode, Quaternion");
 </script>
 </body>
 </html>
