@@ -1,663 +1,1162 @@
 <!DOCTYPE html>
+
 <html lang="ru">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no, viewport-fit=cover">
-    <title>Unity Demo: Transform | Rigidbody | Physics | Raycast</title>
-    <style>
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-            -webkit-tap-highlight-color: transparent;
-        }
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>HULK 3D — Анимированная модель</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Barlow+Condensed:wght@400;700&display=swap');
 
-        body {
-            background: #0a0c15;
-            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, sans-serif;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            min-height: 100vh;
-            padding: 12px;
-        }
+- { margin: 0; padding: 0; box-sizing: border-box; }
 
-        /* Контейнер под iPhone 13 (390px ширина контента) */
-        .app-container {
-            max-width: 390px;
-            width: 100%;
-            margin: 0 auto;
-            background: #10131f;
-            border-radius: 44px;
-            overflow: hidden;
-            box-shadow: 0 20px 40px rgba(0,0,0,0.4);
-            border: 1px solid rgba(255,255,255,0.08);
-        }
+body {
+background: #0a0f0a;
+color: #4eff6a;
+font-family: ‘Barlow Condensed’, sans-serif;
+overflow: hidden;
+height: 100vh;
+display: flex;
+flex-direction: column;
+}
 
-        .content {
-            padding: 18px 16px 24px;
-            display: flex;
-            flex-direction: column;
-            gap: 18px;
-        }
+#header {
+position: absolute;
+top: 0; left: 0; right: 0;
+z-index: 10;
+padding: 12px 20px;
+background: linear-gradient(to bottom, rgba(0,0,0,0.9), transparent);
+display: flex;
+align-items: center;
+gap: 16px;
+}
 
-        /* Заголовок */
-        .title {
-            text-align: center;
-        }
-        .title h1 {
-            font-size: 1.6rem;
-            font-weight: 600;
-            background: linear-gradient(135deg, #c0d4ff, #7c9cff);
-            -webkit-background-clip: text;
-            background-clip: text;
-            color: transparent;
-            letter-spacing: -0.3px;
-        }
-        .title p {
-            font-size: 0.7rem;
-            color: #8e9bb5;
-            margin-top: 5px;
-        }
+#header h1 {
+font-family: ‘Bebas Neue’, sans-serif;
+font-size: 42px;
+color: #4eff6a;
+text-shadow: 0 0 20px #00ff44, 0 0 60px #00ff4444;
+letter-spacing: 4px;
+}
 
-        /* Canvas область */
-        .canvas-area {
-            background: #06080f;
-            border-radius: 28px;
-            overflow: hidden;
-            aspect-ratio: 1 / 0.9;
-            position: relative;
-            box-shadow: 0 8px 20px rgba(0,0,0,0.5);
-            border: 1px solid #2a2f3f;
-        }
-        canvas {
-            width: 100%;
-            height: 100%;
-            display: block;
-        }
+#header span {
+font-size: 13px;
+color: #4eff6a88;
+letter-spacing: 2px;
+text-transform: uppercase;
+border: 1px solid #4eff6a33;
+padding: 3px 10px;
+border-radius: 2px;
+}
 
-        /* Инфо панель: координаты + статус */
-        .info-bar {
-            background: rgba(20, 26, 40, 0.9);
-            backdrop-filter: blur(12px);
-            border-radius: 28px;
-            padding: 10px 14px;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            flex-wrap: wrap;
-            gap: 8px;
-            font-size: 0.7rem;
-            font-weight: 500;
-            border: 1px solid rgba(255,255,255,0.05);
-        }
-        .coord-box {
-            background: #0c1020;
-            padding: 5px 12px;
-            border-radius: 30px;
-            color: #b8d0ff;
-            font-family: monospace;
-            font-size: 0.7rem;
-        }
-        .coord-box span {
-            color: #6d8ae0;
-        }
-        .status {
-            background: #1a1f2e;
-            padding: 5px 12px;
-            border-radius: 30px;
-            color: #a5c1ff;
-        }
+#canvas-container {
+flex: 1;
+position: relative;
+}
 
-        /* Кнопки */
-        .button-panel {
-            display: flex;
-            flex-wrap: wrap;
-            gap: 10px;
-            justify-content: center;
-        }
-        .btn {
-            background: #1e243b;
-            border: none;
-            padding: 10px 16px;
-            border-radius: 50px;
-            font-size: 0.75rem;
-            font-weight: 600;
-            color: #eef3ff;
-            cursor: pointer;
-            transition: all 0.15s ease;
-            box-shadow: 0 2px 5px rgba(0,0,0,0.2);
-            flex: 1 0 auto;
-            min-width: 70px;
-            font-family: inherit;
-        }
-        .btn:active {
-            transform: scale(0.95);
-            background: #2d3552;
-        }
-        .btn-primary {
-            background: #3d5a9c;
-        }
-        .btn-primary:active {
-            background: #2d4680;
-        }
-        .btn-reset {
-            background: #2c2f3e;
-            border: 1px solid #4a526c;
-        }
-        .btn-warning {
-            background: #8b5a2b;
-        }
+canvas { display: block; }
 
-        /* Теги классов Unity */
-        .class-tags {
-            display: flex;
-            flex-wrap: wrap;
-            gap: 6px;
-            justify-content: center;
-            margin-top: 4px;
-        }
-        .tag {
-            background: rgba(70, 100, 150, 0.25);
-            padding: 3px 8px;
-            border-radius: 20px;
-            font-size: 0.6rem;
-            font-weight: 500;
-            color: #a5bbf0;
-        }
+#controls {
+position: absolute;
+bottom: 0; left: 0; right: 0;
+background: linear-gradient(to top, rgba(0,0,0,0.95), rgba(0,8,0,0.7));
+padding: 10px 16px 12px;
+z-index: 10;
+}
 
-        .footer-note {
-            font-size: 0.6rem;
-            text-align: center;
-            color: #5b6885;
-        }
-    </style>
+#controls h2 {
+font-family: ‘Bebas Neue’, sans-serif;
+font-size: 16px;
+letter-spacing: 3px;
+color: #4eff6a88;
+margin-bottom: 8px;
+}
+
+#anim-grid {
+display: flex;
+flex-wrap: wrap;
+gap: 4px;
+max-height: 130px;
+overflow-y: auto;
+}
+
+#anim-grid::-webkit-scrollbar { width: 4px; }
+#anim-grid::-webkit-scrollbar-track { background: #111; }
+#anim-grid::-webkit-scrollbar-thumb { background: #4eff6a44; }
+
+.anim-btn {
+background: rgba(78, 255, 106, 0.06);
+border: 1px solid #4eff6a33;
+color: #4eff6a99;
+font-family: ‘Barlow Condensed’, sans-serif;
+font-size: 11px;
+letter-spacing: 1px;
+text-transform: uppercase;
+padding: 4px 10px;
+cursor: pointer;
+border-radius: 2px;
+transition: all 0.15s;
+white-space: nowrap;
+}
+
+.anim-btn:hover, .anim-btn.active {
+background: rgba(78, 255, 106, 0.18);
+border-color: #4eff6a;
+color: #4eff6a;
+box-shadow: 0 0 10px #4eff6a33;
+}
+
+#current-anim {
+position: absolute;
+top: 70px;
+left: 20px;
+font-family: ‘Bebas Neue’, sans-serif;
+font-size: 22px;
+color: #4eff6a;
+text-shadow: 0 0 20px #4eff6a;
+letter-spacing: 3px;
+z-index: 10;
+pointer-events: none;
+opacity: 0.85;
+}
+
+#hint {
+position: absolute;
+top: 70px;
+right: 20px;
+font-size: 11px;
+color: #4eff6a44;
+letter-spacing: 1px;
+z-index: 10;
+text-align: right;
+pointer-events: none;
+}
+
+#rage-bar-wrap {
+position: absolute;
+top: 68px;
+left: 50%;
+transform: translateX(-50%);
+z-index: 10;
+text-align: center;
+}
+#rage-label {
+font-family: ‘Bebas Neue’, sans-serif;
+font-size: 13px;
+letter-spacing: 3px;
+color: #4eff6a66;
+margin-bottom: 3px;
+}
+#rage-bar {
+width: 160px;
+height: 6px;
+background: #111;
+border: 1px solid #4eff6a33;
+border-radius: 3px;
+overflow: hidden;
+}
+#rage-fill {
+height: 100%;
+width: 60%;
+background: linear-gradient(to right, #00ff44, #aaff00);
+border-radius: 3px;
+transition: width 0.3s;
+box-shadow: 0 0 8px #00ff44;
+}
+</style>
+
 </head>
 <body>
-<div class="app-container">
-    <div class="content">
-        <div class="title">
-            <h1>Unity Components</h1>
-            <p>Transform · Rigidbody · Physics · Raycast · Colliders</p>
-        </div>
-
-        <div class="canvas-area">
-            <canvas id="gameCanvas" width="500" height="450"></canvas>
-        </div>
-
-        <div class="info-bar">
-            <div class="coord-box">📍 Local: <span id="localPosTxt">0.00, 0.00, 0.00</span></div>
-            <div class="coord-box">🌍 World: <span id="worldPosTxt">0.00, 0.00, 0.00</span></div>
-            <div class="status" id="statusLabel">⚡ Готов</div>
-        </div>
-
-        <div class="button-panel">
-            <button class="btn btn-primary" id="btnMove">⬆️ Move</button>
-            <button class="btn btn-primary" id="btnRotate">🔄 Rotate</button>
-            <button class="btn btn-primary" id="btnForce">💥 AddForce</button>
-            <button class="btn" id="btnJump">🦘 Jump</button>
-            <button class="btn" id="btnRaycast">🔍 Raycast</button>
-            <button class="btn btn-reset" id="btnReset">⟳ Reset</button>
-        </div>
-
-        <div class="class-tags">
-            <span class="tag">Transform</span> <span class="tag">Rigidbody</span> <span class="tag">Vector3</span>
-            <span class="tag">Quaternion</span> <span class="tag">Time.deltaTime</span> <span class="tag">ForceMode</span>
-            <span class="tag">CharacterController</span> <span class="tag">Physics.Raycast</span> <span class="tag">RaycastHit</span>
-            <span class="tag">Collider/Box/Sphere</span> <span class="tag">Mathf.SmoothDamp</span> <span class="tag">Physics2D</span>
-        </div>
-        <div class="footer-note">
-            🔄 Авто-сброс через 2.5 сек | Камера следит | Демо: 3D + 2D
-        </div>
-    </div>
+<div id="header">
+  <h1>HULK</h1>
+  <span>3D Анимация</span>
+  <span id="fps-counter">60 FPS</span>
 </div>
 
-<script type="importmap">
-    {
-        "imports": {
-            "three": "https://unpkg.com/three@0.128.0/build/three.module.js"
-        }
-    }
+<div id="current-anim">IDLE</div>
+<div id="hint">🖱 Drag: rotate &nbsp; Scroll: zoom</div>
+
+<div id="rage-bar-wrap">
+  <div id="rage-label">RAGE</div>
+  <div id="rage-bar"><div id="rage-fill"></div></div>
+</div>
+
+<div id="canvas-container">
+  <canvas id="c"></canvas>
+</div>
+
+<div id="controls">
+  <h2>▶ Анимации (53)</h2>
+  <div id="anim-grid"></div>
+</div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+
+<script>
+// ─────────────────────────────────────────
+// SCENE SETUP
+// ─────────────────────────────────────────
+const canvas = document.getElementById('c');
+const container = document.getElementById('canvas-container');
+const renderer = new THREE.WebGLRenderer({ canvas, antialias: true, alpha: true });
+renderer.shadowMap.enabled = true;
+renderer.shadowMap.type = THREE.PCFSoftShadowMap;
+renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+
+const scene = new THREE.Scene();
+scene.background = new THREE.Color(0x060c06);
+scene.fog = new THREE.FogExp2(0x060c06, 0.04);
+
+const camera = new THREE.PerspectiveCamera(55, 1, 0.1, 200);
+camera.position.set(0, 3.5, 9);
+
+// Lights
+const ambient = new THREE.AmbientLight(0x112211, 0.6);
+scene.add(ambient);
+
+const sunLight = new THREE.DirectionalLight(0x88ffaa, 1.4);
+sunLight.position.set(5, 10, 5);
+sunLight.castShadow = true;
+sunLight.shadow.mapSize.set(1024, 1024);
+scene.add(sunLight);
+
+const rimLight = new THREE.DirectionalLight(0x00ff44, 0.8);
+rimLight.position.set(-6, 4, -4);
+scene.add(rimLight);
+
+const fillLight = new THREE.PointLight(0x004422, 1.5, 20);
+fillLight.position.set(0, 2, 4);
+scene.add(fillLight);
+
+// Ground
+const groundGeo = new THREE.PlaneGeometry(40, 40);
+const groundMat = new THREE.MeshStandardMaterial({
+  color: 0x0a1a0a, roughness: 0.9, metalness: 0.1
+});
+const ground = new THREE.Mesh(groundGeo, groundMat);
+ground.rotation.x = -Math.PI / 2;
+ground.receiveShadow = true;
+scene.add(ground);
+
+// Grid
+const gridHelper = new THREE.GridHelper(40, 40, 0x1a3a1a, 0x0f200f);
+scene.add(gridHelper);
+
+// ─────────────────────────────────────────
+// HULK BODY BUILDER
+// ─────────────────────────────────────────
+function makeMat(color, roughness=0.6, metalness=0.1, emissive=0x001100) {
+  return new THREE.MeshStandardMaterial({ color, roughness, metalness, emissive });
+}
+
+const skinColor  = 0x2d8c3c;
+const skinDark   = 0x1d6628;
+const pantColor  = 0x2244aa;
+const eyeColor   = 0xffffff;
+const pupilColor = 0x004400;
+
+const hulk = new THREE.Group();
+scene.add(hulk);
+
+// Helper: box mesh
+function box(w, h, d, mat, cast=true) {
+  const m = new THREE.Mesh(new THREE.BoxGeometry(w, h, d), mat);
+  if (cast) m.castShadow = true;
+  return m;
+}
+function sphere(r, mat) {
+  const m = new THREE.Mesh(new THREE.SphereGeometry(r, 16, 12), mat);
+  m.castShadow = true;
+  return m;
+}
+function cyl(rt, rb, h, mat, seg=12) {
+  const m = new THREE.Mesh(new THREE.CylinderGeometry(rt, rb, h, seg), mat);
+  m.castShadow = true;
+  return m;
+}
+
+const skinMat  = makeMat(skinColor, 0.7, 0.1, 0x001500);
+const skinDMat = makeMat(skinDark, 0.8, 0.1, 0x000800);
+const pantMat  = makeMat(pantColor, 0.9, 0.0, 0x000011);
+const eyeMat   = makeMat(eyeColor, 0.2, 0.0, 0xaaffaa);
+const pupilMat = makeMat(pupilColor, 0.8, 0.0, 0x002200);
+
+// ── TORSO
+const torso = new THREE.Group();
+const torsoMesh = box(2.2, 2.0, 1.1, skinMat);
+torsoMesh.position.y = 0;
+torso.add(torsoMesh);
+// Pecs detail
+const pec = box(0.85, 0.55, 0.25, skinMat);
+pec.position.set(0.52, 0.3, 0.55);
+torso.add(pec);
+const pec2 = pec.clone();
+pec2.position.set(-0.52, 0.3, 0.55);
+torso.add(pec2);
+// Abs
+for (let i=0; i<3; i++) {
+  const ab = box(0.35, 0.22, 0.15, skinDMat);
+  ab.position.set(0.25, -0.1 - i*0.28, 0.55);
+  torso.add(ab);
+  const ab2 = ab.clone();
+  ab2.position.set(-0.25, -0.1 - i*0.28, 0.55);
+  torso.add(ab2);
+}
+torso.position.y = 3.0;
+hulk.add(torso);
+
+// ── HIPS
+const hips = new THREE.Group();
+const hipMesh = box(1.9, 0.7, 1.0, skinMat);
+hips.add(hipMesh);
+// Pants
+const pantsMesh = box(1.85, 0.8, 0.95, pantMat);
+pantsMesh.position.y = -0.1;
+hips.add(pantsMesh);
+hips.position.y = 1.9;
+hulk.add(hips);
+
+// ── HEAD
+const head = new THREE.Group();
+const headMesh = box(1.35, 1.3, 1.2, skinMat);
+head.add(headMesh);
+// Brow ridge
+const brow = box(1.3, 0.25, 0.35, skinDMat);
+brow.position.set(0, 0.45, 0.6);
+head.add(brow);
+// Jaw
+const jaw = box(1.1, 0.35, 0.9, skinMat);
+jaw.position.set(0, -0.5, 0.1);
+head.add(jaw);
+// Eyes
+const eyeL = sphere(0.175, eyeMat);
+eyeL.position.set(0.28, 0.22, 0.55);
+head.add(eyeL);
+const pupilL = sphere(0.1, pupilMat);
+pupilL.position.set(0.28, 0.22, 0.68);
+head.add(pupilL);
+const eyeR = eyeL.clone();
+eyeR.position.set(-0.28, 0.22, 0.55);
+head.add(eyeR);
+const pupilR = pupilL.clone();
+pupilR.position.set(-0.28, 0.22, 0.68);
+head.add(pupilR);
+// Nose
+const nose = box(0.22, 0.2, 0.25, skinDMat);
+nose.position.set(0, -0.05, 0.62);
+head.add(nose);
+// Ears
+const earL = box(0.18, 0.35, 0.2, skinDMat);
+earL.position.set(0.72, 0.1, 0);
+head.add(earL);
+const earR = earL.clone();
+earR.position.set(-0.72, 0.1, 0);
+head.add(earR);
+// Hair bumps
+for (let i=0; i<5; i++) {
+  const hair = sphere(0.12, skinDMat);
+  hair.position.set(-0.4 + i*0.2, 0.68, 0.1 + (i%2)*0.1);
+  head.add(hair);
+}
+head.position.y = 5.3;
+hulk.add(head);
+
+// ── NECK
+const neck = cyl(0.4, 0.5, 0.5, skinMat);
+neck.position.y = 4.95;
+hulk.add(neck);
+
+// ── ARM (generic builder)
+function buildArm(side) {
+  const arm = new THREE.Group();
+  // Upper arm
+  const upper = new THREE.Group();
+  const upperMesh = cyl(0.42, 0.52, 1.3, skinMat);
+  upperMesh.position.y = -0.65;
+  upper.add(upperMesh);
+  // Bicep bulge
+  const bicep = sphere(0.48, skinMat);
+  bicep.position.set(0, -0.4, 0.1);
+  upper.add(bicep);
+
+  // Elbow
+  const elbow = sphere(0.38, skinDMat);
+  elbow.position.y = -1.3;
+  upper.add(elbow);
+
+  // Lower arm
+  const lower = new THREE.Group();
+  const lowerMesh = cyl(0.32, 0.42, 1.2, skinMat);
+  lowerMesh.position.y = -0.6;
+  lower.add(lowerMesh);
+
+  // Hand
+  const hand = new THREE.Group();
+  const palm = box(0.6, 0.5, 0.28, skinMat);
+  hand.add(palm);
+  // Fingers
+  for (let f=0; f<4; f++) {
+    const finger = cyl(0.07, 0.09, 0.4, skinDMat, 6);
+    finger.position.set(-0.2 + f*0.13, -0.42, 0);
+    finger.rotation.x = 0.2;
+    hand.add(finger);
+    const tip = sphere(0.08, skinDMat);
+    tip.position.set(-0.2 + f*0.13, -0.64, 0.04);
+    hand.add(tip);
+  }
+  // Thumb
+  const thumb = cyl(0.09, 0.1, 0.35, skinDMat, 6);
+  thumb.rotation.z = side * -0.8;
+  thumb.position.set(side * 0.34, -0.2, 0.1);
+  hand.add(thumb);
+  hand.position.y = -1.22;
+  lower.add(hand);
+  lower.position.y = -1.3;
+  lower.rotation.x = -0.15;
+  upper.add(lower);
+  arm.add(upper);
+
+  arm._upper = upper;
+  arm._lower = lower;
+  arm._hand = hand;
+  return arm;
+}
+
+const armL = buildArm(1);
+armL.position.set(1.45, 4.6, 0);
+hulk.add(armL);
+const armR = buildArm(-1);
+armR.position.set(-1.45, 4.6, 0);
+hulk.add(armR);
+
+// Shoulders
+const shoulL = sphere(0.52, skinMat);
+shoulL.position.set(1.3, 4.9, 0);
+hulk.add(shoulL);
+const shoulR = sphere(0.52, skinMat);
+shoulR.position.set(-1.3, 4.9, 0);
+hulk.add(shoulR);
+
+// ── LEGS
+function buildLeg() {
+  const leg = new THREE.Group();
+  const upper = new THREE.Group();
+  const upperMesh = cyl(0.48, 0.58, 1.5, skinMat);
+  upperMesh.position.y = -0.75;
+  upper.add(upperMesh);
+  // Quad detail
+  const quad = sphere(0.5, skinMat);
+  quad.position.set(0, -0.55, 0.1);
+  upper.add(quad);
+  // Knee
+  const knee = sphere(0.42, skinDMat);
+  knee.position.y = -1.55;
+  upper.add(knee);
+  const lower = new THREE.Group();
+  const lowerMesh = cyl(0.35, 0.46, 1.4, skinMat);
+  lowerMesh.position.y = -0.7;
+  lower.add(lowerMesh);
+  // Calf
+  const calf = sphere(0.4, skinMat);
+  calf.position.set(0, -0.45, -0.05);
+  lower.add(calf);
+  // Foot
+  const foot = new THREE.Group();
+  const footMesh = box(0.55, 0.3, 0.95, skinDMat);
+  footMesh.position.set(0, -0.1, 0.2);
+  foot.add(footMesh);
+  const toes = box(0.5, 0.2, 0.25, skinDMat);
+  toes.position.set(0, -0.15, 0.72);
+  foot.add(toes);
+  foot.position.y = -1.42;
+  lower.add(foot);
+  lower.position.y = -1.55;
+  upper.add(lower);
+  leg.add(upper);
+  leg._upper = upper;
+  leg._lower = lower;
+  leg._foot = foot;
+  return leg;
+}
+
+const legL = buildLeg();
+legL.position.set(0.62, 1.5, 0);
+hulk.add(legL);
+const legR = buildLeg();
+legR.position.set(-0.62, 1.5, 0);
+hulk.add(legR);
+
+// ─────────────────────────────────────────
+// ANIMATION SYSTEM
+// ─────────────────────────────────────────
+let t = 0;
+let currentAnim = 'IDLE';
+let animTime = 0;
+
+const ANIMS = [
+  'IDLE','WALK','PUNCH','FALL',
+  'RUN','ROAR','JUMP','LAND',
+  'RAGE SMASH','GROUND POUND','CHEST BEAT',
+  'DOUBLE PUNCH','UPPERCUT','BLOCK',
+  'DODGE LEFT','DODGE RIGHT','BACKFLIP',
+  'CROUCH','CRAWL','ROLL',
+  'CLAP','SPIN ATTACK','LEAP',
+  'STOMP','GRAB','THROW',
+  'HEADBUTT','ELBOW SMASH','KICK',
+  'SWEEP KICK','TAUNT','VICTORY',
+  'DEFEAT','STUMBLE','STAGGER',
+  'PUSH','PULL','CARRY',
+  'TIRED','RECOVER','BREATHE',
+  'SCRATCH','FLEX','SHAKE',
+  'SLAM','CHARGE','SLIDE',
+  'SPLIT','TURN','BOW',
+  'SHRUG','WAVE','POINT'
+];
+
+function getAnimFn(name) {
+  const fns = {
+    'IDLE': (t) => {
+      hulk.position.y = Math.sin(t * 0.8) * 0.04;
+      torso.rotation.z = Math.sin(t * 0.6) * 0.02;
+      armL._upper.rotation.z = 0.12 + Math.sin(t * 0.8) * 0.04;
+      armR._upper.rotation.z = -0.12 - Math.sin(t * 0.8) * 0.04;
+      armL._upper.rotation.x = 0;
+      armR._upper.rotation.x = 0;
+      legL._upper.rotation.x = 0;
+      legR._upper.rotation.x = 0;
+      head.rotation.y = Math.sin(t * 0.4) * 0.05;
+      head.rotation.x = 0;
+    },
+    'WALK': (t) => {
+      const s = Math.sin(t * 3);
+      hulk.position.y = Math.abs(Math.sin(t * 3)) * 0.12;
+      torso.rotation.z = s * 0.08;
+      legL._upper.rotation.x = s * 0.55;
+      legR._upper.rotation.x = -s * 0.55;
+      legL._lower.rotation.x = Math.max(0, -s) * 0.6;
+      legR._lower.rotation.x = Math.max(0, s) * 0.6;
+      armL._upper.rotation.x = -s * 0.5;
+      armR._upper.rotation.x = s * 0.5;
+      armL._upper.rotation.z = 0.18;
+      armR._upper.rotation.z = -0.18;
+      head.rotation.x = 0;
+    },
+    'RUN': (t) => {
+      const s = Math.sin(t * 6);
+      hulk.position.y = Math.abs(s) * 0.22;
+      torso.rotation.z = s * 0.12;
+      torso.rotation.x = -0.2;
+      legL._upper.rotation.x = s * 1.0;
+      legR._upper.rotation.x = -s * 1.0;
+      legL._lower.rotation.x = Math.max(0, -s) * 1.1;
+      legR._lower.rotation.x = Math.max(0, s) * 1.1;
+      armL._upper.rotation.x = -s * 0.9;
+      armR._upper.rotation.x = s * 0.9;
+      armL._upper.rotation.z = 0.25;
+      armR._upper.rotation.z = -0.25;
+      head.rotation.x = -0.1;
+    },
+    'PUNCH': (t) => {
+      const phase = (t % 1.2) / 1.2;
+      const p = phase < 0.4 ? phase / 0.4 : phase < 0.7 ? 1 - (phase-0.4)/0.3 : 0;
+      hulk.position.y = 0;
+      armR._upper.rotation.x = -p * 1.6;
+      armR._upper.rotation.z = -0.1 - p * 0.2;
+      armR._lower.rotation.x = -p * 0.4;
+      armL._upper.rotation.z = 0.3;
+      torso.rotation.y = -p * 0.4;
+      torso.rotation.z = p * 0.1;
+    },
+    'FALL': (t) => {
+      const drop = Math.min(t * 2, 1);
+      hulk.position.y = drop < 0.5 ? 0 : -(drop-0.5)*3;
+      torso.rotation.x = drop * 1.4;
+      torso.rotation.z = Math.sin(t*4)*0.3;
+      armL._upper.rotation.x = -1.2;
+      armR._upper.rotation.x = -1.2;
+      armL._upper.rotation.z = 1.2;
+      armR._upper.rotation.z = -1.2;
+      legL._upper.rotation.x = -0.8;
+      legR._upper.rotation.x = -0.8;
+    },
+    'ROAR': (t) => {
+      hulk.position.y = 0;
+      torso.rotation.x = -0.3 + Math.sin(t*8)*0.05;
+      head.rotation.x = -0.45 + Math.sin(t*9)*0.05;
+      armL._upper.rotation.x = -0.6;
+      armR._upper.rotation.x = -0.6;
+      armL._upper.rotation.z = 0.9 + Math.sin(t*10)*0.08;
+      armR._upper.rotation.z = -0.9 - Math.sin(t*10)*0.08;
+      armL._lower.rotation.x = 0.4;
+      armR._lower.rotation.x = 0.4;
+    },
+    'JUMP': (t) => {
+      const ph = (t % 1.5) / 1.5;
+      hulk.position.y = Math.sin(ph * Math.PI) * 2.5;
+      armL._upper.rotation.x = -1.2 * Math.sin(ph * Math.PI);
+      armR._upper.rotation.x = -1.2 * Math.sin(ph * Math.PI);
+      armL._upper.rotation.z = 0.8;
+      armR._upper.rotation.z = -0.8;
+      legL._upper.rotation.x = ph < 0.5 ? -0.8 : 0;
+      legR._upper.rotation.x = ph < 0.5 ? -0.8 : 0;
+    },
+    'LAND': (t) => {
+      const ph = Math.min(t / 0.5, 1);
+      const bounce = 1 - ph;
+      hulk.position.y = -bounce * 0.5;
+      legL._upper.rotation.x = -bounce * 0.9;
+      legR._upper.rotation.x = -bounce * 0.9;
+      legL._lower.rotation.x = bounce * 0.7;
+      legR._lower.rotation.x = bounce * 0.7;
+      torso.rotation.x = bounce * 0.3;
+      armL._upper.rotation.z = 0.6 + bounce * 0.4;
+      armR._upper.rotation.z = -(0.6 + bounce * 0.4);
+    },
+    'RAGE SMASH': (t) => {
+      const s = Math.sin(t * 5);
+      hulk.position.y = Math.abs(s) * 0.08;
+      armL._upper.rotation.x = s * 1.8;
+      armR._upper.rotation.x = -s * 1.8;
+      armL._upper.rotation.z = 0.5 + s * 0.3;
+      armR._upper.rotation.z = -(0.5 + s * 0.3);
+      torso.rotation.z = s * 0.25;
+      torso.rotation.x = -0.1 + s * 0.1;
+      head.rotation.x = -0.2 + Math.sin(t*7)*0.1;
+    },
+    'GROUND POUND': (t) => {
+      const ph = (t % 1.0);
+      const up = ph < 0.4 ? ph / 0.4 : 0;
+      const dn = ph >= 0.4 && ph < 0.7 ? 1 - (ph-0.4)/0.3 : 0;
+      hulk.position.y = up * 1.5;
+      armL._upper.rotation.x = -(up + dn) * 2.0;
+      armR._upper.rotation.x = -(up + dn) * 2.0;
+      armL._upper.rotation.z = 0.7;
+      armR._upper.rotation.z = -0.7;
+      torso.rotation.x = -(up + dn) * 0.5;
+    },
+    'CHEST BEAT': (t) => {
+      const beat = Math.abs(Math.sin(t * 7));
+      armL._upper.rotation.x = -0.2 - beat * 0.6;
+      armR._upper.rotation.x = -0.2 - beat * 0.6;
+      armL._upper.rotation.z = 0.6 - beat * 0.5;
+      armR._upper.rotation.z = -(0.6 - beat * 0.5);
+      armL._lower.rotation.x = beat * 0.8;
+      armR._lower.rotation.x = beat * 0.8;
+      torso.rotation.x = -beat * 0.1;
+      hulk.position.y = beat * 0.05;
+    },
+    'DOUBLE PUNCH': (t) => {
+      const s = Math.sin(t * 4);
+      armL._upper.rotation.x = -s * 1.5;
+      armR._upper.rotation.x = s * 1.5;
+      armL._upper.rotation.z = 0.2;
+      armR._upper.rotation.z = -0.2;
+      torso.rotation.y = s * 0.3;
+    },
+    'UPPERCUT': (t) => {
+      const ph = (t % 1.0);
+      const u = ph < 0.5 ? ph * 2 : 2 - ph * 2;
+      armL._upper.rotation.x = u * -2.0;
+      armL._upper.rotation.z = 0.3 + u * 0.2;
+      armL._lower.rotation.x = -u * 0.5;
+      torso.rotation.y = u * 0.4;
+      hulk.position.y = u * 0.5;
+    },
+    'BLOCK': (t) => {
+      armL._upper.rotation.x = -0.8;
+      armR._upper.rotation.x = -0.8;
+      armL._upper.rotation.z = 0.9;
+      armR._upper.rotation.z = -0.9;
+      armL._lower.rotation.x = 1.6;
+      armR._lower.rotation.x = 1.6;
+      torso.rotation.x = 0.2;
+      hulk.position.y = Math.sin(t * 2) * 0.03;
+    },
+    'DODGE LEFT': (t) => {
+      const ph = Math.sin(t * 4);
+      hulk.position.x = ph * 1.2;
+      hulk.position.y = Math.abs(ph) * 0.1;
+      torso.rotation.z = -ph * 0.4;
+      armL._upper.rotation.z = 0.4 + ph * 0.3;
+      armR._upper.rotation.z = -0.4 + ph * 0.3;
+    },
+    'DODGE RIGHT': (t) => {
+      const ph = Math.sin(t * 4);
+      hulk.position.x = -ph * 1.2;
+      hulk.position.y = Math.abs(ph) * 0.1;
+      torso.rotation.z = ph * 0.4;
+    },
+    'BACKFLIP': (t) => {
+      const ph = (t % 1.5) / 1.5;
+      hulk.rotation.x = ph * Math.PI * 2;
+      hulk.position.y = Math.sin(ph * Math.PI) * 3;
+    },
+    'CROUCH': (t) => {
+      hulk.position.y = -1.2;
+      legL._upper.rotation.x = -1.2;
+      legR._upper.rotation.x = -1.2;
+      legL._lower.rotation.x = 1.8;
+      legR._lower.rotation.x = 1.8;
+      torso.rotation.x = 0.4;
+      armL._upper.rotation.z = 0.5;
+      armR._upper.rotation.z = -0.5;
+    },
+    'CRAWL': (t) => {
+      hulk.position.y = -1.8;
+      hulk.rotation.x = 0.3;
+      const s = Math.sin(t * 4);
+      torso.rotation.z = s * 0.15;
+      legL._upper.rotation.x = -1.5 + s * 0.5;
+      legR._upper.rotation.x = -1.5 - s * 0.5;
+      armL._upper.rotation.x = s * 0.5;
+      armR._upper.rotation.x = -s * 0.5;
+    },
+    'ROLL': (t) => {
+      hulk.rotation.z = t * 4;
+      hulk.position.y = 0.5;
+    },
+    'CLAP': (t) => {
+      const c = Math.abs(Math.sin(t * 5));
+      armL._upper.rotation.x = -0.5;
+      armR._upper.rotation.x = -0.5;
+      armL._upper.rotation.z = 0.9 - c * 0.7;
+      armR._upper.rotation.z = -(0.9 - c * 0.7);
+      armL._lower.rotation.x = 0.5 + c * 0.3;
+      armR._lower.rotation.x = 0.5 + c * 0.3;
+    },
+    'SPIN ATTACK': (t) => {
+      hulk.rotation.y = t * 4;
+      armL._upper.rotation.z = 1.4;
+      armR._upper.rotation.z = -1.4;
+      hulk.position.y = 0.15;
+    },
+    'LEAP': (t) => {
+      const ph = (t % 2.0) / 2.0;
+      hulk.position.y = ph < 0.5 ? ph * 4 : 4 - (ph-0.5)*4;
+      torso.rotation.x = (ph < 0.5 ? -ph : ph-0.5) * 0.8;
+      armL._upper.rotation.x = -1.0;
+      armR._upper.rotation.x = -1.0;
+    },
+    'STOMP': (t) => {
+      const ph = (t % 0.8) / 0.8;
+      const which = Math.floor(t / 0.8) % 2 === 0;
+      if (which) {
+        legL._upper.rotation.x = -ph * 1.5;
+        legR._upper.rotation.x = 0;
+      } else {
+        legR._upper.rotation.x = -ph * 1.5;
+        legL._upper.rotation.x = 0;
+      }
+      hulk.position.y = Math.max(0, Math.sin(t * 7) * 0.2);
+    },
+    'GRAB': (t) => {
+      armL._upper.rotation.x = -1.0 + Math.sin(t*3)*0.1;
+      armR._upper.rotation.x = -1.0 + Math.sin(t*3+1)*0.1;
+      armL._upper.rotation.z = 0.5;
+      armR._upper.rotation.z = -0.5;
+      armL._lower.rotation.x = 1.3;
+      armR._lower.rotation.x = 1.3;
+      torso.rotation.x = -0.25;
+    },
+    'THROW': (t) => {
+      const ph = (t % 1.5) / 1.5;
+      const wind = ph < 0.5 ? ph * 2 : 0;
+      const rel = ph >= 0.5 && ph < 0.8 ? (ph-0.5)/0.3 : 0;
+      armR._upper.rotation.x = -wind * 1.8 + rel * 2.5;
+      armR._upper.rotation.z = -0.3 - wind * 0.5;
+      torso.rotation.y = wind * 0.6 - rel * 0.8;
+      hulk.position.y = wind * 0.3;
+    },
+    'HEADBUTT': (t) => {
+      const ph = Math.sin(t * 4);
+      head.position.z = ph * 0.4;
+      torso.rotation.x = -ph * 0.3;
+    },
+    'ELBOW SMASH': (t) => {
+      const ph = Math.sin(t * 4);
+      armL._upper.rotation.x = -ph * 1.2;
+      armL._lower.rotation.x = ph * 1.5;
+      torso.rotation.y = ph * 0.4;
+      torso.rotation.z = -ph * 0.2;
+    },
+    'KICK': (t) => {
+      const ph = (t % 1.2) / 1.2;
+      const k = ph < 0.5 ? ph * 2 : 2 - ph * 2;
+      legL._upper.rotation.x = k * 1.8;
+      legL._lower.rotation.x = -k * 0.8;
+      torso.rotation.y = k * 0.3;
+      hulk.position.y = k * 0.2;
+    },
+    'SWEEP KICK': (t) => {
+      hulk.position.y = -0.3;
+      legL._upper.rotation.z = Math.sin(t * 4) * 0.8;
+      legR._upper.rotation.z = -Math.sin(t * 4) * 0.8;
+      torso.rotation.z = Math.sin(t * 4) * 0.15;
+    },
+    'TAUNT': (t) => {
+      armL._upper.rotation.z = 1.0;
+      armL._lower.rotation.x = 1.8;
+      torso.rotation.y = Math.sin(t * 2) * 0.25;
+      head.rotation.y = Math.sin(t * 2) * 0.2;
+      hulk.position.y = Math.sin(t * 3) * 0.06;
+    },
+    'VICTORY': (t) => {
+      hulk.position.y = Math.sin(t * 3) * 0.12;
+      armL._upper.rotation.x = -1.4 + Math.sin(t * 6) * 0.2;
+      armR._upper.rotation.x = -1.4 + Math.sin(t * 6 + 1) * 0.2;
+      armL._upper.rotation.z = 0.7;
+      armR._upper.rotation.z = -0.7;
+      head.rotation.x = -0.3;
+      torso.rotation.x = -0.1;
+    },
+    'DEFEAT': (t) => {
+      const fall = Math.min(t / 1.5, 1);
+      hulk.position.y = -fall * 1.5;
+      hulk.rotation.x = fall * 0.9;
+      armL._upper.rotation.z = fall * 1.3;
+      armR._upper.rotation.z = -fall * 1.3;
+      armL._upper.rotation.x = fall * 0.8;
+      armR._upper.rotation.x = fall * 0.8;
+      head.rotation.x = fall * 0.6;
+    },
+    'STUMBLE': (t) => {
+      const s = Math.sin(t * 4);
+      hulk.position.y = Math.abs(s) * 0.08;
+      hulk.rotation.z = s * 0.18;
+      legL._upper.rotation.x = s * 0.7;
+      legR._upper.rotation.x = -s * 0.5;
+      armL._upper.rotation.z = 0.4 + s * 0.3;
+      armR._upper.rotation.z = -0.4 - s * 0.3;
+    },
+    'STAGGER': (t) => {
+      hulk.position.x = Math.sin(t * 5) * 0.25;
+      hulk.position.y = Math.abs(Math.sin(t * 5)) * 0.1;
+      torso.rotation.z = Math.sin(t * 5) * 0.3;
+      head.rotation.z = Math.sin(t * 5 + 0.5) * 0.2;
+    },
+    'PUSH': (t) => {
+      const ph = Math.sin(t * 3) * 0.5 + 0.5;
+      armL._upper.rotation.x = -0.6 - ph * 0.6;
+      armR._upper.rotation.x = -0.6 - ph * 0.6;
+      armL._lower.rotation.x = 0.8 - ph * 0.6;
+      armR._lower.rotation.x = 0.8 - ph * 0.6;
+      torso.rotation.x = -ph * 0.25;
+      legL._upper.rotation.x = ph * 0.4;
+    },
+    'PULL': (t) => {
+      const ph = Math.sin(t * 3) * 0.5 + 0.5;
+      armL._upper.rotation.x = -1.2 + ph * 0.8;
+      armR._upper.rotation.x = -1.2 + ph * 0.8;
+      torso.rotation.x = ph * 0.35;
+      legR._upper.rotation.x = -ph * 0.4;
+    },
+    'CARRY': (t) => {
+      armL._upper.rotation.z = 0.7;
+      armR._upper.rotation.z = -0.7;
+      armL._upper.rotation.x = -0.3;
+      armR._upper.rotation.x = -0.3;
+      armL._lower.rotation.x = 1.5;
+      armR._lower.rotation.x = 1.5;
+      hulk.position.y = Math.sin(t * 1.5) * 0.06;
+      torso.rotation.z = Math.sin(t * 1.5) * 0.04;
+    },
+    'TIRED': (t) => {
+      hulk.position.y = -0.3;
+      torso.rotation.x = 0.35;
+      head.rotation.x = 0.4;
+      armL._upper.rotation.z = 0.5 + Math.sin(t*1.5)*0.04;
+      armR._upper.rotation.z = -0.5 - Math.sin(t*1.5)*0.04;
+      armL._upper.rotation.x = 0.4;
+      armR._upper.rotation.x = 0.4;
+      legL._upper.rotation.x = -0.3;
+      legR._upper.rotation.x = -0.3;
+    },
+    'RECOVER': (t) => {
+      const ph = Math.min(t / 2, 1);
+      hulk.position.y = -0.3 * (1 - ph);
+      torso.rotation.x = 0.3 * (1 - ph);
+      head.rotation.x = 0.35 * (1 - ph) + Math.sin(t*2)*0.05;
+      armL._upper.rotation.z = 0.15 + ph * 0.1;
+      armR._upper.rotation.z = -(0.15 + ph * 0.1);
+    },
+    'BREATHE': (t) => {
+      const b = Math.sin(t * 1.8);
+      torso.scale.set(1 + b*0.025, 1 + b*0.02, 1 + b*0.025);
+      hulk.position.y = b * 0.04;
+      torso.rotation.x = -b * 0.04;
+    },
+    'SCRATCH': (t) => {
+      const s = Math.sin(t * 8);
+      armR._upper.rotation.x = -0.5 + s * 0.15;
+      armR._upper.rotation.z = -0.8;
+      armR._lower.rotation.x = 1.4;
+      head.rotation.y = 0.2;
+    },
+    'FLEX': (t) => {
+      armL._upper.rotation.x = -1.2;
+      armR._upper.rotation.x = -1.2;
+      armL._upper.rotation.z = 0.8 + Math.sin(t*4)*0.05;
+      armR._upper.rotation.z = -(0.8 + Math.sin(t*4)*0.05);
+      armL._lower.rotation.x = 2.0;
+      armR._lower.rotation.x = 2.0;
+      torso.rotation.x = -0.15 + Math.sin(t*4)*0.03;
+      head.rotation.x = -0.2;
+    },
+    'SHAKE': (t) => {
+      head.rotation.y = Math.sin(t * 12) * 0.35;
+      torso.rotation.y = Math.sin(t * 10) * 0.12;
+      armL._upper.rotation.z = 0.3 + Math.sin(t*11)*0.15;
+      armR._upper.rotation.z = -(0.3 + Math.sin(t*11)*0.15);
+    },
+    'SLAM': (t) => {
+      const ph = (t % 0.9) / 0.9;
+      const u = ph < 0.35 ? ph / 0.35 : 0;
+      const d = ph >= 0.35 && ph < 0.6 ? 1 - (ph-0.35)/0.25 : 0;
+      armL._upper.rotation.x = -(u + d) * 2.2;
+      armR._upper.rotation.x = -(u + d) * 2.2;
+      armL._upper.rotation.z = 0.6;
+      armR._upper.rotation.z = -0.6;
+      torso.rotation.x = -(u + d) * 0.45;
+      hulk.position.y = (u + d) * 0.3;
+    },
+    'CHARGE': (t) => {
+      const s = Math.sin(t * 5);
+      hulk.position.y = Math.abs(s) * 0.15;
+      torso.rotation.x = -0.4;
+      head.rotation.x = -0.35;
+      legL._upper.rotation.x = s * 0.9;
+      legR._upper.rotation.x = -s * 0.9;
+      armL._upper.rotation.x = -s * 0.7;
+      armR._upper.rotation.x = s * 0.7;
+      armL._upper.rotation.z = 0.3;
+      armR._upper.rotation.z = -0.3;
+    },
+    'SLIDE': (t) => {
+      hulk.position.y = -0.8;
+      hulk.rotation.x = 0.5;
+      legL._upper.rotation.x = -0.6 + Math.sin(t*3)*0.08;
+      legR._upper.rotation.x = -0.6 - Math.sin(t*3)*0.08;
+      armL._upper.rotation.z = 1.2;
+      armR._upper.rotation.z = -1.2;
+    },
+    'SPLIT': (t) => {
+      hulk.position.y = -0.9;
+      legL._upper.rotation.z = 1.2;
+      legR._upper.rotation.z = -1.2;
+      torso.rotation.x = 0.1;
+      armL._upper.rotation.z = 0.5;
+      armR._upper.rotation.z = -0.5;
+    },
+    'TURN': (t) => {
+      hulk.rotation.y = t * 2;
+      armL._upper.rotation.z = 0.25 + Math.sin(t*2)*0.08;
+      armR._upper.rotation.z = -(0.25 + Math.sin(t*2)*0.08);
+    },
+    'BOW': (t) => {
+      const ph = Math.sin(t * 2) * 0.5 + 0.5;
+      torso.rotation.x = ph * 0.8;
+      head.rotation.x = ph * 0.6;
+      armL._upper.rotation.z = 0.3 + ph * 0.2;
+      armR._upper.rotation.z = -(0.3 + ph * 0.2);
+    },
+    'SHRUG': (t) => {
+      const sh = Math.abs(Math.sin(t * 2.5));
+      armL._upper.rotation.z = 0.8 + sh * 0.4;
+      armR._upper.rotation.z = -(0.8 + sh * 0.4);
+      head.rotation.z = sh * 0.12;
+      torso.rotation.z = sh * 0.06;
+    },
+    'WAVE': (t) => {
+      armR._upper.rotation.x = -1.2;
+      armR._upper.rotation.z = -0.4;
+      armR._lower.rotation.x = Math.sin(t * 6) * 0.5 + 0.9;
+      head.rotation.y = 0.15;
+    },
+    'POINT': (t) => {
+      armR._upper.rotation.x = -0.8 + Math.sin(t*3)*0.05;
+      armR._upper.rotation.z = -0.3;
+      armR._lower.rotation.x = 0.4;
+      head.rotation.y = -0.2;
+      head.rotation.x = -0.1;
+    },
+  };
+  return fns[name] || fns['IDLE'];
+}
+
+// Reset all rotations
+function resetPose() {
+  hulk.position.set(0, 0, 0);
+  hulk.rotation.set(0, 0, 0);
+  hulk.scale.set(1, 1, 1);
+  torso.rotation.set(0, 0, 0);
+  torso.scale.set(1, 1, 1);
+  head.rotation.set(0, 0, 0);
+  head.position.set(0, 5.3, 0);
+  armL._upper.rotation.set(0, 0, 0);
+  armR._upper.rotation.set(0, 0, 0);
+  armL._lower.rotation.set(-0.15, 0, 0);
+  armR._lower.rotation.set(-0.15, 0, 0);
+  legL._upper.rotation.set(0, 0, 0);
+  legR._upper.rotation.set(0, 0, 0);
+  legL._lower.rotation.set(0, 0, 0);
+  legR._lower.rotation.set(0, 0, 0);
+}
+
+// ─────────────────────────────────────────
+// UI: ANIMATION BUTTONS
+// ─────────────────────────────────────────
+const grid = document.getElementById('anim-grid');
+const label = document.getElementById('current-anim');
+let activeBtn = null;
+
+ANIMS.forEach(name => {
+  const btn = document.createElement('button');
+  btn.className = 'anim-btn';
+  btn.textContent = name;
+  if (name === 'IDLE') { btn.classList.add('active'); activeBtn = btn; }
+  btn.onclick = () => {
+    if (activeBtn) activeBtn.classList.remove('active');
+    btn.classList.add('active');
+    activeBtn = btn;
+    currentAnim = name;
+    animTime = 0;
+    resetPose();
+    label.textContent = name;
+    // rage bar
+    const rageMap = {'RAGE SMASH':1,'ROAR':0.95,'GROUND POUND':0.9,'CHEST BEAT':0.85,'SLAM':0.88,'STOMP':0.8,'CHARGE':0.75,'SPIN ATTACK':0.7,'DOUBLE PUNCH':0.7,'UPPERCUT':0.65,'PUNCH':0.6,'JUMP':0.55,'LEAP':0.5,'RUN':0.45,'BACKFLIP':0.4,'KICK':0.5,'SWEEP KICK':0.45,'THROW':0.55,'HEADBUTT':0.6,'ELBOW SMASH':0.55,'VICTORY':0.3,'DEFEAT':0.2,'IDLE':0.1,'BOW':0.05,'WAVE':0.05};
+    const rage = rageMap[name] ?? 0.3;
+    document.getElementById('rage-fill').style.width = (rage * 100) + '%';
+  };
+  grid.appendChild(btn);
+});
+
+// ─────────────────────────────────────────
+// ORBIT CONTROLS (manual)
+// ─────────────────────────────────────────
+let isDragging = false, lastX = 0, lastY = 0;
+let camTheta = 0, camPhi = Math.PI / 6, camDist = 9;
+
+container.addEventListener('mousedown', e => { isDragging = true; lastX = e.clientX; lastY = e.clientY; });
+window.addEventListener('mouseup', () => isDragging = false);
+window.addEventListener('mousemove', e => {
+  if (!isDragging) return;
+  camTheta -= (e.clientX - lastX) * 0.008;
+  camPhi   -= (e.clientY - lastY) * 0.006;
+  camPhi = Math.max(0.05, Math.min(Math.PI / 2.2, camPhi));
+  lastX = e.clientX; lastY = e.clientY;
+});
+container.addEventListener('wheel', e => {
+  camDist += e.deltaY * 0.01;
+  camDist = Math.max(3, Math.min(22, camDist));
+});
+// Touch
+let lastTouchX = 0, lastTouchY = 0;
+container.addEventListener('touchstart', e => { lastTouchX = e.touches[0].clientX; lastTouchY = e.touches[0].clientY; });
+container.addEventListener('touchmove', e => {
+  camTheta -= (e.touches[0].clientX - lastTouchX) * 0.012;
+  camPhi   -= (e.touches[0].clientY - lastTouchY) * 0.009;
+  camPhi = Math.max(0.05, Math.min(Math.PI / 2.2, camPhi));
+  lastTouchX = e.touches[0].clientX; lastTouchY = e.touches[0].clientY;
+});
+
+// ─────────────────────────────────────────
+// PARTICLES — Rage dust
+// ─────────────────────────────────────────
+const particles = [];
+const particleGeo = new THREE.SphereGeometry(0.05, 4, 4);
+const particleMat = new THREE.MeshBasicMaterial({ color: 0x44ff66, transparent: true });
+
+for (let i = 0; i < 30; i++) {
+  const p = new THREE.Mesh(particleGeo, particleMat.clone());
+  p.visible = false;
+  scene.add(p);
+  particles.push({ mesh: p, vel: new THREE.Vector3(), life: 0, maxLife: 0 });
+}
+
+function spawnParticle() {
+  const p = particles.find(p => p.life <= 0);
+  if (!p) return;
+  p.life = 1;
+  p.maxLife = 0.5 + Math.random() * 0.5;
+  p.mesh.position.set(
+    hulk.position.x + (Math.random()-0.5)*2,
+    hulk.position.y + 1 + Math.random() * 3,
+    hulk.position.z + (Math.random()-0.5)*2
+  );
+  p.vel.set((Math.random()-0.5)*0.08, 0.05 + Math.random()*0.08, (Math.random()-0.5)*0.08);
+  p.mesh.visible = true;
+}
+
+// ─────────────────────────────────────────
+// RESIZE
+// ─────────────────────────────────────────
+function resize() {
+  const w = container.clientWidth;
+  const h = container.clientHeight;
+  renderer.setSize(w, h);
+  camera.aspect = w / h;
+  camera.updateProjectionMatrix();
+}
+resize();
+window.addEventListener('resize', resize);
+
+// ─────────────────────────────────────────
+// FPS counter
+// ─────────────────────────────────────────
+let frameCount = 0, fpsTime = 0, fps = 60;
+const fpsEl = document.getElementById('fps-counter');
+
+// ─────────────────────────────────────────
+// RENDER LOOP
+// ─────────────────────────────────────────
+const clock = new THREE.Clock();
+
+function animate() {
+  requestAnimationFrame(animate);
+  const delta = clock.getDelta();
+  t += delta;
+  animTime += delta;
+  frameCount++;
+  fpsTime += delta;
+  if (fpsTime >= 1) { fps = Math.round(frameCount / fpsTime); fpsEl.textContent = fps + ' FPS'; frameCount = 0; fpsTime = 0; }
+
+  // Camera orbit
+  camera.position.x = Math.sin(camTheta) * Math.cos(camPhi) * camDist;
+  camera.position.y = Math.sin(camPhi) * camDist + 2.5;
+  camera.position.z = Math.cos(camTheta) * Math.cos(camPhi) * camDist;
+  camera.lookAt(0, 3, 0);
+
+  // Apply animation
+  resetPose();
+  getAnimFn(currentAnim)(animTime);
+
+  // Clamp hulk Y
+  if (hulk.position.y < -2) hulk.position.y = -2;
+
+  // Particle spawn for energetic anims
+  const energeticAnims = ['RAGE SMASH','ROAR','GROUND POUND','SLAM','CHEST BEAT','STOMP','CHARGE','SPIN ATTACK'];
+  if (energeticAnims.includes(currentAnim) && Math.random() < 0.3) spawnParticle();
+
+  // Update particles
+  particles.forEach(p => {
+    if (p.life <= 0) return;
+    p.life -= delta / p.maxLife;
+    if (p.life <= 0) { p.mesh.visible = false; return; }
+    p.mesh.position.addScaledVector(p.vel, 1);
+    p.mesh.material.opacity = p.life * 0.7;
+    p.mesh.scale.setScalar(0.5 + p.life * 0.8);
+  });
+
+  // Glow pulsing
+  const glowIntensity = 0.5 + Math.sin(t * 2) * 0.2;
+  fillLight.intensity = glowIntensity;
+  rimLight.intensity = 0.6 + Math.sin(t * 1.5) * 0.2;
+
+  renderer.render(scene, camera);
+}
+
+animate();
 </script>
 
-<script type="module">
-    import * as THREE from 'three';
-
-    // --- ИНИЦИАЛИЗАЦИЯ СЦЕНЫ ---
-    const canvas = document.getElementById('gameCanvas');
-    const scene = new THREE.Scene();
-    scene.background = new THREE.Color(0x06080f);
-    scene.fog = new THREE.FogExp2(0x06080f, 0.012);
-
-    // Камера с динамическим следованием
-    const camera = new THREE.PerspectiveCamera(45, 1, 0.1, 1000);
-    camera.position.set(5, 3.5, 7);
-    
-    const renderer = new THREE.WebGLRenderer({ canvas, antialias: true });
-    
-    // Освещение
-    const ambient = new THREE.AmbientLight(0x404060);
-    scene.add(ambient);
-    const mainLight = new THREE.DirectionalLight(0xfff5e0, 1.2);
-    mainLight.position.set(4, 8, 3);
-    mainLight.castShadow = true;
-    mainLight.receiveShadow = true;
-    scene.add(mainLight);
-    const fillLight = new THREE.PointLight(0x4466aa, 0.4);
-    fillLight.position.set(-2, 3, 4);
-    scene.add(fillLight);
-    const backLight = new THREE.PointLight(0xffaa66, 0.3);
-    backLight.position.set(0, 2, -5);
-    scene.add(backLight);
-    
-    // --- ПОЛ (Ground + Collider) ---
-    const groundMat = new THREE.MeshStandardMaterial({ color: 0x2a3850, roughness: 0.7, metalness: 0.1 });
-    const groundPlane = new THREE.Mesh(new THREE.PlaneGeometry(12, 10), groundMat);
-    groundPlane.rotation.x = -Math.PI / 2;
-    groundPlane.position.y = -1.2;
-    groundPlane.receiveShadow = true;
-    scene.add(groundPlane);
-    
-    // Сетка для референса
-    const grid = new THREE.GridHelper(14, 20, 0x6a8cff, 0x335588);
-    grid.position.y = -1.1;
-    scene.add(grid);
-    
-    // --- ДЕМОНСТРАЦИОННЫЕ КОЛЛАЙДЕРЫ (Collider, BoxCollider, SphereCollider, CapsuleCollider, MeshCollider) ---
-    // Красный куб (BoxCollider)
-    const boxCol = new THREE.Mesh(new THREE.BoxGeometry(0.9, 0.9, 0.9), new THREE.MeshStandardMaterial({ color: 0xef6a4a, emissive: 0x331100 }));
-    boxCol.position.set(3.2, -0.4, 2.2);
-    boxCol.castShadow = true;
-    scene.add(boxCol);
-    
-    // Синяя сфера (SphereCollider)
-    const sphereCol = new THREE.Mesh(new THREE.SphereGeometry(0.65, 32, 16), new THREE.MeshStandardMaterial({ color: 0x4aa8ef, roughness: 0.3 }));
-    sphereCol.position.set(-2.8, -0.5, 2.8);
-    sphereCol.castShadow = true;
-    scene.add(sphereCol);
-    
-    // Фиолетовый цилиндр (CapsuleCollider стиль)
-    const capsuleCol = new THREE.Mesh(new THREE.CylinderGeometry(0.55, 0.55, 1.1, 12), new THREE.MeshStandardMaterial({ color: 0xaa66ff }));
-    capsuleCol.position.set(0, -0.5, 3.4);
-    capsuleCol.castShadow = true;
-    scene.add(capsuleCol);
-    
-    // Тор (MeshCollider)
-    const torusCol = new THREE.Mesh(new THREE.TorusGeometry(0.7, 0.18, 20, 40), new THREE.MeshStandardMaterial({ color: 0x66cc99 }));
-    torusCol.position.set(3.0, -0.4, -2.2);
-    torusCol.rotation.x = Math.PI / 2;
-    torusCol.castShadow = true;
-    scene.add(torusCol);
-    
-    // 2D объект (Physics2D, Rigidbody2D визуализация) — спрайт с надписью 2D
-    const canvas2d = document.createElement('canvas');
-    canvas2d.width = 64;
-    canvas2d.height = 64;
-    const ctx = canvas2d.getContext('2d');
-    ctx.fillStyle = '#f5a142';
-    ctx.beginPath();
-    ctx.arc(32, 32, 28, 0, 2*Math.PI);
-    ctx.fill();
-    ctx.fillStyle = '#1e1e2a';
-    ctx.font = 'bold 22px monospace';
-    ctx.fillText("2D", 20, 44);
-    const tex2d = new THREE.CanvasTexture(canvas2d);
-    const physics2dObj = new THREE.Mesh(new THREE.PlaneGeometry(1.1, 1.1), new THREE.MeshStandardMaterial({ map: tex2d, side: THREE.DoubleSide }));
-    physics2dObj.position.set(-2.5, 0.2, -2.8);
-    scene.add(physics2dObj);
-    
-    // --- ГЛАВНЫЙ ИГРОК (Cube — демонстрирует Transform, Rigidbody, CharacterController-like) ---
-    const playerMat = new THREE.MeshStandardMaterial({ color: 0xffbb77, emissive: 0x442200, metalness: 0.3 });
-    const player = new THREE.Mesh(new THREE.BoxGeometry(0.85, 0.85, 0.85), playerMat);
-    player.castShadow = true;
-    player.receiveShadow = true;
-    scene.add(player);
-    
-    // Начальное положение
-    const startPos = new THREE.Vector3(0, 0.2, 0);
-    const startRotY = 0;
-    player.position.copy(startPos);
-    player.rotation.y = 0;
-    
-    // Физическое состояние (имитация Rigidbody velocity + ForceMode)
-    let velocity = new THREE.Vector3(0, 0, 0);
-    let isGrounded = true;
-    let activeAction = false;
-    let autoResetTimer = null;
-    let currentActionName = "";
-    
-    // Raycast визуализация
-    let rayLineObj = null;
-    
-    // Обновление UI координат (Vector3 local vs world)
-    function updateCoords() {
-        const local = player.position;
-        const world = player.getWorldPosition(new THREE.Vector3());
-        document.getElementById('localPosTxt').innerText = `${local.x.toFixed(2)}, ${local.y.toFixed(2)}, ${local.z.toFixed(2)}`;
-        document.getElementById('worldPosTxt').innerText = `${world.x.toFixed(2)}, ${world.y.toFixed(2)}, ${world.z.toFixed(2)}`;
-    }
-    
-    // Полный сброс состояния
-    function fullReset(keepTimer = false) {
-        if (autoResetTimer) { clearTimeout(autoResetTimer); autoResetTimer = null; }
-        velocity.set(0, 0, 0);
-        player.position.copy(startPos);
-        player.rotation.y = startRotY;
-        activeAction = false;
-        if (rayLineObj) { scene.remove(rayLineObj); rayLineObj = null; }
-        updateCoords();
-        document.getElementById('statusLabel').innerHTML = "🟢 Готов";
-        currentActionName = "";
-        isGrounded = true;
-    }
-    
-    // Авто-сброс после действия
-    function scheduleReset(action) {
-        if (autoResetTimer) clearTimeout(autoResetTimer);
-        autoResetTimer = setTimeout(() => {
-            fullReset(true);
-            document.getElementById('statusLabel').innerHTML = `✅ ${action} завершён → сброс`;
-            activeAction = false;
-        }, 2500);
-    }
-    
-    // --- ДЕЙСТВИЯ (имитация Unity-методов) ---
-    
-    // 1. Transform Move (Vector3.Translate)
-    function doMove() {
-        if (activeAction) fullReset(true);
-        activeAction = true;
-        currentActionName = "Move";
-        document.getElementById('statusLabel').innerHTML = "⬆️ Move (Transform + Vector3)";
-        const startX = player.position.x;
-        const targetX = 2.3;
-        const duration = 550;
-        const startTime = performance.now();
-        
-        function animateMove(now) {
-            const t = Math.min(1, (now - startTime) / duration);
-            const ease = 1 - Math.pow(1 - t, 2);
-            player.position.x = startX + (targetX - startX) * ease;
-            updateCoords();
-            if (t < 1) {
-                requestAnimationFrame(animateMove);
-            } else {
-                // Возврат
-                const revertStart = performance.now();
-                const fromX = player.position.x;
-                function revert(nowR) {
-                    const tR = Math.min(1, (nowR - revertStart) / 450);
-                    player.position.x = fromX * (1 - tR);
-                    updateCoords();
-                    if (tR < 1) requestAnimationFrame(revert);
-                    else {
-                        player.position.x = startX;
-                        updateCoords();
-                        scheduleReset("Move");
-                        activeAction = false;
-                    }
-                }
-                requestAnimationFrame(revert);
-            }
-        }
-        requestAnimationFrame(animateMove);
-    }
-    
-    // 2. Rotate (Quaternion / Euler)
-    function doRotate() {
-        if (activeAction) fullReset(true);
-        activeAction = true;
-        currentActionName = "Rotate";
-        document.getElementById('statusLabel').innerHTML = "🔄 Rotate (Quaternion * Euler)";
-        const startRot = player.rotation.y;
-        const targetRot = startRot + Math.PI * 1.6;
-        const duration = 650;
-        const startTime = performance.now();
-        
-        function animateRot(now) {
-            let t = Math.min(1, (now - startTime) / duration);
-            player.rotation.y = startRot + (targetRot - startRot) * t;
-            if (t < 1) {
-                requestAnimationFrame(animateRot);
-            } else {
-                const revertStart = performance.now();
-                function revertRot(nowR) {
-                    let tR = Math.min(1, (nowR - revertStart) / 500);
-                    player.rotation.y = targetRot * (1 - tR);
-                    if (tR < 1) requestAnimationFrame(revertRot);
-                    else {
-                        player.rotation.y = startRot;
-                        scheduleReset("Rotate");
-                        activeAction = false;
-                    }
-                }
-                requestAnimationFrame(revertRot);
-            }
-        }
-        requestAnimationFrame(animateRot);
-    }
-    
-    // 3. AddForce (ForceMode.Impulse + физика, коллизии)
-    function doAddForce() {
-        if (activeAction) fullReset(true);
-        activeAction = true;
-        currentActionName = "Force";
-        document.getElementById('statusLabel').innerHTML = "💥 AddForce (ForceMode.Impulse)";
-        velocity.set(4.5, 3.2, 3.8);
-        let lastTime = performance.now();
-        let activeForce = true;
-        
-        function updateForcePhysics() {
-            if (!activeForce) return;
-            const now = performance.now();
-            let dt = Math.min(0.033, (now - lastTime) / 1000);
-            lastTime = now;
-            // Гравитация
-            velocity.y -= 9.8 * dt;
-            let newPos = player.position.clone();
-            newPos.x += velocity.x * dt;
-            newPos.y += velocity.y * dt;
-            newPos.z += velocity.z * dt;
-            
-            // Коллизия с полом
-            if (newPos.y - 0.45 < -1.2) {
-                newPos.y = -1.2 + 0.45;
-                velocity.y = -velocity.y * 0.5;
-                if (Math.abs(velocity.y) < 0.3) velocity.y = 0;
-            }
-            // Столкновения с демо-коллайдерами (простая реакция)
-            // BoxCollider
-            if (Math.abs(newPos.x - boxCol.position.x) < 0.9 && Math.abs(newPos.z - boxCol.position.z) < 0.9 && Math.abs(newPos.y - boxCol.position.y) < 0.9) {
-                velocity.x *= -0.6;
-                velocity.z *= -0.6;
-                newPos.x = player.position.x;
-                newPos.z = player.position.z;
-            }
-            // SphereCollider
-            const distToSphere = newPos.distanceTo(sphereCol.position);
-            if (distToSphere < 1.0) {
-                const dir = newPos.clone().sub(sphereCol.position).normalize();
-                velocity.x = dir.x * 2.8;
-                velocity.z = dir.z * 2.8;
-            }
-            // CapsuleCollider
-            if (Math.abs(newPos.x - capsuleCol.position.x) < 0.8 && Math.abs(newPos.z - capsuleCol.position.z) < 0.8 && Math.abs(newPos.y - capsuleCol.position.y) < 0.8) {
-                velocity.x = -velocity.x * 0.8;
-                velocity.z = -velocity.z * 0.8;
-            }
-            
-            player.position.copy(newPos);
-            velocity.x *= 0.995;
-            velocity.z *= 0.995;
-            updateCoords();
-            
-            if (Math.abs(velocity.x) < 0.08 && Math.abs(velocity.z) < 0.08 && player.position.y <= -0.5 && Math.abs(velocity.y) < 0.2) {
-                activeForce = false;
-                scheduleReset("AddForce");
-                activeAction = false;
-            } else {
-                requestAnimationFrame(updateForcePhysics);
-            }
-        }
-        lastTime = performance.now();
-        requestAnimationFrame(updateForcePhysics);
-    }
-    
-    // 4. Jump (CharacterController.Jump)
-    function doJump() {
-        if (activeAction) fullReset(true);
-        if (!isGrounded) return;
-        activeAction = true;
-        currentActionName = "Jump";
-        document.getElementById('statusLabel').innerHTML = "🦘 Jump (CharacterController)";
-        velocity.y = 5.2;
-        isGrounded = false;
-        let jumpActive = true;
-        let lastJumpTime = performance.now();
-        
-        function updateJump() {
-            if (!jumpActive) return;
-            const now = performance.now();
-            let dt = Math.min(0.033, (now - lastJumpTime) / 1000);
-            lastJumpTime = now;
-            velocity.y -= 12 * dt;
-            let newY = player.position.y + velocity.y * dt;
-            if (newY - 0.45 <= -1.2) {
-                newY = -1.2 + 0.45;
-                velocity.y = 0;
-                isGrounded = true;
-                jumpActive = false;
-                scheduleReset("Jump");
-                activeAction = false;
-            }
-            player.position.y = newY;
-            updateCoords();
-            if (jumpActive) requestAnimationFrame(updateJump);
-        }
-        lastJumpTime = performance.now();
-        requestAnimationFrame(updateJump);
-    }
-    
-    // 5. Raycast (Physics.Raycast + RaycastHit)
-    function doRaycast() {
-        if (activeAction) fullReset(true);
-        activeAction = true;
-        currentActionName = "Raycast";
-        document.getElementById('statusLabel').innerHTML = "🔍 Raycast (Physics.Raycast + RaycastHit)";
-        if (rayLineObj) scene.remove(rayLineObj);
-        const origin = player.position.clone();
-        const direction = new THREE.Vector3(1.2, -0.2, 1.5).normalize();
-        const rayLen = 4.2;
-        const points = [origin, origin.clone().add(direction.clone().multiplyScalar(rayLen))];
-        const lineGeo = new THREE.BufferGeometry().setFromPoints(points);
-        const lineMat = new THREE.LineBasicMaterial({ color: 0xff5577 });
-        rayLineObj = new THREE.Line(lineGeo, lineMat);
-        scene.add(rayLineObj);
-        
-        // Проверка попадания по демо-объектам
-        const targets = [boxCol, sphereCol, capsuleCol, torusCol];
-        let hitTarget = null;
-        let minDist = rayLen;
-        for (let obj of targets) {
-            const objPos = obj.position;
-            const toObj = objPos.clone().sub(origin);
-            const proj = toObj.dot(direction);
-            if (proj > 0 && proj < rayLen) {
-                const perp = toObj.clone().sub(direction.clone().multiplyScalar(proj)).length();
-                const radius = 0.75;
-                if (perp < radius && proj < minDist) {
-                    minDist = proj;
-                    hitTarget = obj;
-                }
-            }
-        }
-        if (hitTarget) {
-            const originalColor = hitTarget.material.color.getHex();
-            hitTarget.material.color.setHex(0xffaa44);
-            document.getElementById('statusLabel').innerHTML = `🎯 Raycast HIT: ${hitTarget.geometry.type}`;
-            setTimeout(() => { if (hitTarget) hitTarget.material.color.setHex(originalColor); }, 500);
-        } else {
-            document.getElementById('statusLabel').innerHTML = `❌ Raycast MISS | Physics2D проверен`;
-        }
-        
-        setTimeout(() => {
-            if (rayLineObj) scene.remove(rayLineObj);
-            rayLineObj = null;
-            scheduleReset("Raycast");
-            activeAction = false;
-        }, 1500);
-    }
-    
-    // --- КАМЕРА СЛЕЖЕНИЯ (Smooth Follow) ---
-    function updateCamera() {
-        const targetPos = player.position.clone();
-        const desiredOffset = new THREE.Vector3(-2.8, 2.8, 5.2);
-        const desiredPos = targetPos.clone().add(desiredOffset);
-        camera.position.lerp(desiredPos, 0.08);
-        camera.lookAt(targetPos);
-    }
-    
-    // --- БАЗОВАЯ ФИЗИКА ГРАВИТАЦИИ (если нет активного действия) ---
-    let lastFrameTime = 0;
-    function baseGravityAndUpdate(now) {
-        requestAnimationFrame(baseGravityAndUpdate);
-        const delta = Math.min(0.033, (now - lastFrameTime) / 1000);
-        lastFrameTime = now;
-        
-        if (!activeAction && !isGrounded) {
-            velocity.y -= 9.8 * delta;
-            let newY = player.position.y + velocity.y * delta;
-            if (newY - 0.45 <= -1.2) {
-                newY = -1.2 + 0.45;
-                velocity.y = 0;
-                isGrounded = true;
-            } else {
-                isGrounded = false;
-            }
-            player.position.y = newY;
-            updateCoords();
-        }
-        if (!activeAction && isGrounded && player.position.y > 0.15) {
-            // мягкое приземление
-            player.position.y += (0.2 - player.position.y) * 0.2;
-            updateCoords();
-        }
-        updateCamera();
-        renderer.render(scene, camera);
-    }
-    
-    // --- ПОДКЛЮЧЕНИЕ КНОПОК ---
-    document.getElementById('btnMove').addEventListener('click', doMove);
-    document.getElementById('btnRotate').addEventListener('click', doRotate);
-    document.getElementById('btnForce').addEventListener('click', doAddForce);
-    document.getElementById('btnJump').addEventListener('click', doJump);
-    document.getElementById('btnRaycast').addEventListener('click', doRaycast);
-    document.getElementById('btnReset').addEventListener('click', () => {
-        if (autoResetTimer) clearTimeout(autoResetTimer);
-        fullReset(false);
-        document.getElementById('statusLabel').innerHTML = "⟳ Ручной сброс";
-        activeAction = false;
-    });
-    
-    // Старт
-    function resizeCanvas() {
-        const container = document.querySelector('.canvas-area');
-        const width = container.clientWidth;
-        const height = container.clientHeight;
-        renderer.setSize(width, height);
-        camera.aspect = width / height;
-        camera.updateProjectionMatrix();
-    }
-    window.addEventListener('resize', resizeCanvas);
-    resizeCanvas();
-    
-    fullReset(false);
-    updateCoords();
-    lastFrameTime = performance.now();
-    requestAnimationFrame(baseGravityAndUpdate);
-    
-    // Доп. отображение информации о коллайдерах
-    console.log("Demo запущен: Transform, Rigidbody, Physics, Raycast, Colliders (Box/Sphere/Capsule/Mesh), ForceMode, Quaternion");
-</script>
 </body>
 </html>
