@@ -14,7 +14,7 @@
   }
   canvas { display:block; touch-action:none; }
   #hint-box {
-    position: fixed; bottom: 130px; left: 50%; transform: translateX(-50%);
+    position: fixed; bottom: 160px; left: 50%; transform: translateX(-50%);
     background: rgba(0,0,0,0.82); border: 1px solid rgba(180,255,180,0.35);
     border-radius: 14px; padding: 10px 20px; color: #c8f0c8;
     font-size: 13px; text-align: center; max-width: 310px;
@@ -23,26 +23,77 @@
     box-shadow: 0 0 20px rgba(0,200,80,0.1);
   }
   #hint-box.visible { opacity: 1; }
+
+  /* ── CONTROLS LAYOUT ── */
   #controls {
-    position: fixed; bottom: 28px; left: 0; right: 0;
-    display: flex; justify-content: center; gap: 16px;
+    position: fixed; bottom: 20px; left: 0; right: 0;
+    display: flex; justify-content: space-between;
+    align-items: flex-end;
+    padding: 0 24px;
     z-index: 10;
+    pointer-events: none;
   }
-  .btn {
-    width: 64px; height: 64px; border-radius: 50%;
-    border: 1.5px solid rgba(180,220,180,0.4);
-    background: rgba(0,25,0,0.75);
-    color: #c8f0c8; font-size: 24px;
+
+  /* D-PAD (left side) */
+  #dpad {
+    pointer-events: all;
+    position: relative;
+    width: 148px; height: 148px;
+    flex-shrink: 0;
+  }
+  .dpad-btn {
+    position: absolute;
+    width: 48px; height: 48px;
+    border-radius: 10px;
+    border: 1.5px solid rgba(180,220,180,0.35);
+    background: rgba(0,22,0,0.78);
+    color: #b0e8b0; font-size: 20px;
     display: flex; align-items: center; justify-content: center;
     cursor: pointer; user-select: none;
-    box-shadow: 0 0 14px rgba(80,200,80,0.15), inset 0 1px 0 rgba(255,255,255,0.05);
+    box-shadow: 0 0 10px rgba(60,180,60,0.12), inset 0 1px 0 rgba(255,255,255,0.04);
+    -webkit-tap-highlight-color: transparent;
+    transition: background 0.1s, transform 0.07s;
+  }
+  .dpad-btn:active, .dpad-btn.pressed { background: rgba(0,60,0,0.95); transform: scale(0.88); }
+
+  /* cross layout: up center, left/right sides, down center */
+  #btn-up    { top: 0;    left: 50px; }
+  #btn-left  { top: 50px; left: 0;    }
+  #btn-center{ top: 50px; left: 50px; background: rgba(0,10,0,0.5); border-color: rgba(80,120,80,0.2); pointer-events:none; }
+  #btn-right { top: 50px; left: 100px;}
+  #btn-down  { top: 100px;left: 50px; }
+
+  /* RIGHT SIDE: jump + web stacked */
+  #right-btns {
+    pointer-events: all;
+    display: flex;
+    flex-direction: column;
+    gap: 14px;
+    align-items: center;
+    flex-shrink: 0;
+  }
+
+  .action-btn {
+    width: 64px; height: 64px; border-radius: 50%;
+    border: 1.5px solid rgba(100,160,255,0.45);
+    background: rgba(0,15,35,0.8);
+    color: #a8d4ff; font-size: 26px;
+    display: flex; align-items: center; justify-content: center;
+    cursor: pointer; user-select: none;
+    box-shadow: 0 0 14px rgba(80,140,255,0.15), inset 0 1px 0 rgba(255,255,255,0.05);
     -webkit-tap-highlight-color: transparent;
     transition: background 0.12s, transform 0.08s;
   }
-  .btn:active { background: rgba(0,70,0,0.95); transform: scale(0.88); }
-  #btn-jump { background: rgba(0,15,35,0.8); border-color: rgba(100,160,255,0.45); color: #a8d4ff; }
+  .action-btn:active { transform: scale(0.88); }
   #btn-jump:active { background: rgba(0,40,90,0.95); }
-  #btn-web.active { background: rgba(0,55,0,0.95); border-color: rgba(100,255,100,0.7); }
+
+  #btn-web {
+    border-color: rgba(180,220,180,0.4);
+    background: rgba(0,22,0,0.8);
+    color: #c8f0c8; font-size: 22px;
+  }
+  #btn-web:active, #btn-web.active { background: rgba(0,55,0,0.95); border-color: rgba(100,255,100,0.7); }
+
   #status {
     position: fixed; top: 16px; left: 16px; right: 16px;
     display: flex; justify-content: space-between;
@@ -58,12 +109,24 @@
   <span id="mode-lbl">ползти</span>
 </div>
 <div id="hint-box"></div>
+
 <div id="controls">
-  <div class="btn" id="btn-left">◀</div>
-  <div class="btn" id="btn-jump">↑</div>
-  <div class="btn" id="btn-right">▶</div>
-  <div class="btn" id="btn-web" style="font-size:18px;">🕸</div>
+  <!-- LEFT: D-PAD -->
+  <div id="dpad">
+    <div class="dpad-btn" id="btn-up">▲</div>
+    <div class="dpad-btn" id="btn-left">◀</div>
+    <div class="dpad-btn" id="btn-center">·</div>
+    <div class="dpad-btn" id="btn-right">▶</div>
+    <div class="dpad-btn" id="btn-down">▼</div>
+  </div>
+
+  <!-- RIGHT: Jump + Web -->
+  <div id="right-btns">
+    <div class="action-btn" id="btn-jump">↑</div>
+    <div class="action-btn" id="btn-web">🕸</div>
+  </div>
 </div>
+
 <script>
 const canvas = document.getElementById('c');
 const ctx = canvas.getContext('2d');
@@ -81,7 +144,7 @@ function hint(msg, dur=3200) {
   hintTmr = setTimeout(() => hintEl.classList.remove('visible'), dur);
 }
 
-// ── STARS (pre-generated) ─────────────────────────
+// ── STARS ─────────────────────────────────────────
 const stars = Array.from({length:60}, () => ({
   x: Math.random()*W, y: Math.random()*H*0.55,
   r: 0.5 + Math.random()*1.2,
@@ -114,16 +177,13 @@ const BRANCHES = [
   }
 ];
 
-// Build all anchor snapping points
 function linePts(x1,y1,x2,y2,n=10){
   const pts=[];
   for(let i=0;i<=n;i++){const t=i/n;pts.push({x:x1+(x2-x1)*t,y:y1+(y2-y1)*t});}
   return pts;
 }
 let ANCHORS=[];
-// trunk
 ANCHORS.push(...linePts(TX, TRUNK_TOP, TX, H*0.80, 14));
-// branches
 BRANCHES.forEach(b=>{
   ANCHORS.push(...linePts(b.sx,b.sy,b.ex,b.ey,12));
   b.subs.forEach(s=>ANCHORS.push(...linePts(b.ex,b.ey,s.ex,s.ey,6)));
@@ -143,7 +203,7 @@ const sp = {
   x: TX, y: H*0.52,
   vx:0, vy:0,
   onTree: true,
-  treeType: 'trunk',  // 'trunk'|'b0'|'b1'|'ground'
+  treeType: 'trunk',
   treeT: 0.45,
   jumping: false,
   facing: 1,
@@ -152,33 +212,44 @@ const sp = {
 
 // ── WEB STATE ────────────────────────────────────
 let webMode = false;
-let anchorA = null;      // first chosen anchor
-let silkLine = null;     // animating silk {x1,y1,x2,y2,tx,ty}
-let webs = [];           // {x1,y1,x2,y2,sag,age}
-let dewdrops = [];       // {x,y,r,alpha}
+let anchorA = null;
+let silkLine = null;
+let webs = [];
+let dewdrops = [];
 let webCount = 0;
 
 function setWebCount(n){ webCount=n; document.getElementById('wc').textContent=n; }
 
 // ── INPUT ─────────────────────────────────────────
-const keys={left:false,right:false,jump:false};
-function btnHold(id,key){
-  const el=document.getElementById(id);
-  ['touchstart','mousedown'].forEach(ev=>el.addEventListener(ev,e=>{e.preventDefault();keys[key]=true;},{passive:false}));
-  ['touchend','touchcancel','mouseup','mouseleave'].forEach(ev=>el.addEventListener(ev,e=>{e.preventDefault();keys[key]=false;},{passive:false}));
-}
-btnHold('btn-left','left');
-btnHold('btn-right','right');
-btnHold('btn-jump','jump');
+const keys={left:false,right:false,up:false,down:false,jump:false};
 
-document.getElementById('btn-web').addEventListener('click', e=>{
+function btnHold(id, key) {
+  const el = document.getElementById(id);
+  ['touchstart','mousedown'].forEach(ev => el.addEventListener(ev, e => {
+    e.preventDefault(); keys[key] = true; el.classList.add('pressed');
+  }, {passive:false}));
+  ['touchend','touchcancel','mouseup','mouseleave'].forEach(ev => el.addEventListener(ev, e => {
+    e.preventDefault(); keys[key] = false; el.classList.remove('pressed');
+  }, {passive:false}));
+}
+
+btnHold('btn-left', 'left');
+btnHold('btn-right', 'right');
+btnHold('btn-up', 'up');
+btnHold('btn-down', 'down');
+btnHold('btn-jump', 'jump');
+
+// Prevent jump button from being held (one-shot via keypress detection)
+let jumpPrev = false;
+
+document.getElementById('btn-web').addEventListener('click', e => {
   e.preventDefault();
-  webMode=!webMode;
-  anchorA=null; silkLine=null;
+  webMode = !webMode;
+  anchorA = null; silkLine = null;
   document.getElementById('btn-web').classList.toggle('active', webMode);
   document.getElementById('mode-lbl').textContent = webMode ? '🕸 плести' : 'ползти';
-  if(webMode) hint('🕷 Коснись точки на дереве — начало нити\nЗатем вторая точка — конец нити',3500);
-  else hint('Режим: ползти',1200);
+  if(webMode) hint('🕷 Коснись точки на дереве — начало нити\nЗатем вторая точка — конец нити', 3500);
+  else hint('Режим: ползти', 1200);
 });
 
 canvas.addEventListener('touchstart', onTap, {passive:false});
@@ -188,32 +259,32 @@ function onTap(e){
   e.preventDefault();
   const cx = e.touches ? e.touches[0].clientX : e.clientX;
   const cy = e.touches ? e.touches[0].clientY : e.clientY;
-  const pt = nearestAnchor(cx,cy);
-  if(!pt){ hint('⚠️ Прикрепить нить можно\nтолько к стволу или ветке',2200); return; }
+  const pt = nearestAnchor(cx, cy);
+  if(!pt){ hint('⚠️ Прикрепить нить можно\nтолько к стволу или ветке', 2200); return; }
 
   if(!anchorA){
     anchorA = pt;
-    silkLine = {x1:sp.x,y1:sp.y, x2:sp.x,y2:sp.y, tx:pt.x, ty:pt.y};
+    silkLine = {x1:sp.x, y1:sp.y, x2:sp.x, y2:sp.y, tx:pt.x, ty:pt.y};
     hint(rnd([
       '✓ Начало закреплено!\nВыбери вторую точку крепления',
       '📍 Первая точка выбрана!\nТяни нить к другой ветке',
       '🕷 Отлично! Теперь укажи конец нити'
-    ]),2800);
+    ]), 2800);
   } else {
-    if(Math.hypot(pt.x-anchorA.x,pt.y-anchorA.y)<8){
-      hint('Выбери другую точку!',1500); return;
+    if(Math.hypot(pt.x-anchorA.x, pt.y-anchorA.y)<8){
+      hint('Выбери другую точку!', 1500); return;
     }
     const sag = computeSag(anchorA, pt);
-    webs.push({x1:anchorA.x,y1:anchorA.y,x2:pt.x,y2:pt.y,sag,age:0});
-    spawnDewdrops(anchorA,pt,sag);
+    webs.push({x1:anchorA.x, y1:anchorA.y, x2:pt.x, y2:pt.y, sag, age:0});
+    spawnDewdrops(anchorA, pt, sag);
     setWebCount(webCount+1);
-    anchorA=null; silkLine=null;
+    anchorA = null; silkLine = null;
     hint(rnd([
       '✨ Нить натянута!\nДля паутины-колеса крепи от центра к краям',
       '🕸 Красиво! Добавь поперечные нити — паутина станет ловушкой',
       '💡 Совет: нити пересекающиеся по спирали — классическая паутина',
       '🌿 Ещё нить между ветками даст опору для всей сети'
-    ]),3000);
+    ]), 3000);
   }
 }
 function rnd(arr){return arr[Math.floor(Math.random()*arr.length)];}
@@ -255,22 +326,38 @@ const GRAVITY = 0.42;
 const JUMP_POWER = -13;
 const MOVE = 2.0;
 
+// track previous jump state for one-shot
+let jumpWasDown = false;
+
 function update(){
   sp.legPhase += 0.14;
 
+  // One-shot jump trigger
+  const jumpPressed = keys.jump && !jumpWasDown;
+  jumpWasDown = keys.jump;
+
   if(sp.onTree && !sp.jumping){
     if(sp.treeType==='ground'){
-      if(keys.left){sp.x-=MOVE;sp.facing=-1;}
-      if(keys.right){sp.x+=MOVE;sp.facing=1;}
-      if(keys.jump){ doJump(sp.facing*1.8, JUMP_POWER); }
+      if(keys.left){sp.x-=MOVE; sp.facing=-1;}
+      if(keys.right){sp.x+=MOVE; sp.facing=1;}
+      if(jumpPressed){ doJump(sp.facing*1.8, JUMP_POWER); }
     } else {
       const path = sp.treeType==='trunk' ? trunkPath() : branchPath(sp.treeType==='b0'?0:1);
       const step = 1/(path.length-1)*0.6;
-      if(keys.left){sp.treeT=clamp(sp.treeT-step,0,1);sp.facing=-1;}
-      if(keys.right){sp.treeT=clamp(sp.treeT+step,0,1);sp.facing=1;}
+      // On trunk: up/down moves along path (trunk is vertical)
+      // On branches: left/right moves along branch
+      if(sp.treeType==='trunk'){
+        if(keys.up || keys.left){sp.treeT=clamp(sp.treeT-step,0,1); sp.facing= keys.left ? -1 : sp.facing;}
+        if(keys.down || keys.right){sp.treeT=clamp(sp.treeT+step,0,1); sp.facing= keys.right ? 1 : sp.facing;}
+      } else {
+        if(keys.left){sp.treeT=clamp(sp.treeT-step,0,1);sp.facing=-1;}
+        if(keys.right){sp.treeT=clamp(sp.treeT+step,0,1);sp.facing=1;}
+        if(keys.up){sp.treeT=clamp(sp.treeT+step*0.7,0,1);}
+        if(keys.down){sp.treeT=clamp(sp.treeT-step*0.7,0,1);}
+      }
       const pt=ptOnPath(path,sp.treeT);
       sp.x=pt.x; sp.y=pt.y;
-      if(keys.jump){ doJump(sp.facing*2.5, JUMP_POWER*0.88); }
+      if(jumpPressed){ doJump(sp.facing*2.5, JUMP_POWER*0.88); }
     }
   } else {
     sp.vy += GRAVITY;
@@ -291,7 +378,6 @@ function update(){
     else{silkLine.x2+=dx/d*spd;silkLine.y2+=dy/d*spd;}
   }
 
-  // Web aging
   webs.forEach(w=>{ if(w.age<1) w.age=Math.min(1,w.age+0.04); });
 }
 
@@ -301,8 +387,7 @@ function doJump(vx,vy){
 }
 
 function checkTreeLanding(){
-  if(sp.vy<-2) return; // still going up fast
-  // trunk
+  if(sp.vy<-2) return;
   const tp=trunkPath(30);
   for(let i=0;i<tp.length;i++){
     const p=tp[i];
@@ -310,7 +395,6 @@ function checkTreeLanding(){
       land('trunk'); sp.treeT=i/(tp.length-1); sp.x=p.x; sp.y=p.y; return;
     }
   }
-  // branches
   for(let bi=0;bi<2;bi++){
     const bp=branchPath(bi,16);
     for(let i=0;i<bp.length;i++){
@@ -329,33 +413,28 @@ function land(type){
 
 // ── DRAW ─────────────────────────────────────────
 function drawBg(){
-  // Sky gradient
   const sg=ctx.createLinearGradient(0,0,0,H);
   sg.addColorStop(0,'#06080f');
   sg.addColorStop(0.5,'#0a1008');
   sg.addColorStop(1,'#120e00');
   ctx.fillStyle=sg; ctx.fillRect(0,0,W,H);
 
-  // Moon glow
   const mg=ctx.createRadialGradient(W*0.78,H*0.07,8,W*0.78,H*0.07,130);
   mg.addColorStop(0,'rgba(255,255,220,0.18)');
   mg.addColorStop(1,'rgba(0,0,0,0)');
   ctx.fillStyle=mg; ctx.fillRect(0,0,W,H);
 
-  // Moon
   ctx.save();
   ctx.shadowColor='rgba(255,255,200,0.6)';
   ctx.shadowBlur=20;
   ctx.fillStyle='rgba(255,253,225,0.92)';
   ctx.beginPath(); ctx.arc(W*0.78,H*0.07,20,0,Math.PI*2); ctx.fill();
-  // Moon craters
   ctx.fillStyle='rgba(220,218,200,0.3)';
   [[W*0.78-6,H*0.065,4],[W*0.78+7,H*0.08,3],[W*0.78+2,H*0.055,2.5]].forEach(([cx,cy,r])=>{
     ctx.beginPath(); ctx.arc(cx,cy,r,0,Math.PI*2); ctx.fill();
   });
   ctx.restore();
 
-  // Stars
   const t=Date.now()*0.001;
   stars.forEach(s=>{
     const a=s.alpha*(0.7+0.3*Math.sin(t*0.8+s.twinkle));
@@ -363,13 +442,11 @@ function drawBg(){
     ctx.beginPath(); ctx.arc(s.x,s.y,s.r,0,Math.PI*2); ctx.fill();
   });
 
-  // Ground
   const gg=ctx.createLinearGradient(0,H-55,0,H);
   gg.addColorStop(0,'#1c1500');
   gg.addColorStop(1,'#0a0900');
   ctx.fillStyle=gg; ctx.fillRect(0,H-55,W,55);
 
-  // Grass blades
   const gt=Date.now()*0.0008;
   for(let gx=4;gx<W;gx+=7){
     const sway=Math.sin(gt+gx*0.09)*2.5;
@@ -384,7 +461,6 @@ function drawBg(){
 }
 
 function drawTree(){
-  // Trunk
   const tg=ctx.createLinearGradient(TX-TRUNK_W,0,TX+TRUNK_W,0);
   tg.addColorStop(0,'#110a02');
   tg.addColorStop(0.35,'#3a1e0a');
@@ -398,7 +474,6 @@ function drawTree(){
   ctx.bezierCurveTo(TX+TRUNK_W*0.6,TRUNK_TOP+80,TX+TRUNK_W,TRUNK_BOT*0.75,TX+TRUNK_W*1.6,TRUNK_BOT);
   ctx.closePath(); ctx.fill();
 
-  // Bark grain
   ctx.strokeStyle='rgba(0,0,0,0.25)'; ctx.lineWidth=1;
   for(let i=1;i<9;i++){
     const yy=TRUNK_TOP+(TRUNK_BOT-TRUNK_TOP)*(i/9);
@@ -408,9 +483,7 @@ function drawTree(){
     ctx.stroke();
   }
 
-  // Branches
   BRANCHES.forEach((b,bi)=>{
-    // Main branch
     ctx.strokeStyle='#261208';
     ctx.lineWidth=b.w; ctx.lineCap='round';
     ctx.beginPath();
@@ -420,7 +493,6 @@ function drawTree(){
     ctx.quadraticCurveTo(cpx,cpy,b.ex,b.ey);
     ctx.stroke();
 
-    // Sub-branches
     b.subs.forEach(s=>{
       ctx.lineWidth=s.w;
       ctx.beginPath();
@@ -465,7 +537,6 @@ function drawWebs(){
     ctx.stroke();
     ctx.restore();
   });
-  // Dewdrops
   dewdrops.forEach(d=>{
     if(d.web>=webs.length) return;
     const w=webs[d.web];
@@ -521,9 +592,8 @@ function drawSpider(){
   ctx.scale(sp.facing,1);
 
   const lp=sp.legPhase;
-  const moving=keys.left||keys.right;
+  const moving=keys.left||keys.right||keys.up||keys.down;
 
-  // Silk thread from abdomen when on tree
   if(sp.onTree && sp.treeType!=='ground'){
     ctx.strokeStyle='rgba(180,240,180,0.2)';
     ctx.lineWidth=0.6;
@@ -531,7 +601,6 @@ function drawSpider(){
     ctx.beginPath(); ctx.moveTo(0,8); ctx.lineTo(0,32); ctx.stroke();
   }
 
-  // Draw 8 legs
   ctx.strokeStyle='rgba(15,8,2,0.9)';
   ctx.lineWidth=1.6; ctx.lineCap='round';
   const legs=[
@@ -549,31 +618,25 @@ function drawSpider(){
     ctx.beginPath(); ctx.moveTo(bx,by); ctx.quadraticCurveTo(mx,my,ex,ey); ctx.stroke();
   });
 
-  // Abdomen (larger oval)
   ctx.fillStyle='#0e0600';
   ctx.beginPath(); ctx.ellipse(-5,2,9,7,-0.15,0,Math.PI*2); ctx.fill();
-  // Abdomen marking (orange hourglass shape)
   ctx.fillStyle='#cc2200';
   ctx.beginPath(); ctx.ellipse(-5,2,5,3,-0.15,0,Math.PI*2); ctx.fill();
   ctx.fillStyle='rgba(255,80,0,0.6)';
   ctx.beginPath(); ctx.ellipse(-5,2,2.5,1.2,-0.15,0,Math.PI*2); ctx.fill();
 
-  // Cephalothorax
   ctx.fillStyle='#0a0500';
   ctx.beginPath(); ctx.ellipse(5,0,7,5.5,0.1,0,Math.PI*2); ctx.fill();
 
-  // Pedipalps (small front limbs)
   ctx.strokeStyle='rgba(20,10,2,0.8)'; ctx.lineWidth=1.2;
   [[5,-2,12,-8],[5,1,12,6]].forEach(([bx,by,ex,ey])=>{
     ctx.beginPath(); ctx.moveTo(bx,by); ctx.lineTo(ex,ey); ctx.stroke();
   });
 
-  // Eyes (4 pairs simplified to 4 dots)
   ctx.fillStyle='rgba(255,50,0,0.95)';
   [[3,-2],[6,-2],[3,1],[6,1]].forEach(([ex,ey])=>{
     ctx.beginPath(); ctx.arc(ex,ey,1.3,0,Math.PI*2); ctx.fill();
   });
-  // Eye shine
   ctx.fillStyle='rgba(255,200,200,0.6)';
   [[3,-2.3],[6,-2.3]].forEach(([ex,ey])=>{
     ctx.beginPath(); ctx.arc(ex,ey,0.5,0,Math.PI*2); ctx.fill();
@@ -595,9 +658,8 @@ function loop(){
   requestAnimationFrame(loop);
 }
 
-// ── INIT HINTS ───────────────────────────────────
-setTimeout(()=>hint('🕷 Добро пожаловать!\n◀ ▶ — движение    ↑ — прыжок\n🕸 — режим плетения паутины',4500),600);
-setTimeout(()=>hint('💡 Паук может ползти по стволу и ветвям\nПрыгай на них с земли!',3500),7000);
+setTimeout(()=>hint('🕷 Добро пожаловать!\n◀▲▼▶ — движение    ↑ — прыжок\n🕸 — режим плетения паутины',4500),600);
+setTimeout(()=>hint('💡 На стволе ▲▼ движут вверх/вниз\nНа ветках ◀▶ ползут по ветке',3500),7000);
 
 loop();
 </script>
