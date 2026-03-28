@@ -3,664 +3,854 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-<title>Паук и Паутина</title>
+<title>Муравьиная Колония</title>
 <style>
-  * { margin:0; padding:0; box-sizing:border-box; -webkit-tap-highlight-color:transparent; }
+  * { margin: 0; padding: 0; box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+  
   body {
-    background: #060810;
-    overflow: hidden; width: 100vw; height: 100vh;
+    background: #c8b090;
+    width: 100vw;
+    height: 100vh;
+    overflow: hidden;
     font-family: 'Georgia', serif;
     touch-action: none;
   }
-  canvas { display:block; touch-action:none; }
-  #hint-box {
-    position: fixed; bottom: 160px; left: 50%; transform: translateX(-50%);
-    background: rgba(0,0,0,0.82); border: 1px solid rgba(180,255,180,0.35);
-    border-radius: 14px; padding: 10px 20px; color: #c8f0c8;
-    font-size: 13px; text-align: center; max-width: 310px;
-    opacity: 0; transition: opacity 0.4s ease; pointer-events: none;
-    z-index: 20; line-height: 1.6; white-space: pre-line;
-    box-shadow: 0 0 20px rgba(0,200,80,0.1);
-  }
-  #hint-box.visible { opacity: 1; }
 
-  /* ── CONTROLS LAYOUT ── */
-  #controls {
-    position: fixed; bottom: 20px; left: 0; right: 0;
-    display: flex; justify-content: space-between;
-    align-items: flex-end;
-    padding: 0 24px;
-    z-index: 10;
-    pointer-events: none;
+  canvas {
+    display: block;
+    width: 100vw;
+    height: 100vh;
   }
 
-  /* D-PAD (left side) */
-  #dpad {
-    pointer-events: all;
-    position: relative;
-    width: 148px; height: 148px;
-    flex-shrink: 0;
-  }
-  .dpad-btn {
-    position: absolute;
-    width: 48px; height: 48px;
-    border-radius: 10px;
-    border: 1.5px solid rgba(180,220,180,0.35);
-    background: rgba(0,22,0,0.78);
-    color: #b0e8b0; font-size: 20px;
-    display: flex; align-items: center; justify-content: center;
-    cursor: pointer; user-select: none;
-    box-shadow: 0 0 10px rgba(60,180,60,0.12), inset 0 1px 0 rgba(255,255,255,0.04);
-    -webkit-tap-highlight-color: transparent;
-    transition: background 0.1s, transform 0.07s;
-  }
-  .dpad-btn:active, .dpad-btn.pressed { background: rgba(0,60,0,0.95); transform: scale(0.88); }
-
-  /* cross layout: up center, left/right sides, down center */
-  #btn-up    { top: 0;    left: 50px; }
-  #btn-left  { top: 50px; left: 0;    }
-  #btn-center{ top: 50px; left: 50px; background: rgba(0,10,0,0.5); border-color: rgba(80,120,80,0.2); pointer-events:none; }
-  #btn-right { top: 50px; left: 100px;}
-  #btn-down  { top: 100px;left: 50px; }
-
-  /* RIGHT SIDE: jump + web stacked */
-  #right-btns {
-    pointer-events: all;
+  #ui {
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    right: 0;
     display: flex;
     flex-direction: column;
-    gap: 14px;
     align-items: center;
-    flex-shrink: 0;
+    padding-bottom: env(safe-area-inset-bottom, 10px);
+    pointer-events: none;
+    z-index: 10;
   }
 
-  .action-btn {
-    width: 64px; height: 64px; border-radius: 50%;
-    border: 1.5px solid rgba(100,160,255,0.45);
-    background: rgba(0,15,35,0.8);
-    color: #a8d4ff; font-size: 26px;
-    display: flex; align-items: center; justify-content: center;
-    cursor: pointer; user-select: none;
-    box-shadow: 0 0 14px rgba(80,140,255,0.15), inset 0 1px 0 rgba(255,255,255,0.05);
-    -webkit-tap-highlight-color: transparent;
-    transition: background 0.12s, transform 0.08s;
+  #prey-panel {
+    display: flex;
+    gap: 8px;
+    padding: 8px 12px;
+    background: rgba(200,175,120,0.95);
+    border-top: 2px solid #8a6020;
+    border-radius: 16px 16px 0 0;
+    width: 100%;
+    justify-content: center;
+    flex-wrap: wrap;
+    pointer-events: all;
+    backdrop-filter: blur(4px);
   }
-  .action-btn:active { transform: scale(0.88); }
-  #btn-jump:active { background: rgba(0,40,90,0.95); }
 
-  #btn-web {
-    border-color: rgba(180,220,180,0.4);
-    background: rgba(0,22,0,0.8);
-    color: #c8f0c8; font-size: 22px;
+  .prey-btn {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    background: linear-gradient(145deg, #e8d090, #d4b860);
+    border: 1.5px solid #8a6020;
+    border-radius: 10px;
+    padding: 6px 8px;
+    cursor: pointer;
+    font-size: 22px;
+    color: #3a2008;
+    min-width: 50px;
+    transition: all 0.15s;
+    user-select: none;
+    -webkit-user-select: none;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.2);
   }
-  #btn-web:active, #btn-web.active { background: rgba(0,55,0,0.95); border-color: rgba(100,255,100,0.7); }
 
-  #status {
-    position: fixed; top: 16px; left: 16px; right: 16px;
-    display: flex; justify-content: space-between;
-    pointer-events: none; z-index: 10;
-    color: rgba(180,220,180,0.7); font-size: 12px; letter-spacing: 0.5px;
+  .prey-btn:active {
+    transform: scale(0.92);
+    background: linear-gradient(145deg, #f0d880, #c8a840);
+    border-color: #6a4010;
+    box-shadow: 0 1px 2px rgba(0,0,0,0.3);
+  }
+
+  .prey-btn span {
+    font-size: 9px;
+    color: #5a3a10;
+    margin-top: 2px;
+    font-family: sans-serif;
+    text-align: center;
+    line-height: 1.1;
+    font-weight: bold;
+  }
+
+  #stats {
+    position: fixed;
+    top: env(safe-area-inset-top, 10px);
+    left: 0;
+    right: 0;
+    display: flex;
+    justify-content: space-between;
+    padding: 8px 16px;
+    pointer-events: none;
+    z-index: 10;
+    font-size: 11px;
+    color: #5a3a10;
+    font-family: sans-serif;
+    font-weight: bold;
+    text-shadow: 0 1px 2px rgba(255,220,150,0.8);
+  }
+
+  #hint {
+    position: fixed;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%,-50%);
+    color: rgba(80,50,10,0.4);
+    font-size: 14px;
+    text-align: center;
+    pointer-events: none;
+    z-index: 5;
+    transition: opacity 1s;
+    line-height: 1.8;
+  }
+
+  #title {
+    position: fixed;
+    top: env(safe-area-inset-top, 10px);
+    left: 50%;
+    transform: translateX(-50%);
+    color: #5a3010;
+    font-size: 13px;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    pointer-events: none;
+    z-index: 10;
+    font-family: sans-serif;
+    font-weight: bold;
+    text-shadow: 0 1px 2px rgba(255,220,150,0.6);
   }
 </style>
 </head>
 <body>
 <canvas id="c"></canvas>
-<div id="status">
-  <span>🕸 нитей: <span id="wc">0</span></span>
-  <span id="mode-lbl">ползти</span>
+<div id="title">КОЛОНИЯ</div>
+<div id="stats">
+  <span id="ant-count">🐜 0</span>
+  <span id="food-status"></span>
 </div>
-<div id="hint-box"></div>
-
-<div id="controls">
-  <!-- LEFT: D-PAD -->
-  <div id="dpad">
-    <div class="dpad-btn" id="btn-up">▲</div>
-    <div class="dpad-btn" id="btn-left">◀</div>
-    <div class="dpad-btn" id="btn-center">·</div>
-    <div class="dpad-btn" id="btn-right">▶</div>
-    <div class="dpad-btn" id="btn-down">▼</div>
-  </div>
-
-  <!-- RIGHT: Jump + Web -->
-  <div id="right-btns">
-    <div class="action-btn" id="btn-jump">↑</div>
-    <div class="action-btn" id="btn-web">🕸</div>
+<div id="hint">Нажми на добычу снизу<br>и брось её в коробку</div>
+<div id="ui">
+  <div id="prey-panel">
+    <div class="prey-btn" data-prey="fly" onclick="addPrey('fly')">🪰<span>Муха</span></div>
+    <div class="prey-btn" data-prey="beetle" onclick="addPrey('beetle')">🪲<span>Жук</span></div>
+    <div class="prey-btn" data-prey="worm" onclick="addPrey('worm')">🐛<span>Гусеница</span></div>
+    <div class="prey-btn" data-prey="spider" onclick="addPrey('spider')">🕷️<span>Паук</span></div>
+    <div class="prey-btn" data-prey="mouse" onclick="addPrey('mouse')">🐭<span>Мышь</span></div>
+    <div class="prey-btn" data-prey="frog" onclick="addPrey('frog')">🐸<span>Лягушка</span></div>
+    <div class="prey-btn" data-prey="lizard" onclick="addPrey('lizard')">🦎<span>Ящерица</span></div>
+    <div class="prey-btn" data-prey="bird" onclick="addPrey('bird')">🐦<span>Птица</span></div>
   </div>
 </div>
 
 <script>
 const canvas = document.getElementById('c');
 const ctx = canvas.getContext('2d');
-canvas.width = window.innerWidth;
-canvas.height = window.innerHeight;
-const W = canvas.width, H = canvas.height;
+let W, H, GROUND_Y;
 
-// ── HINT ──────────────────────────────────────────
-const hintEl = document.getElementById('hint-box');
-let hintTmr = null;
-function hint(msg, dur=3200) {
-  hintEl.textContent = msg;
-  hintEl.classList.add('visible');
-  clearTimeout(hintTmr);
-  hintTmr = setTimeout(() => hintEl.classList.remove('visible'), dur);
-}
-
-// ── STARS ─────────────────────────────────────────
-const stars = Array.from({length:60}, () => ({
-  x: Math.random()*W, y: Math.random()*H*0.55,
-  r: 0.5 + Math.random()*1.2,
-  alpha: 0.3 + Math.random()*0.5,
-  twinkle: Math.random()*Math.PI*2
-}));
-
-// ── TREE GEOMETRY ─────────────────────────────────
-const TX = W * 0.5;
-const TRUNK_TOP = H * 0.22;
-const TRUNK_BOT = H;
-const TRUNK_W = 22;
-
-const BRANCHES = [
-  {
-    sx: TX, sy: H*0.30,
-    ex: TX - W*0.32, ey: H*0.14, w: 13,
-    subs: [
-      {ex: TX-W*0.38, ey:H*0.07, w:7},
-      {ex: TX-W*0.26, ey:H*0.08, w:6}
-    ]
-  },
-  {
-    sx: TX, sy: H*0.40,
-    ex: TX + W*0.30, ey: H*0.18, w: 13,
-    subs: [
-      {ex: TX+W*0.36, ey:H*0.09, w:7},
-      {ex: TX+W*0.24, ey:H*0.10, w:6}
-    ]
-  }
-];
-
-function linePts(x1,y1,x2,y2,n=10){
-  const pts=[];
-  for(let i=0;i<=n;i++){const t=i/n;pts.push({x:x1+(x2-x1)*t,y:y1+(y2-y1)*t});}
-  return pts;
-}
-let ANCHORS=[];
-ANCHORS.push(...linePts(TX, TRUNK_TOP, TX, H*0.80, 14));
-BRANCHES.forEach(b=>{
-  ANCHORS.push(...linePts(b.sx,b.sy,b.ex,b.ey,12));
-  b.subs.forEach(s=>ANCHORS.push(...linePts(b.ex,b.ey,s.ex,s.ey,6)));
-});
-
-function nearestAnchor(px,py,maxD=70){
-  let best=null,bd=maxD;
-  ANCHORS.forEach(p=>{
-    const d=Math.hypot(p.x-px,p.y-py);
-    if(d<bd){bd=d;best=p;}
-  });
-  return best;
-}
-
-// ── SPIDER ────────────────────────────────────────
-const sp = {
-  x: TX, y: H*0.52,
-  vx:0, vy:0,
-  onTree: true,
-  treeType: 'trunk',
-  treeT: 0.45,
-  jumping: false,
-  facing: 1,
-  legPhase: 0,
+const PREY_DATA = {
+  fly:     { emoji: '🪰', mass: 50,   label: 'Муха',      size: 8  },
+  beetle:  { emoji: '🪲', mass: 150,  label: 'Жук',       size: 14 },
+  worm:    { emoji: '🐛', mass: 120,  label: 'Гусеница',  size: 20 },
+  spider:  { emoji: '🕷️', mass: 100,  label: 'Паук',      size: 12 },
+  mouse:   { emoji: '🐭', mass: 800,  label: 'Мышь',      size: 30 },
+  frog:    { emoji: '🐸', mass: 600,  label: 'Лягушка',   size: 28 },
+  lizard:  { emoji: '🦎', mass: 700,  label: 'Ящерица',   size: 35 },
+  bird:    { emoji: '🐦', mass: 1200, label: 'Птица',     size: 38 },
 };
 
-// ── WEB STATE ────────────────────────────────────
-let webMode = false;
-let anchorA = null;
-let silkLine = null;
-let webs = [];
-let dewdrops = [];
-let webCount = 0;
+// Simulation state
+let ants = [];
+let preyList = [];
+let pheromones = [];
+let particles = [];
+let nestX, nestY;
+let antCount = 200;
+let frameCount = 0;
+let hintVisible = true;
 
-function setWebCount(n){ webCount=n; document.getElementById('wc').textContent=n; }
+// Pheromone grid
+const GRID = 40;
+let gridW, gridH;
+let pheroGrid = []; // food pheromone
+let homeGrid = [];  // home pheromone
 
-// ── INPUT ─────────────────────────────────────────
-const keys={left:false,right:false,up:false,down:false,jump:false};
-
-function btnHold(id, key) {
-  const el = document.getElementById(id);
-  ['touchstart','mousedown'].forEach(ev => el.addEventListener(ev, e => {
-    e.preventDefault(); keys[key] = true; el.classList.add('pressed');
-  }, {passive:false}));
-  ['touchend','touchcancel','mouseup','mouseleave'].forEach(ev => el.addEventListener(ev, e => {
-    e.preventDefault(); keys[key] = false; el.classList.remove('pressed');
-  }, {passive:false}));
+function resize() {
+  W = canvas.width = window.innerWidth;
+  H = canvas.height = window.innerHeight;
+  GROUND_Y = H - 190; // well above the button panel
+  nestX = W * 0.5;
+  nestY = GROUND_Y - 20;
+  gridW = Math.ceil(W / GRID);
+  gridH = Math.ceil(H / GRID);
+  pheroGrid = new Float32Array(gridW * gridH);
+  homeGrid  = new Float32Array(gridW * gridH);
+  // Seed home pheromone near nest
+  for(let i=0;i<ants.length;i++) { depositHome(ants[i].x, ants[i].y, 200); }
 }
 
-btnHold('btn-left', 'left');
-btnHold('btn-right', 'right');
-btnHold('btn-up', 'up');
-btnHold('btn-down', 'down');
-btnHold('btn-jump', 'jump');
+function gridIdx(x,y) {
+  let gx = Math.floor(x/GRID);
+  let gy = Math.floor(y/GRID);
+  gx = Math.max(0, Math.min(gridW-1, gx));
+  gy = Math.max(0, Math.min(gridH-1, gy));
+  return gy * gridW + gx;
+}
 
-// Prevent jump button from being held (one-shot via keypress detection)
-let jumpPrev = false;
+function depositFood(x,y,v) {
+  pheroGrid[gridIdx(x,y)] = Math.min(255, pheroGrid[gridIdx(x,y)] + v);
+}
+function depositHome(x,y,v) {
+  homeGrid[gridIdx(x,y)] = Math.min(255, homeGrid[gridIdx(x,y)] + v);
+}
+function sampleFood(x,y) { return pheroGrid[gridIdx(x,y)]; }
+function sampleHome(x,y) { return homeGrid[gridIdx(x,y)];  }
 
-document.getElementById('btn-web').addEventListener('click', e => {
-  e.preventDefault();
-  webMode = !webMode;
-  anchorA = null; silkLine = null;
-  document.getElementById('btn-web').classList.toggle('active', webMode);
-  document.getElementById('mode-lbl').textContent = webMode ? '🕸 плести' : 'ползти';
-  if(webMode) hint('🕷 Коснись точки на дереве — начало нити\nЗатем вторая точка — конец нити', 3500);
-  else hint('Режим: ползти', 1200);
-});
+// Evaporate grids
+function evaporate() {
+  for(let i=0;i<pheroGrid.length;i++) pheroGrid[i] *= 0.996;
+  for(let i=0;i<homeGrid.length;i++)  homeGrid[i]  *= 0.997;
+}
 
-canvas.addEventListener('touchstart', onTap, {passive:false});
-canvas.addEventListener('mousedown', onTap);
-function onTap(e){
-  if(!webMode) return;
-  e.preventDefault();
-  const cx = e.touches ? e.touches[0].clientX : e.clientX;
-  const cy = e.touches ? e.touches[0].clientY : e.clientY;
-  const pt = nearestAnchor(cx, cy);
-  if(!pt){ hint('⚠️ Прикрепить нить можно\nтолько к стволу или ветке', 2200); return; }
+// ====== ANT ======
+class Ant {
+  constructor() {
+    this.x = nestX + (Math.random()-0.5)*30;
+    this.y = nestY + (Math.random()-0.5)*10;
+    this.angle = Math.random()*Math.PI*2;
+    this.speed = 0.8 + Math.random()*0.6;
+    this.baseSpeed = this.speed;
+    this.hasFood = false;
+    this.targetPrey = null;
+    this.state = 'search'; // search, approach, eat, carry, goHome
+    this.wobble = Math.random()*Math.PI*2;
+    this.wobbleSpeed = 0.1 + Math.random()*0.05;
+    this.turnRate = 0.12 + Math.random()*0.08;
+    this.senseRadius = 60 + Math.random()*40;
+    this.id = Math.random();
+    this.size = 3 + Math.random()*1.5;
+    this.legPhase = Math.random()*Math.PI*2;
+    this.carryFood = 0;
+    this.depositing = false;
+    this.lastState = '';
+    this.patience = 0;
+    this.restTimer = 0; // short rests
+    this.color = `hsl(${15+Math.random()*10},70%,${8+Math.random()*8}%)`;
+    // Body segments proportions
+    this.headSize = this.size * 0.55;
+    this.thoraxSize = this.size * 0.45;
+    this.abdomenSize = this.size * 0.85;
+    depositHome(this.x, this.y, 50);
+  }
 
-  if(!anchorA){
-    anchorA = pt;
-    silkLine = {x1:sp.x, y1:sp.y, x2:sp.x, y2:sp.y, tx:pt.x, ty:pt.y};
-    hint(rnd([
-      '✓ Начало закреплено!\nВыбери вторую точку крепления',
-      '📍 Первая точка выбрана!\nТяни нить к другой ветке',
-      '🕷 Отлично! Теперь укажи конец нити'
-    ]), 2800);
-  } else {
-    if(Math.hypot(pt.x-anchorA.x, pt.y-anchorA.y)<8){
-      hint('Выбери другую точку!', 1500); return;
+  update() {
+    this.wobble += this.wobbleSpeed;
+    this.legPhase += 0.35;
+    frameCount; // just reference
+
+    if(this.restTimer > 0) { this.restTimer--; return; }
+
+    // Find nearby prey
+    let nearestPrey = null;
+    let nearestDist = this.senseRadius;
+    for(let p of preyList) {
+      if(p.eaten) continue;
+      let dx = p.x - this.x, dy = p.y - this.y;
+      let d = Math.sqrt(dx*dx+dy*dy);
+      if(d < nearestDist) { nearestDist = d; nearestPrey = p; }
     }
-    const sag = computeSag(anchorA, pt);
-    webs.push({x1:anchorA.x, y1:anchorA.y, x2:pt.x, y2:pt.y, sag, age:0});
-    spawnDewdrops(anchorA, pt, sag);
-    setWebCount(webCount+1);
-    anchorA = null; silkLine = null;
-    hint(rnd([
-      '✨ Нить натянута!\nДля паутины-колеса крепи от центра к краям',
-      '🕸 Красиво! Добавь поперечные нити — паутина станет ловушкой',
-      '💡 Совет: нити пересекающиеся по спирали — классическая паутина',
-      '🌿 Ещё нить между ветками даст опору для всей сети'
-    ]), 3000);
-  }
-}
-function rnd(arr){return arr[Math.floor(Math.random()*arr.length)];}
-function computeSag(a,b){
-  const d=Math.hypot(b.x-a.x,b.y-a.y);
-  return d*0.15 + 8;
-}
-function spawnDewdrops(a,b,sag){
-  const n=Math.floor(Math.hypot(b.x-a.x,b.y-a.y)/30)+2;
-  for(let i=0;i<n;i++){
-    const t=Math.random();
-    const mx=(a.x+b.x)/2, my=(a.y+b.y)/2+sag;
-    const x=quadB(a.x,mx,b.x,t);
-    const y=quadB(a.y,my,b.y,t);
-    dewdrops.push({x,y,r:1.2+Math.random()*1.2,alpha:0.55+Math.random()*0.35,web:webs.length});
-  }
-}
-function quadB(p0,p1,p2,t){return (1-t)*(1-t)*p0+2*(1-t)*t*p1+t*t*p2;}
 
-// ── SURFACE PATHS ─────────────────────────────────
-function trunkPath(n=30){return linePts(TX,TRUNK_TOP,TX,H*0.85,n);}
-function branchPath(bi,n=16){
-  const b=BRANCHES[bi];
-  const pts=linePts(b.sx,b.sy,b.ex,b.ey,n);
-  b.subs.forEach(s=>pts.push(...linePts(b.ex,b.ey,s.ex,s.ey,6)));
-  return pts;
-}
-
-function clamp(v,a,b){return Math.max(a,Math.min(b,v));}
-function ptOnPath(path,t){
-  const idx=clamp(t*(path.length-1),0,path.length-1);
-  const i=Math.floor(idx),f=idx-i;
-  if(i>=path.length-1) return path[path.length-1];
-  return {x:path[i].x+(path[i+1].x-path[i].x)*f, y:path[i].y+(path[i+1].y-path[i].y)*f};
-}
-
-// ── UPDATE ────────────────────────────────────────
-const GRAVITY = 0.42;
-const JUMP_POWER = -13;
-const MOVE = 2.0;
-
-// track previous jump state for one-shot
-let jumpWasDown = false;
-
-function update(){
-  sp.legPhase += 0.14;
-
-  // One-shot jump trigger
-  const jumpPressed = keys.jump && !jumpWasDown;
-  jumpWasDown = keys.jump;
-
-  if(sp.onTree && !sp.jumping){
-    if(sp.treeType==='ground'){
-      if(keys.left){sp.x-=MOVE; sp.facing=-1;}
-      if(keys.right){sp.x+=MOVE; sp.facing=1;}
-      if(jumpPressed){ doJump(sp.facing*1.8, JUMP_POWER); }
+    if(this.hasFood) {
+      // Carry back to nest
+      this.state = 'carry';
+      depositFood(this.x, this.y, 8);
+      let dx = nestX - this.x, dy = nestY - this.y;
+      let d = Math.sqrt(dx*dx+dy*dy);
+      if(d < 15) {
+        this.hasFood = false;
+        this.carryFood = 0;
+        this.state = 'search';
+        this.restTimer = 10 + Math.random()*20;
+        // Spawn food particle
+        particles.push({x:this.x,y:this.y,vx:(Math.random()-0.5)*1.5,vy:-Math.random()*2,life:40,color:'#6a3a0a',size:2+Math.random()*2});
+        return;
+      }
+      let ta = Math.atan2(dy, dx);
+      // Follow home pheromone + direct
+      ta = this.followHome(ta);
+      this.turnToward(ta);
+      this.move();
+    } else if(nearestPrey && nearestDist < 30) {
+      // Approach and eat
+      this.state = 'approach';
+      let dx = nearestPrey.x - this.x, dy = nearestPrey.y - this.y;
+      let ta = Math.atan2(dy, dx);
+      this.turnToward(ta);
+      this.speed = this.baseSpeed * 1.2;
+      this.move();
+      // Bite if very close
+      if(nearestDist < nearestPrey.radius + 4) {
+        this.state = 'eat';
+        this.speed = 0;
+        let bite = 0.5 + Math.random()*0.5;
+        nearestPrey.mass -= bite;
+        nearestPrey.health = nearestPrey.mass / nearestPrey.maxMass;
+        this.patience++;
+        if(this.patience > 30 + Math.random()*60) {
+          this.hasFood = true;
+          this.carryFood = 1;
+          this.patience = 0;
+          this.speed = this.baseSpeed * 0.75;
+          // Blood/juicy particle
+          if(Math.random()<0.4) particles.push({x:nearestPrey.x+(Math.random()-0.5)*10,y:nearestPrey.y+(Math.random()-0.5)*10,vx:(Math.random()-0.5)*2,vy:-Math.random()*1.5,life:30,color:'#8a1a00',size:1.5+Math.random()*2});
+        }
+      }
     } else {
-      const path = sp.treeType==='trunk' ? trunkPath() : branchPath(sp.treeType==='b0'?0:1);
-      const step = 1/(path.length-1)*0.6;
-      // On trunk: up/down moves along path (trunk is vertical)
-      // On branches: left/right moves along branch
-      if(sp.treeType==='trunk'){
-        if(keys.up || keys.left){sp.treeT=clamp(sp.treeT-step,0,1); sp.facing= keys.left ? -1 : sp.facing;}
-        if(keys.down || keys.right){sp.treeT=clamp(sp.treeT+step,0,1); sp.facing= keys.right ? 1 : sp.facing;}
+      // Search
+      this.state = 'search';
+      this.speed = this.baseSpeed;
+      // Follow food pheromone
+      let ta = this.sniffFood();
+      if(ta !== null) {
+        this.turnToward(ta);
       } else {
-        if(keys.left){sp.treeT=clamp(sp.treeT-step,0,1);sp.facing=-1;}
-        if(keys.right){sp.treeT=clamp(sp.treeT+step,0,1);sp.facing=1;}
-        if(keys.up){sp.treeT=clamp(sp.treeT+step*0.7,0,1);}
-        if(keys.down){sp.treeT=clamp(sp.treeT-step*0.7,0,1);}
+        // Random walk with bias
+        this.angle += (Math.random()-0.5) * this.turnRate * 3;
       }
-      const pt=ptOnPath(path,sp.treeT);
-      sp.x=pt.x; sp.y=pt.y;
-      if(jumpPressed){ doJump(sp.facing*2.5, JUMP_POWER*0.88); }
-    }
-  } else {
-    sp.vy += GRAVITY;
-    sp.x += sp.vx;
-    sp.y += sp.vy;
-    sp.vx *= 0.985;
-    sp.x = clamp(sp.x, 14, W-14);
-    if(sp.y >= H-35){ land('ground'); sp.y=H-35; return; }
-    checkTreeLanding();
-  }
-
-  // Silk animation
-  if(silkLine){
-    const dx=silkLine.tx-silkLine.x2, dy=silkLine.ty-silkLine.y2;
-    const d=Math.hypot(dx,dy);
-    const spd=9;
-    if(d<spd){silkLine.x2=silkLine.tx;silkLine.y2=silkLine.ty;}
-    else{silkLine.x2+=dx/d*spd;silkLine.y2+=dy/d*spd;}
-  }
-
-  webs.forEach(w=>{ if(w.age<1) w.age=Math.min(1,w.age+0.04); });
-}
-
-function doJump(vx,vy){
-  sp.vx=vx; sp.vy=vy;
-  sp.onTree=false; sp.jumping=true;
-}
-
-function checkTreeLanding(){
-  if(sp.vy<-2) return;
-  const tp=trunkPath(30);
-  for(let i=0;i<tp.length;i++){
-    const p=tp[i];
-    if(Math.abs(sp.x-p.x)<22 && Math.abs(sp.y-p.y)<18){
-      land('trunk'); sp.treeT=i/(tp.length-1); sp.x=p.x; sp.y=p.y; return;
+      this.move();
+      depositHome(this.x, this.y, 2);
     }
   }
-  for(let bi=0;bi<2;bi++){
-    const bp=branchPath(bi,16);
-    for(let i=0;i<bp.length;i++){
-      const p=bp[i];
-      if(Math.abs(sp.x-p.x)<22 && Math.abs(sp.y-p.y)<18){
-        land('b'+bi); sp.treeT=i/(bp.length-1); sp.x=p.x; sp.y=p.y; return;
-      }
+
+  sniffFood() {
+    let best = -1, bestA = null;
+    let samples = 5;
+    for(let i=0;i<samples;i++) {
+      let a = this.angle + (Math.random()-0.5)*1.2;
+      let sx = this.x + Math.cos(a)*this.senseRadius*0.6;
+      let sy = this.y + Math.sin(a)*this.senseRadius*0.6;
+      let v = sampleFood(sx,sy);
+      if(v > best) { best = v; bestA = a; }
     }
-  }
-}
-
-function land(type){
-  sp.onTree=true; sp.treeType=type;
-  sp.jumping=false; sp.vy=0; sp.vx*=0.5;
-}
-
-// ── DRAW ─────────────────────────────────────────
-function drawBg(){
-  const sg=ctx.createLinearGradient(0,0,0,H);
-  sg.addColorStop(0,'#06080f');
-  sg.addColorStop(0.5,'#0a1008');
-  sg.addColorStop(1,'#120e00');
-  ctx.fillStyle=sg; ctx.fillRect(0,0,W,H);
-
-  const mg=ctx.createRadialGradient(W*0.78,H*0.07,8,W*0.78,H*0.07,130);
-  mg.addColorStop(0,'rgba(255,255,220,0.18)');
-  mg.addColorStop(1,'rgba(0,0,0,0)');
-  ctx.fillStyle=mg; ctx.fillRect(0,0,W,H);
-
-  ctx.save();
-  ctx.shadowColor='rgba(255,255,200,0.6)';
-  ctx.shadowBlur=20;
-  ctx.fillStyle='rgba(255,253,225,0.92)';
-  ctx.beginPath(); ctx.arc(W*0.78,H*0.07,20,0,Math.PI*2); ctx.fill();
-  ctx.fillStyle='rgba(220,218,200,0.3)';
-  [[W*0.78-6,H*0.065,4],[W*0.78+7,H*0.08,3],[W*0.78+2,H*0.055,2.5]].forEach(([cx,cy,r])=>{
-    ctx.beginPath(); ctx.arc(cx,cy,r,0,Math.PI*2); ctx.fill();
-  });
-  ctx.restore();
-
-  const t=Date.now()*0.001;
-  stars.forEach(s=>{
-    const a=s.alpha*(0.7+0.3*Math.sin(t*0.8+s.twinkle));
-    ctx.fillStyle=`rgba(255,255,255,${a})`;
-    ctx.beginPath(); ctx.arc(s.x,s.y,s.r,0,Math.PI*2); ctx.fill();
-  });
-
-  const gg=ctx.createLinearGradient(0,H-55,0,H);
-  gg.addColorStop(0,'#1c1500');
-  gg.addColorStop(1,'#0a0900');
-  ctx.fillStyle=gg; ctx.fillRect(0,H-55,W,55);
-
-  const gt=Date.now()*0.0008;
-  for(let gx=4;gx<W;gx+=7){
-    const sway=Math.sin(gt+gx*0.09)*2.5;
-    const gh=12+Math.sin(gx*0.3)*5;
-    ctx.strokeStyle=`rgba(${20+Math.floor(Math.sin(gx)*8)},${55+Math.floor(Math.cos(gx)*12)},5,0.6)`;
-    ctx.lineWidth=1.2;
-    ctx.beginPath();
-    ctx.moveTo(gx,H-55);
-    ctx.quadraticCurveTo(gx+sway,H-55-gh*0.5,gx+sway*1.4,H-55-gh);
-    ctx.stroke();
-  }
-}
-
-function drawTree(){
-  const tg=ctx.createLinearGradient(TX-TRUNK_W,0,TX+TRUNK_W,0);
-  tg.addColorStop(0,'#110a02');
-  tg.addColorStop(0.35,'#3a1e0a');
-  tg.addColorStop(0.65,'#2c1608');
-  tg.addColorStop(1,'#0e0701');
-  ctx.fillStyle=tg;
-  ctx.beginPath();
-  ctx.moveTo(TX-TRUNK_W*1.6,TRUNK_BOT);
-  ctx.bezierCurveTo(TX-TRUNK_W,TRUNK_BOT*0.75,TX-TRUNK_W*0.6,TRUNK_TOP+80,TX-TRUNK_W*0.4,TRUNK_TOP);
-  ctx.lineTo(TX+TRUNK_W*0.4,TRUNK_TOP);
-  ctx.bezierCurveTo(TX+TRUNK_W*0.6,TRUNK_TOP+80,TX+TRUNK_W,TRUNK_BOT*0.75,TX+TRUNK_W*1.6,TRUNK_BOT);
-  ctx.closePath(); ctx.fill();
-
-  ctx.strokeStyle='rgba(0,0,0,0.25)'; ctx.lineWidth=1;
-  for(let i=1;i<9;i++){
-    const yy=TRUNK_TOP+(TRUNK_BOT-TRUNK_TOP)*(i/9);
-    ctx.beginPath();
-    ctx.moveTo(TX-TRUNK_W*0.4,yy);
-    ctx.bezierCurveTo(TX-4,yy+14,TX+3,yy+10,TX+TRUNK_W*0.35,yy+3);
-    ctx.stroke();
+    return best > 2 ? bestA : null;
   }
 
-  BRANCHES.forEach((b,bi)=>{
-    ctx.strokeStyle='#261208';
-    ctx.lineWidth=b.w; ctx.lineCap='round';
-    ctx.beginPath();
-    ctx.moveTo(b.sx,b.sy);
-    const cpx=(b.sx+b.ex)/2+(bi===0?-18:18);
-    const cpy=(b.sy+b.ey)/2-18;
-    ctx.quadraticCurveTo(cpx,cpy,b.ex,b.ey);
-    ctx.stroke();
+  followHome(targetAngle) {
+    let best = -1, bestA = targetAngle;
+    for(let i=0;i<6;i++) {
+      let a = targetAngle + (Math.random()-0.5)*0.8;
+      let sx = this.x + Math.cos(a)*30;
+      let sy = this.y + Math.sin(a)*30;
+      let v = sampleHome(sx,sy);
+      if(v > best) { best = v; bestA = a; }
+    }
+    return bestA;
+  }
 
-    b.subs.forEach(s=>{
-      ctx.lineWidth=s.w;
+  turnToward(target) {
+    let diff = target - this.angle;
+    while(diff > Math.PI) diff -= 2*Math.PI;
+    while(diff < -Math.PI) diff += 2*Math.PI;
+    this.angle += diff * this.turnRate;
+  }
+
+  move() {
+    let nx = this.x + Math.cos(this.angle) * this.speed;
+    let ny = this.y + Math.sin(this.angle) * this.speed;
+    // Bounce off walls
+    if(nx < 4) { nx = 4; this.angle = Math.PI - this.angle; }
+    if(nx > W-4) { nx = W-4; this.angle = Math.PI - this.angle; }
+    if(ny < 30) { ny = 30; this.angle = -this.angle; }
+    if(ny > GROUND_Y) { ny = GROUND_Y; this.angle = -this.angle; }
+    this.x = nx; this.y = ny;
+  }
+
+  draw() {
+    ctx.save();
+    ctx.translate(this.x, this.y);
+    ctx.rotate(this.angle + Math.PI/2);
+
+    const s = this.size;
+    const lp = this.legPhase;
+
+    // Legs
+    ctx.strokeStyle = '#1a0d00';
+    ctx.lineWidth = 0.8;
+    const legOffsets = [-0.5, 0, 0.5];
+    for(let i=0;i<3;i++) {
+      let ly = -s*0.2 + i*s*0.4 - s*0.4;
+      let lx = s * (this.state === 'eat' ? 1.4 : 1.2);
+      let wiggle = Math.sin(lp + i*1.2) * s*0.4;
+      // Left leg
       ctx.beginPath();
-      ctx.moveTo(b.ex,b.ey);
-      ctx.quadraticCurveTo((b.ex+s.ex)/2+(bi===0?-8:8),(b.ey+s.ey)/2-8,s.ex,s.ey);
+      ctx.moveTo(-s*0.3, ly);
+      ctx.lineTo(-lx + wiggle, ly + s*0.5);
       ctx.stroke();
-      drawLeafCluster(s.ex,s.ey,6,bi);
-    });
-    drawLeafCluster(b.ex,b.ey,9,bi);
-  });
-}
-
-function drawLeafCluster(cx,cy,n,bi){
-  ctx.save();
-  const t=Date.now()*0.0005;
-  for(let i=0;i<n;i++){
-    const angle=(i/n)*Math.PI*2+(bi===0?0.2:-0.2)+Math.sin(t+i*0.7)*0.05;
-    const r=16+i*5;
-    const lx=cx+Math.cos(angle)*r*(0.6+Math.random()*0.2);
-    const ly=cy+Math.sin(angle)*r*0.45;
-    const green=50+i*7;
-    ctx.fillStyle=`rgba(15,${green},8,${0.55+i*0.04})`;
-    ctx.beginPath();
-    ctx.ellipse(lx,ly,10+i*2,5.5+i,angle+0.3,0,Math.PI*2);
-    ctx.fill();
-  }
-  ctx.restore();
-}
-
-function drawWebs(){
-  webs.forEach(w=>{
-    ctx.save();
-    ctx.globalAlpha=w.age*0.72;
-    ctx.strokeStyle='rgba(215,240,215,0.9)';
-    ctx.lineWidth=0.85;
-    ctx.shadowColor='rgba(150,255,150,0.25)';
-    ctx.shadowBlur=4;
-    const mx=(w.x1+w.x2)/2, my=(w.y1+w.y2)/2+w.sag;
-    ctx.beginPath();
-    ctx.moveTo(w.x1,w.y1);
-    ctx.quadraticCurveTo(mx,my,w.x2,w.y2);
-    ctx.stroke();
-    ctx.restore();
-  });
-  dewdrops.forEach(d=>{
-    if(d.web>=webs.length) return;
-    const w=webs[d.web];
-    if(!w || w.age<0.5) return;
-    ctx.save();
-    ctx.globalAlpha=d.alpha*w.age;
-    const dg=ctx.createRadialGradient(d.x-d.r*0.3,d.y-d.r*0.3,0,d.x,d.y,d.r);
-    dg.addColorStop(0,'rgba(255,255,255,0.8)');
-    dg.addColorStop(0.6,'rgba(180,230,255,0.5)');
-    dg.addColorStop(1,'rgba(100,180,255,0.1)');
-    ctx.fillStyle=dg;
-    ctx.beginPath(); ctx.arc(d.x,d.y,d.r,0,Math.PI*2); ctx.fill();
-    ctx.restore();
-  });
-}
-
-function drawSilk(){
-  if(!silkLine) return;
-  ctx.save();
-  ctx.strokeStyle='rgba(200,255,180,0.45)';
-  ctx.lineWidth=0.7;
-  ctx.setLineDash([5,5]);
-  ctx.beginPath();
-  ctx.moveTo(silkLine.x1,silkLine.y1);
-  ctx.lineTo(silkLine.x2,silkLine.y2);
-  ctx.stroke();
-  ctx.restore();
-}
-
-function drawAnchors(){
-  if(!webMode) return;
-  const t=Date.now()*0.005;
-  ANCHORS.forEach(p=>{
-    const isSelected = anchorA && Math.abs(anchorA.x-p.x)<2 && Math.abs(anchorA.y-p.y)<2;
-    const pulse=0.3+0.25*Math.sin(t+p.x*0.05);
-    ctx.save();
-    if(isSelected){
-      ctx.shadowColor='rgba(255,220,50,0.8)';
-      ctx.shadowBlur=10;
-      ctx.fillStyle=`rgba(255,220,50,${0.85+pulse*0.1})`;
-      ctx.beginPath(); ctx.arc(p.x,p.y,5.5,0,Math.PI*2); ctx.fill();
-    } else {
-      ctx.fillStyle=`rgba(140,255,140,${pulse})`;
-      ctx.beginPath(); ctx.arc(p.x,p.y,3.5,0,Math.PI*2); ctx.fill();
+      // Right leg
+      ctx.beginPath();
+      ctx.moveTo(s*0.3, ly);
+      ctx.lineTo(lx - wiggle, ly + s*0.5);
+      ctx.stroke();
     }
+
+    // Abdomen (teardrop)
+    ctx.beginPath();
+    let abdW = this.abdomenSize * 0.7;
+    let abdH = this.abdomenSize;
+    ctx.ellipse(0, s*0.6 + abdH*0.5, abdW, abdH, 0, 0, Math.PI*2);
+    ctx.fillStyle = this.hasFood ? '#5a1a00' : '#0d0800';
+    ctx.fill();
+    // Abdomen sheen
+    ctx.beginPath();
+    ctx.ellipse(-abdW*0.2, s*0.5 + abdH*0.3, abdW*0.3, abdH*0.35, -0.3, 0, Math.PI*2);
+    ctx.fillStyle = 'rgba(255,180,80,0.06)';
+    ctx.fill();
+
+    // Thorax
+    ctx.beginPath();
+    ctx.ellipse(0, 0, s*0.5, s*0.55, 0, 0, Math.PI*2);
+    ctx.fillStyle = '#150a00';
+    ctx.fill();
+
+    // Head
+    ctx.beginPath();
+    ctx.ellipse(0, -s*0.75, this.headSize*0.65, this.headSize*0.7, 0, 0, Math.PI*2);
+    ctx.fillStyle = '#100800';
+    ctx.fill();
+
+    // Eyes
+    ctx.fillStyle = '#6a3a10';
+    ctx.beginPath(); ctx.arc(-s*0.18, -s*0.9, s*0.12, 0, Math.PI*2); ctx.fill();
+    ctx.beginPath(); ctx.arc(s*0.18, -s*0.9, s*0.12, 0, Math.PI*2); ctx.fill();
+
+    // Antennae
+    ctx.strokeStyle = '#1a0d00';
+    ctx.lineWidth = 0.7;
+    let aw = Math.sin(lp*0.5)*s*0.3;
+    ctx.beginPath();
+    ctx.moveTo(-s*0.15, -s*1.1);
+    ctx.quadraticCurveTo(-s*0.8+aw, -s*1.8, -s*0.9+aw, -s*2.1);
+    ctx.stroke();
+    ctx.beginPath();
+    ctx.moveTo(s*0.15, -s*1.1);
+    ctx.quadraticCurveTo(s*0.8-aw, -s*1.8, s*0.9-aw, -s*2.1);
+    ctx.stroke();
+    // Antenna tips
+    ctx.fillStyle = '#5a2a08';
+    ctx.beginPath(); ctx.arc(-s*0.9+aw, -s*2.1, s*0.15, 0, Math.PI*2); ctx.fill();
+    ctx.beginPath(); ctx.arc(s*0.9-aw, -s*2.1, s*0.15, 0, Math.PI*2); ctx.fill();
+
+    // Carrying food indicator
+    if(this.hasFood) {
+      ctx.beginPath();
+      ctx.arc(0, -s*0.75 - s*0.8, s*0.5, 0, Math.PI*2);
+      ctx.fillStyle = '#8a4010';
+      ctx.fill();
+    }
+
     ctx.restore();
-  });
+  }
 }
 
-function drawSpider(){
-  ctx.save();
-  ctx.translate(sp.x, sp.y);
-  ctx.scale(sp.facing,1);
-
-  const lp=sp.legPhase;
-  const moving=keys.left||keys.right||keys.up||keys.down;
-
-  if(sp.onTree && sp.treeType!=='ground'){
-    ctx.strokeStyle='rgba(180,240,180,0.2)';
-    ctx.lineWidth=0.6;
-    ctx.setLineDash([]);
-    ctx.beginPath(); ctx.moveTo(0,8); ctx.lineTo(0,32); ctx.stroke();
+// ====== PREY ======
+class Prey {
+  constructor(type, x, y) {
+    const d = PREY_DATA[type];
+    this.type = type;
+    this.emoji = d.emoji;
+    this.mass = d.mass;
+    this.maxMass = d.mass;
+    this.health = 1.0;
+    this.radius = d.size;
+    this.x = x;
+    this.y = y;
+    this.vy = 0;
+    this.vx = (Math.random()-0.5)*2;
+    this.grounded = false;
+    this.eaten = false;
+    this.age = 0;
+    this.bones = []; // debris after eaten
+    // Struggle animation
+    this.struggle = 1.0;
+    this.struggleTimer = 0;
+    this.struggling = true;
+    this.deathFrames = 0;
   }
 
-  ctx.strokeStyle='rgba(15,8,2,0.9)';
-  ctx.lineWidth=1.6; ctx.lineCap='round';
-  const legs=[
-    [-11,-3,-28,-16+Math.sin(lp+(moving?0:0))*5],
-    [-10,-1,-24,-7+Math.sin(lp+0.6)*(moving?4:1)],
-    [-9, 2, -22, 12+Math.sin(lp+1.2)*(moving?4:1)],
-    [-7, 5, -20, 22+Math.sin(lp+1.8)*(moving?4:1)],
-    [11,-3, 28,-16+Math.sin(lp+Math.PI)*5],
-    [10,-1, 24,-7+Math.sin(lp+Math.PI+0.6)*(moving?4:1)],
-    [9,  2, 22, 12+Math.sin(lp+Math.PI+1.2)*(moving?4:1)],
-    [7,  5, 20, 22+Math.sin(lp+Math.PI+1.8)*(moving?4:1)],
-  ];
-  legs.forEach(([bx,by,ex,ey])=>{
-    const mx=(bx+ex)/2, my=(by+ey)/2-7;
-    ctx.beginPath(); ctx.moveTo(bx,by); ctx.quadraticCurveTo(mx,my,ex,ey); ctx.stroke();
-  });
+  update() {
+    this.age++;
+    // Physics
+    if(!this.grounded) {
+      this.vy += 0.3;
+      this.x += this.vx;
+      this.y += this.vy;
+      if(this.y + this.radius >= GROUND_Y) {
+        this.y = GROUND_Y - this.radius;
+        this.vy *= -0.3;
+        this.vx *= 0.8;
+        if(Math.abs(this.vy) < 1) { this.vy = 0; this.grounded = true; }
+      }
+      if(this.x < this.radius) { this.x = this.radius; this.vx *= -0.7; }
+      if(this.x > W - this.radius) { this.x = W - this.radius; this.vx *= -0.7; }
+    }
 
-  ctx.fillStyle='#0e0600';
-  ctx.beginPath(); ctx.ellipse(-5,2,9,7,-0.15,0,Math.PI*2); ctx.fill();
-  ctx.fillStyle='#cc2200';
-  ctx.beginPath(); ctx.ellipse(-5,2,5,3,-0.15,0,Math.PI*2); ctx.fill();
-  ctx.fillStyle='rgba(255,80,0,0.6)';
-  ctx.beginPath(); ctx.ellipse(-5,2,2.5,1.2,-0.15,0,Math.PI*2); ctx.fill();
+    // Struggle
+    if(this.grounded && this.struggling) {
+      this.struggleTimer++;
+      this.struggle = Math.max(0, 1 - this.health * 0.3);
+      if(this.health < 0.1) { this.struggling = false; this.struggle = 0; }
+    }
 
-  ctx.fillStyle='#0a0500';
-  ctx.beginPath(); ctx.ellipse(5,0,7,5.5,0.1,0,Math.PI*2); ctx.fill();
+    // Death / eaten check
+    if(this.mass <= 1) {
+      this.eaten = true;
+    }
 
-  ctx.strokeStyle='rgba(20,10,2,0.8)'; ctx.lineWidth=1.2;
-  [[5,-2,12,-8],[5,1,12,6]].forEach(([bx,by,ex,ey])=>{
-    ctx.beginPath(); ctx.moveTo(bx,by); ctx.lineTo(ex,ey); ctx.stroke();
-  });
+    // Deposit food pheromone around corpse
+    if(!this.eaten && this.grounded && frameCount % 3 === 0) {
+      let intensity = (this.mass / this.maxMass) * 30 + 5;
+      for(let i=0;i<3;i++) {
+        let ax = this.x + (Math.random()-0.5)*this.radius*3;
+        let ay = this.y + (Math.random()-0.5)*this.radius*2;
+        depositFood(ax, ay, intensity);
+      }
+    }
+  }
 
-  ctx.fillStyle='rgba(255,50,0,0.95)';
-  [[3,-2],[6,-2],[3,1],[6,1]].forEach(([ex,ey])=>{
-    ctx.beginPath(); ctx.arc(ex,ey,1.3,0,Math.PI*2); ctx.fill();
-  });
-  ctx.fillStyle='rgba(255,200,200,0.6)';
-  [[3,-2.3],[6,-2.3]].forEach(([ex,ey])=>{
-    ctx.beginPath(); ctx.arc(ex,ey,0.5,0,Math.PI*2); ctx.fill();
-  });
+  draw() {
+    if(this.eaten) return;
+    ctx.save();
+    ctx.translate(this.x, this.y);
 
-  ctx.restore();
+    // Struggle wobble
+    let wobble = this.struggling ? Math.sin(this.age*0.3)*this.struggle*3 : 0;
+    ctx.rotate(wobble * 0.1);
+
+    // Shadow
+    ctx.beginPath();
+    ctx.ellipse(0, this.radius*0.5, this.radius*0.8, this.radius*0.25, 0, 0, Math.PI*2);
+    ctx.fillStyle = 'rgba(0,0,0,0.4)';
+    ctx.fill();
+
+    // Decay overlay: show increasingly stripped look
+    let decay = 1 - this.health;
+
+    // Draw the body
+    let scale = 0.8 + this.health*0.2; // shrinks as eaten
+    ctx.scale(scale, scale);
+    ctx.rotate(wobble*0.05);
+
+    // Background flesh
+    if(this.health < 0.8) {
+      ctx.beginPath();
+      ctx.ellipse(0, 0, this.radius*0.9, this.radius*0.7, 0, 0, Math.PI*2);
+      ctx.fillStyle = `rgba(${Math.floor(150*this.health+60)},${Math.floor(40*this.health)},${Math.floor(30*this.health)},${0.6+decay*0.4})`;
+      ctx.fill();
+    }
+
+    // Emoji (fades as eaten)
+    ctx.globalAlpha = Math.min(1, this.health * 2);
+    ctx.font = `${this.radius * 1.6}px serif`;
+    ctx.textAlign = 'center';
+    ctx.textBaseline = 'middle';
+    // Decomposing tint
+    if(decay > 0.3) {
+      ctx.filter = `brightness(${0.3+this.health*0.7}) sepia(${decay*0.8})`;
+    }
+    ctx.fillText(this.emoji, 0, 0);
+    ctx.filter = 'none';
+    ctx.globalAlpha = 1;
+
+    // Bones / skeleton emerging
+    if(this.health < 0.35) {
+      ctx.strokeStyle = `rgba(220,200,160,${(0.35-this.health)*3})`;
+      ctx.lineWidth = 1;
+      for(let i=0;i<4;i++) {
+        ctx.beginPath();
+        ctx.moveTo(-this.radius*0.5+i*this.radius*0.3, -this.radius*0.2);
+        ctx.lineTo(-this.radius*0.5+i*this.radius*0.3, this.radius*0.2);
+        ctx.stroke();
+      }
+    }
+
+    // Blood pool
+    if(this.health < 0.7 && this.grounded) {
+      ctx.beginPath();
+      ctx.ellipse(0, this.radius*0.4, this.radius*(1-this.health)*0.8, this.radius*(1-this.health)*0.3, 0, 0, Math.PI*2);
+      ctx.fillStyle = `rgba(80,0,0,${(0.7-this.health)*0.6})`;
+      ctx.fill();
+    }
+
+    ctx.restore();
+  }
 }
 
-// ── LOOP ─────────────────────────────────────────
-function loop(){
-  ctx.clearRect(0,0,W,H);
-  drawBg();
-  drawTree();
-  drawWebs();
-  drawSilk();
-  drawAnchors();
-  drawSpider();
-  update();
+// ====== PARTICLES ======
+function updateParticles() {
+  for(let i=particles.length-1;i>=0;i--) {
+    let p = particles[i];
+    p.x += p.vx; p.y += p.vy;
+    p.vy += 0.05;
+    p.life--;
+    if(p.life <= 0) { particles.splice(i,1); continue; }
+    ctx.beginPath();
+    ctx.arc(p.x, p.y, p.size*(p.life/40), 0, Math.PI*2);
+    ctx.fillStyle = p.color;
+    ctx.globalAlpha = p.life/40;
+    ctx.fill();
+    ctx.globalAlpha = 1;
+  }
+}
+
+// ====== ENVIRONMENT ======
+function drawBox() {
+  // Light sandy soil gradient background
+  let grad = ctx.createLinearGradient(0, 0, 0, GROUND_Y);
+  grad.addColorStop(0, '#e8d5a0');
+  grad.addColorStop(0.4, '#d4bf85');
+  grad.addColorStop(1, '#c0a860');
+  ctx.fillStyle = grad;
+  ctx.fillRect(0, 0, W, GROUND_Y);
+
+  // Ground surface
+  ctx.beginPath();
+  ctx.moveTo(0, GROUND_Y);
+  ctx.lineTo(W, GROUND_Y);
+  ctx.strokeStyle = '#8a6a30';
+  ctx.lineWidth = 2;
+  ctx.stroke();
+
+  // Below ground (darker soil block)
+  ctx.fillStyle = '#a08040';
+  ctx.fillRect(0, GROUND_Y, W, H-GROUND_Y);
+
+  // Soil lines below
+  for(let i=1;i<4;i++) {
+    ctx.beginPath();
+    ctx.moveTo(0, GROUND_Y + i*8);
+    ctx.lineTo(W, GROUND_Y + i*8);
+    ctx.strokeStyle = `rgba(80,50,10,${0.25-i*0.05})`;
+    ctx.lineWidth = 1;
+    ctx.stroke();
+  }
+
+  // Wall borders (glass look)
+  ctx.strokeStyle = '#8a6020';
+  ctx.lineWidth = 3;
+  ctx.strokeRect(1, 1, W-2, GROUND_Y-1);
+
+  // Nest entrance hole
+  ctx.beginPath();
+  ctx.ellipse(nestX, GROUND_Y, 25, 8, 0, 0, Math.PI*2);
+  ctx.fillStyle = '#6a4010';
+  ctx.fill();
+  ctx.strokeStyle = '#4a2a05';
+  ctx.lineWidth = 1.5;
+  ctx.stroke();
+}
+
+function drawPheromones() {
+  // Subtle food trail visualization on light bg
+  ctx.globalAlpha = 0.07;
+  for(let gy=0;gy<gridH;gy++) {
+    for(let gx=0;gx<gridW;gx++) {
+      let v = pheroGrid[gy*gridW+gx];
+      if(v > 5) {
+        ctx.fillStyle = `rgb(${Math.floor(180-v*0.3)},${Math.floor(100-v*0.2)},0)`;
+        ctx.fillRect(gx*GRID, gy*GRID, GRID, GRID);
+      }
+    }
+  }
+  ctx.globalAlpha = 1;
+}
+
+function drawNest() {
+  // Nest glow on light bg
+  let ng = ctx.createRadialGradient(nestX, nestY, 0, nestX, nestY, 40);
+  ng.addColorStop(0, 'rgba(100,60,10,0.2)');
+  ng.addColorStop(1, 'rgba(0,0,0,0)');
+  ctx.fillStyle = ng;
+  ctx.fillRect(nestX-40, nestY-20, 80, 40);
+}
+
+// ====== SOIL TEXTURE (pre-rendered) ======
+let soilCanvas = null;
+function buildSoilTexture() {
+  soilCanvas = document.createElement('canvas');
+  soilCanvas.width = W; soilCanvas.height = GROUND_Y;
+  let sc = soilCanvas.getContext('2d');
+  // Sandy soil dots
+  for(let i=0;i<1000;i++) {
+    let x = Math.random()*W;
+    let y = Math.random()*GROUND_Y;
+    let r = Math.random()*2;
+    sc.beginPath();
+    sc.arc(x, y, r, 0, Math.PI*2);
+    sc.fillStyle = `rgba(${100+Math.random()*60},${70+Math.random()*40},${20+Math.random()*20},${0.12+Math.random()*0.18})`;
+    sc.fill();
+  }
+  // Small pebbles
+  for(let i=0;i<80;i++) {
+    let x = Math.random()*W;
+    let y = Math.random()*GROUND_Y;
+    let r = 1.5+Math.random()*3.5;
+    sc.beginPath();
+    sc.ellipse(x,y,r,r*0.7,Math.random()*Math.PI,0,Math.PI*2);
+    sc.fillStyle = `rgba(${90+Math.random()*40},${60+Math.random()*30},${15+Math.random()*15},${0.15+Math.random()*0.12})`;
+    sc.fill();
+  }
+  // Grass/leaf fragments near top
+  for(let i=0;i<30;i++) {
+    let x = Math.random()*W;
+    let y = Math.random()*(GROUND_Y*0.3);
+    sc.beginPath();
+    sc.ellipse(x,y,3+Math.random()*4,1+Math.random()*2,Math.random()*Math.PI,0,Math.PI*2);
+    sc.fillStyle = `rgba(80,100,30,${0.06+Math.random()*0.08})`;
+    sc.fill();
+  }
+}
+
+// ====== INIT ======
+function init() {
+  resize();
+  buildSoilTexture();
+  ants = [];
+  for(let i=0;i<antCount;i++) {
+    setTimeout(() => ants.push(new Ant()), i*5);
+  }
+  depositHome(nestX, nestY, 255);
+}
+
+// ====== ADD PREY ======
+function addPrey(type) {
+  // Try to place near center of arena, avoiding overlap with existing prey
+  const centerX = W * 0.5;
+  const centerY = GROUND_Y * 0.45; // middle of the visible arena
+  const d = PREY_DATA[type];
+  const minDist = d.size * 2.5 + 20;
+
+  let x, y;
+  let attempts = 0;
+  let placed = false;
+
+  // Spiral outward from center to find free spot
+  const angles = [0, Math.PI/3, 2*Math.PI/3, Math.PI, 4*Math.PI/3, 5*Math.PI/3];
+  const rings = [0, 60, 110, 160, 210];
+
+  outer:
+  for(let r of rings) {
+    for(let a of angles) {
+      let cx = r === 0 ? centerX : centerX + Math.cos(a + r*0.01)*r;
+      let cy = r === 0 ? centerY : centerY + Math.sin(a + r*0.01)*r*(0.6);
+      // Clamp within arena
+      cx = Math.max(d.size*2, Math.min(W - d.size*2, cx));
+      cy = Math.max(50, Math.min(GROUND_Y - d.size*2, cy));
+      // Check distance from existing prey
+      let ok = true;
+      for(let p of preyList) {
+        if(p.eaten) continue;
+        let dx = p.x - cx, dy = p.y - cy;
+        let dist = Math.sqrt(dx*dx+dy*dy);
+        if(dist < minDist + p.radius) { ok = false; break; }
+      }
+      if(ok || r === rings[rings.length-1]) {
+        x = cx + (Math.random()-0.5)*10;
+        y = cy + (Math.random()-0.5)*10;
+        placed = true;
+        break outer;
+      }
+    }
+  }
+
+  if(!placed) {
+    x = centerX + (Math.random()-0.5)*W*0.5;
+    y = centerY + (Math.random()-0.5)*GROUND_Y*0.3;
+  }
+
+  // Drop from above
+  let prey = new Prey(type, x, 40);
+  prey.vx = (x - W/2) * 0.02; // slight horizontal push toward target
+  preyList.push(prey);
+
+  // Hide hint
+  if(hintVisible) {
+    hintVisible = false;
+    document.getElementById('hint').style.opacity = '0';
+  }
+  // Nearby ants get excited
+  let excited = 0;
+  for(let a of ants) {
+    if(Math.random() < 0.3 && excited < 30) {
+      a.state = 'search';
+      a.angle = Math.atan2(y - a.y, x - a.x) + (Math.random()-0.5)*0.5;
+      excited++;
+    }
+  }
+}
+
+// ====== STATS ======
+function updateStats() {
+  document.getElementById('ant-count').textContent = `🐜 ${ants.length}`;
+  let fs = '';
+  for(let p of preyList) {
+    if(!p.eaten) {
+      let pct = Math.round(p.health*100);
+      fs += `${p.emoji} ${pct}%  `;
+    }
+  }
+  document.getElementById('food-status').textContent = fs;
+}
+
+// ====== MAIN LOOP ======
+function loop() {
+  frameCount++;
+  ctx.clearRect(0, 0, W, H);
+
+  drawBox();
+  if(soilCanvas) ctx.drawImage(soilCanvas, 0, 0);
+  drawPheromones();
+  drawNest();
+
+  // Update & draw prey
+  preyList = preyList.filter(p => {
+    p.update();
+    p.draw();
+    return p.age < 18000; // cleanup old
+  });
+
+  // Evaporate
+  if(frameCount % 2 === 0) evaporate();
+
+  // Update & draw ants
+  for(let a of ants) {
+    a.update();
+    a.draw();
+  }
+
+  updateParticles();
+
+  if(frameCount % 60 === 0) updateStats();
+
   requestAnimationFrame(loop);
 }
 
-setTimeout(()=>hint('🕷 Добро пожаловать!\n◀▲▼▶ — движение    ↑ — прыжок\n🕸 — режим плетения паутины',4500),600);
-setTimeout(()=>hint('💡 На стволе ▲▼ движут вверх/вниз\nНа ветках ◀▶ ползут по ветке',3500),7000);
+window.addEventListener('resize', () => { resize(); buildSoilTexture(); });
+canvas.addEventListener('click', e => {
+  // Drop prey at tap location on canvas
+  // (buttons handle actual spawning)
+});
 
+init();
 loop();
 </script>
 </body>
