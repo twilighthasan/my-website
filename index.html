@@ -1,857 +1,1168 @@
 <!DOCTYPE html>
+
 <html lang="ru">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-<title>Муравьиная Колония</title>
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">
+<title>Чайный Мастер</title>
 <style>
-  * { margin: 0; padding: 0; box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
-  
-  body {
-    background: #c8b090;
-    width: 100vw;
-    height: 100vh;
-    overflow: hidden;
-    font-family: 'Georgia', serif;
-    touch-action: none;
-  }
+  @import url('https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,700;1,400&family=Nunito:wght@300;400;600&display=swap');
 
-  canvas {
-    display: block;
-    width: 100vw;
-    height: 100vh;
-  }
+:root {
+–bg: #0f0d0a;
+–bg2: #1a1610;
+–bg3: #231f18;
+–card: #1e1a13;
+–border: #3a3020;
+–gold: #c9a84c;
+–gold2: #e8c97a;
+–green: #5a8a4a;
+–green2: #7ab865;
+–text: #e8dfc8;
+–text2: #a89870;
+–red: #c0504a;
+–blue: #4a7fa0;
+–purple: #7a5a9a;
+–orange: #c07840;
+}
 
-  #ui {
-    position: fixed;
-    bottom: 0;
-    left: 0;
-    right: 0;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    padding-bottom: env(safe-area-inset-bottom, 10px);
-    pointer-events: none;
-    z-index: 10;
-  }
+- { margin:0; padding:0; box-sizing:border-box; -webkit-tap-highlight-color:transparent; }
 
-  #prey-panel {
-    display: flex;
-    gap: 8px;
-    padding: 8px 12px;
-    background: rgba(200,175,120,0.95);
-    border-top: 2px solid #8a6020;
-    border-radius: 16px 16px 0 0;
-    width: 100%;
-    justify-content: center;
-    flex-wrap: wrap;
-    pointer-events: all;
-    backdrop-filter: blur(4px);
-  }
+body {
+background: var(–bg);
+color: var(–text);
+font-family: ‘Nunito’, sans-serif;
+height: 100vh;
+overflow: hidden;
+display: flex;
+flex-direction: column;
+}
 
-  .prey-btn {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    background: linear-gradient(145deg, #e8d090, #d4b860);
-    border: 1.5px solid #8a6020;
-    border-radius: 10px;
-    padding: 6px 8px;
-    cursor: pointer;
-    font-size: 22px;
-    color: #3a2008;
-    min-width: 50px;
-    transition: all 0.15s;
-    user-select: none;
-    -webkit-user-select: none;
-    box-shadow: 0 2px 4px rgba(0,0,0,0.2);
-  }
+/* ── HEADER ── */
+.header {
+padding: 16px 20px 10px;
+background: linear-gradient(180deg, #1a1610 0%, transparent 100%);
+flex-shrink: 0;
+}
+.header-top {
+display: flex;
+align-items: center;
+gap: 10px;
+margin-bottom: 12px;
+}
+.logo { font-size: 28px; }
+.header-title {
+flex: 1;
+}
+.header-title h1 {
+font-family: ‘Playfair Display’, serif;
+font-size: 20px;
+color: var(–gold2);
+line-height: 1.1;
+}
+.header-title p {
+font-size: 11px;
+color: var(–text2);
+font-weight: 300;
+letter-spacing: 0.5px;
+}
+.level-badge {
+background: linear-gradient(135deg, var(–gold), var(–orange));
+color: #0f0d0a;
+font-size: 10px;
+font-weight: 700;
+padding: 4px 10px;
+border-radius: 20px;
+letter-spacing: 0.5px;
+text-transform: uppercase;
+}
 
-  .prey-btn:active {
-    transform: scale(0.92);
-    background: linear-gradient(145deg, #f0d880, #c8a840);
-    border-color: #6a4010;
-    box-shadow: 0 1px 2px rgba(0,0,0,0.3);
-  }
+/* ── SEARCH ── */
+.search-wrap {
+position: relative;
+margin-bottom: 2px;
+}
+.search-icon {
+position: absolute;
+left: 14px;
+top: 50%;
+transform: translateY(-50%);
+font-size: 16px;
+pointer-events: none;
+}
+.search-input {
+width: 100%;
+background: var(–bg3);
+border: 1px solid var(–border);
+border-radius: 14px;
+padding: 12px 16px 12px 42px;
+color: var(–text);
+font-family: ‘Nunito’, sans-serif;
+font-size: 15px;
+outline: none;
+transition: border-color 0.2s;
+}
+.search-input::placeholder { color: var(–text2); }
+.search-input:focus { border-color: var(–gold); }
 
-  .prey-btn span {
-    font-size: 9px;
-    color: #5a3a10;
-    margin-top: 2px;
-    font-family: sans-serif;
-    text-align: center;
-    line-height: 1.1;
-    font-weight: bold;
-  }
+/* ── TABS ── */
+.tabs {
+display: flex;
+gap: 6px;
+padding: 10px 20px 6px;
+overflow-x: auto;
+scrollbar-width: none;
+flex-shrink: 0;
+}
+.tabs::-webkit-scrollbar { display: none; }
+.tab {
+flex-shrink: 0;
+padding: 7px 14px;
+border-radius: 20px;
+font-size: 12px;
+font-weight: 600;
+border: 1px solid var(–border);
+background: transparent;
+color: var(–text2);
+cursor: pointer;
+touch-action: manipulation;
+transition: all 0.2s;
+white-space: nowrap;
+}
+.tab.active {
+background: var(–gold);
+color: #0f0d0a;
+border-color: var(–gold);
+}
 
-  #stats {
-    position: fixed;
-    top: env(safe-area-inset-top, 10px);
-    left: 0;
-    right: 0;
-    display: flex;
-    justify-content: space-between;
-    padding: 8px 16px;
-    pointer-events: none;
-    z-index: 10;
-    font-size: 11px;
-    color: #5a3a10;
-    font-family: sans-serif;
-    font-weight: bold;
-    text-shadow: 0 1px 2px rgba(255,220,150,0.8);
-  }
+/* ── CONTENT ── */
+.content {
+flex: 1;
+overflow-y: auto;
+padding: 8px 16px 20px;
+scrollbar-width: thin;
+scrollbar-color: var(–border) transparent;
+}
+.content::-webkit-scrollbar { width: 3px; }
+.content::-webkit-scrollbar-thumb { background: var(–border); border-radius: 3px; }
 
-  #hint {
-    position: fixed;
-    top: 50%;
-    left: 50%;
-    transform: translate(-50%,-50%);
-    color: rgba(80,50,10,0.4);
-    font-size: 14px;
-    text-align: center;
-    pointer-events: none;
-    z-index: 5;
-    transition: opacity 1s;
-    line-height: 1.8;
-  }
+/* ── DISEASE CARDS ── */
+.section-title {
+font-family: ‘Playfair Display’, serif;
+font-size: 13px;
+color: var(–text2);
+letter-spacing: 1px;
+text-transform: uppercase;
+margin: 8px 0 10px 4px;
+}
 
-  #title {
-    position: fixed;
-    top: env(safe-area-inset-top, 10px);
-    left: 50%;
-    transform: translateX(-50%);
-    color: #5a3010;
-    font-size: 13px;
-    letter-spacing: 2px;
-    text-transform: uppercase;
-    pointer-events: none;
-    z-index: 10;
-    font-family: sans-serif;
-    font-weight: bold;
-    text-shadow: 0 1px 2px rgba(255,220,150,0.6);
-  }
+.disease-grid {
+display: grid;
+grid-template-columns: 1fr 1fr;
+gap: 10px;
+margin-bottom: 16px;
+}
+.disease-card {
+background: var(–card);
+border: 1px solid var(–border);
+border-radius: 16px;
+padding: 14px 12px;
+cursor: pointer;
+touch-action: manipulation;
+transition: all 0.2s;
+position: relative;
+overflow: hidden;
+}
+.disease-card::before {
+content: ‘’;
+position: absolute;
+top: 0; left: 0; right: 0;
+height: 3px;
+border-radius: 16px 16px 0 0;
+}
+.disease-card.cat-simple::before { background: var(–green); }
+.disease-card.cat-digest::before { background: var(–orange); }
+.disease-card.cat-nerve::before { background: var(–purple); }
+.disease-card.cat-immune::before { background: var(–blue); }
+.disease-card.cat-pain::before { background: var(–red); }
+.disease-card.cat-skin::before { background: #a0786a; }
+
+.disease-card:active { transform: scale(0.97); }
+.disease-icon { font-size: 24px; margin-bottom: 6px; }
+.disease-name {
+font-size: 13px;
+font-weight: 600;
+color: var(–text);
+line-height: 1.3;
+margin-bottom: 4px;
+}
+.disease-hint {
+font-size: 10px;
+color: var(–text2);
+line-height: 1.3;
+}
+
+/* ── DETAIL VIEW ── */
+.detail-view { display: none; }
+.detail-view.active { display: block; }
+.list-view.hidden { display: none; }
+
+.back-btn {
+display: flex;
+align-items: center;
+gap: 8px;
+color: var(–gold);
+font-size: 14px;
+font-weight: 600;
+background: none;
+border: none;
+cursor: pointer;
+touch-action: manipulation;
+padding: 4px 0 12px 0;
+}
+
+.detail-header {
+background: linear-gradient(135deg, var(–bg3), var(–card));
+border: 1px solid var(–border);
+border-radius: 18px;
+padding: 18px;
+margin-bottom: 16px;
+}
+.detail-icon { font-size: 36px; margin-bottom: 8px; }
+.detail-title {
+font-family: ‘Playfair Display’, serif;
+font-size: 22px;
+color: var(–gold2);
+margin-bottom: 6px;
+}
+.detail-desc {
+font-size: 13px;
+color: var(–text2);
+line-height: 1.6;
+}
+
+.teas-title {
+font-family: ‘Playfair Display’, serif;
+font-size: 16px;
+color: var(–text);
+margin: 4px 0 12px;
+}
+
+.tea-card {
+background: var(–card);
+border: 1px solid var(–border);
+border-radius: 16px;
+padding: 16px;
+margin-bottom: 12px;
+cursor: pointer;
+touch-action: manipulation;
+transition: all 0.2s;
+}
+.tea-card:active { transform: scale(0.98); }
+.tea-card-header {
+display: flex;
+align-items: flex-start;
+gap: 12px;
+margin-bottom: 10px;
+}
+.tea-emoji { font-size: 28px; flex-shrink: 0; }
+.tea-info { flex: 1; }
+.tea-name {
+font-family: ‘Playfair Display’, serif;
+font-size: 16px;
+color: var(–gold2);
+margin-bottom: 3px;
+}
+.tea-latin {
+font-size: 11px;
+font-style: italic;
+color: var(–text2);
+margin-bottom: 6px;
+}
+.tea-effect {
+font-size: 12px;
+color: var(–text);
+line-height: 1.5;
+}
+
+.tea-recipe {
+background: var(–bg3);
+border-radius: 12px;
+padding: 12px;
+margin-top: 10px;
+}
+.recipe-label {
+font-size: 10px;
+font-weight: 700;
+color: var(–gold);
+letter-spacing: 1px;
+text-transform: uppercase;
+margin-bottom: 8px;
+}
+.recipe-steps { list-style: none; }
+.recipe-step {
+display: flex;
+gap: 8px;
+font-size: 12px;
+color: var(–text);
+line-height: 1.5;
+margin-bottom: 5px;
+}
+.step-num {
+background: var(–gold);
+color: #0f0d0a;
+width: 18px;
+height: 18px;
+border-radius: 50%;
+display: flex;
+align-items: center;
+justify-content: center;
+font-size: 10px;
+font-weight: 700;
+flex-shrink: 0;
+margin-top: 1px;
+}
+
+.tags-row {
+display: flex;
+flex-wrap: wrap;
+gap: 6px;
+margin-top: 10px;
+}
+.tag {
+font-size: 10px;
+padding: 3px 9px;
+border-radius: 10px;
+font-weight: 600;
+border: 1px solid;
+}
+.tag-safe { color: var(–green2); border-color: var(–green); background: rgba(90,138,74,0.15); }
+.tag-caution { color: #f0c060; border-color: #c09040; background: rgba(192,120,64,0.15); }
+.tag-warning { color: var(–red); border-color: var(–red); background: rgba(192,80,74,0.15); }
+.tag-time { color: var(–blue); border-color: var(–blue); background: rgba(74,127,160,0.15); }
+
+.warn-box {
+background: rgba(192,80,74,0.12);
+border: 1px solid rgba(192,80,74,0.3);
+border-radius: 12px;
+padding: 10px 12px;
+font-size: 11px;
+color: #e08080;
+line-height: 1.5;
+margin-top: 10px;
+display: flex;
+gap: 8px;
+align-items: flex-start;
+}
+
+/* ── SEARCH RESULTS ── */
+.search-results { display: none; }
+.search-results.active { display: block; }
+.no-results {
+text-align: center;
+padding: 40px 20px;
+color: var(–text2);
+font-size: 14px;
+}
+.no-results .no-icon { font-size: 40px; margin-bottom: 10px; }
+
+/* ── MASTER INFO ── */
+.master-card {
+background: linear-gradient(135deg, #1a1a0e, #1a160a);
+border: 1px solid var(–gold);
+border-radius: 18px;
+padding: 18px;
+margin-bottom: 14px;
+position: relative;
+overflow: hidden;
+}
+.master-card::after {
+content: ‘茶’;
+position: absolute;
+right: 16px;
+top: 50%;
+transform: translateY(-50%);
+font-size: 60px;
+opacity: 0.07;
+font-family: serif;
+}
+.master-title {
+font-family: ‘Playfair Display’, serif;
+font-size: 16px;
+color: var(–gold2);
+margin-bottom: 8px;
+}
+.master-text {
+font-size: 12px;
+color: var(–text2);
+line-height: 1.7;
+}
+
+.tip-row {
+background: var(–bg3);
+border-radius: 14px;
+padding: 12px 14px;
+margin-bottom: 10px;
+display: flex;
+gap: 10px;
+align-items: flex-start;
+}
+.tip-icon { font-size: 20px; flex-shrink: 0; }
+.tip-text { font-size: 12px; color: var(–text); line-height: 1.6; }
+.tip-text strong { color: var(–gold2); font-weight: 600; }
 </style>
+
 </head>
 <body>
-<canvas id="c"></canvas>
-<div id="title">КОЛОНИЯ</div>
-<div id="stats">
-  <span id="ant-count">🐜 0</span>
-  <span id="food-status"></span>
-</div>
-<div id="hint">Нажми на добычу снизу<br>и брось её в коробку</div>
-<div id="ui">
-  <div id="prey-panel">
-    <div class="prey-btn" data-prey="fly" onclick="addPrey('fly')">🪰<span>Муха</span></div>
-    <div class="prey-btn" data-prey="beetle" onclick="addPrey('beetle')">🪲<span>Жук</span></div>
-    <div class="prey-btn" data-prey="worm" onclick="addPrey('worm')">🐛<span>Гусеница</span></div>
-    <div class="prey-btn" data-prey="spider" onclick="addPrey('spider')">🕷️<span>Паук</span></div>
-    <div class="prey-btn" data-prey="mouse" onclick="addPrey('mouse')">🐭<span>Мышь</span></div>
-    <div class="prey-btn" data-prey="frog" onclick="addPrey('frog')">🐸<span>Лягушка</span></div>
-    <div class="prey-btn" data-prey="lizard" onclick="addPrey('lizard')">🦎<span>Ящерица</span></div>
-    <div class="prey-btn" data-prey="bird" onclick="addPrey('bird')">🐦<span>Птица</span></div>
+
+<div class="header">
+  <div class="header-top">
+    <div class="logo">🍵</div>
+    <div class="header-title">
+      <h1>Чайный Мастер</h1>
+      <p>Лечебные травы и сборы</p>
+    </div>
+    <div class="level-badge">Мастер</div>
+  </div>
+  <div class="search-wrap">
+    <span class="search-icon">🔍</span>
+    <input class="search-input" type="text" placeholder="Поиск по симптому или траве..." id="searchInput" oninput="onSearch(this.value)">
   </div>
 </div>
 
+<div class="tabs" id="tabsBar">
+  <div class="tab active" onclick="switchTab('all', this)">Все</div>
+  <div class="tab" onclick="switchTab('simple', this)">🌿 Простуда</div>
+  <div class="tab" onclick="switchTab('digest', this)">🍊 Пищеварение</div>
+  <div class="tab" onclick="switchTab('nerve', this)">🧠 Нервы</div>
+  <div class="tab" onclick="switchTab('immune', this)">🛡️ Иммунитет</div>
+  <div class="tab" onclick="switchTab('pain', this)">💊 Боль</div>
+  <div class="tab" onclick="switchTab('skin', this)">✨ Кожа</div>
+  <div class="tab" onclick="switchTab('tips', this)">📖 Основы</div>
+</div>
+
+<div class="content" id="mainContent">
+  <!-- будет рендерить JS -->
+</div>
+
 <script>
-const canvas = document.getElementById('c');
-const ctx = canvas.getContext('2d');
-let W, H, GROUND_Y;
+// ══════════════════════════════════════════════
+//  БАЗА ДАННЫХ
+// ══════════════════════════════════════════════
 
-const PREY_DATA = {
-  fly:     { emoji: '🪰', mass: 50,   label: 'Муха',      size: 8  },
-  beetle:  { emoji: '🪲', mass: 150,  label: 'Жук',       size: 14 },
-  worm:    { emoji: '🐛', mass: 120,  label: 'Гусеница',  size: 20 },
-  spider:  { emoji: '🕷️', mass: 100,  label: 'Паук',      size: 12 },
-  mouse:   { emoji: '🐭', mass: 800,  label: 'Мышь',      size: 30 },
-  frog:    { emoji: '🐸', mass: 600,  label: 'Лягушка',   size: 28 },
-  lizard:  { emoji: '🦎', mass: 700,  label: 'Ящерица',   size: 35 },
-  bird:    { emoji: '🐦', mass: 1200, label: 'Птица',     size: 38 },
-};
-
-// Simulation state
-let ants = [];
-let preyList = [];
-let pheromones = [];
-let particles = [];
-let nestX, nestY;
-let antCount = 200;
-let frameCount = 0;
-let hintVisible = true;
-
-// Pheromone grid
-const GRID = 40;
-let gridW, gridH;
-let pheroGrid = []; // food pheromone
-let homeGrid = [];  // home pheromone
-
-function resize() {
-  W = canvas.width = window.innerWidth;
-  H = canvas.height = window.innerHeight;
-  GROUND_Y = H - 190; // well above the button panel
-  nestX = W * 0.5;
-  nestY = GROUND_Y - 20;
-  gridW = Math.ceil(W / GRID);
-  gridH = Math.ceil(H / GRID);
-  pheroGrid = new Float32Array(gridW * gridH);
-  homeGrid  = new Float32Array(gridW * gridH);
-  // Seed home pheromone near nest
-  for(let i=0;i<ants.length;i++) { depositHome(ants[i].x, ants[i].y, 200); }
-}
-
-function gridIdx(x,y) {
-  let gx = Math.floor(x/GRID);
-  let gy = Math.floor(y/GRID);
-  gx = Math.max(0, Math.min(gridW-1, gx));
-  gy = Math.max(0, Math.min(gridH-1, gy));
-  return gy * gridW + gx;
-}
-
-function depositFood(x,y,v) {
-  pheroGrid[gridIdx(x,y)] = Math.min(255, pheroGrid[gridIdx(x,y)] + v);
-}
-function depositHome(x,y,v) {
-  homeGrid[gridIdx(x,y)] = Math.min(255, homeGrid[gridIdx(x,y)] + v);
-}
-function sampleFood(x,y) { return pheroGrid[gridIdx(x,y)]; }
-function sampleHome(x,y) { return homeGrid[gridIdx(x,y)];  }
-
-// Evaporate grids
-function evaporate() {
-  for(let i=0;i<pheroGrid.length;i++) pheroGrid[i] *= 0.996;
-  for(let i=0;i<homeGrid.length;i++)  homeGrid[i]  *= 0.997;
-}
-
-// ====== ANT ======
-class Ant {
-  constructor() {
-    this.x = nestX + (Math.random()-0.5)*30;
-    this.y = nestY + (Math.random()-0.5)*10;
-    this.angle = Math.random()*Math.PI*2;
-    this.speed = 0.8 + Math.random()*0.6;
-    this.baseSpeed = this.speed;
-    this.hasFood = false;
-    this.targetPrey = null;
-    this.state = 'search'; // search, approach, eat, carry, goHome
-    this.wobble = Math.random()*Math.PI*2;
-    this.wobbleSpeed = 0.1 + Math.random()*0.05;
-    this.turnRate = 0.12 + Math.random()*0.08;
-    this.senseRadius = 60 + Math.random()*40;
-    this.id = Math.random();
-    this.size = 3 + Math.random()*1.5;
-    this.legPhase = Math.random()*Math.PI*2;
-    this.carryFood = 0;
-    this.depositing = false;
-    this.lastState = '';
-    this.patience = 0;
-    this.restTimer = 0; // short rests
-    this.color = `hsl(${15+Math.random()*10},70%,${8+Math.random()*8}%)`;
-    // Body segments proportions
-    this.headSize = this.size * 0.55;
-    this.thoraxSize = this.size * 0.45;
-    this.abdomenSize = this.size * 0.85;
-    depositHome(this.x, this.y, 50);
-  }
-
-  update() {
-    this.wobble += this.wobbleSpeed;
-    this.legPhase += 0.35;
-    frameCount; // just reference
-
-    if(this.restTimer > 0) { this.restTimer--; return; }
-
-    // Find nearby prey
-    let nearestPrey = null;
-    let nearestDist = this.senseRadius;
-    for(let p of preyList) {
-      if(p.eaten) continue;
-      let dx = p.x - this.x, dy = p.y - this.y;
-      let d = Math.sqrt(dx*dx+dy*dy);
-      if(d < nearestDist) { nearestDist = d; nearestPrey = p; }
-    }
-
-    if(this.hasFood) {
-      // Carry back to nest
-      this.state = 'carry';
-      depositFood(this.x, this.y, 8);
-      let dx = nestX - this.x, dy = nestY - this.y;
-      let d = Math.sqrt(dx*dx+dy*dy);
-      if(d < 15) {
-        this.hasFood = false;
-        this.carryFood = 0;
-        this.state = 'search';
-        this.restTimer = 10 + Math.random()*20;
-        // Spawn food particle
-        particles.push({x:this.x,y:this.y,vx:(Math.random()-0.5)*1.5,vy:-Math.random()*2,life:40,color:'#6a3a0a',size:2+Math.random()*2});
-        return;
+const DISEASES = [
+  {
+    id: 'cold',
+    cat: 'simple',
+    icon: '🤧',
+    name: 'Простуда / ОРВИ',
+    hint: 'Насморк, температура, кашель',
+    desc: 'Острые респираторные инфекции — самые частые болезни. Лечебные чаи помогают снизить температуру, облегчить дыхание и ускорить выздоровление.',
+    teas: [
+      {
+        emoji: '🌹',
+        name: 'Шиповник',
+        latin: 'Rosa canina',
+        effect: 'Лидер по витамину C — в 10× больше, чем в лимоне. Укрепляет иммунитет, снижает воспаление, восполняет силы.',
+        steps: [
+          'Измельчите 2 ст.л. сушёных плодов (раздавите)',
+          'Залейте 500 мл воды 90°C (не кипяток)',
+          'Настаивайте в термосе 4–8 часов',
+          'Процедите через марлю, пейте с мёдом'
+        ],
+        tags: ['safe', 'time:4ч+', 'курс:10 дней'],
+        warn: null
+      },
+      {
+        emoji: '🌿',
+        name: 'Имбирь + лимон + мёд',
+        latin: 'Zingiber officinale',
+        effect: 'Мощный противовирусный эффект. Имбирь прогревает, лимон даёт витамин C, мёд успокаивает горло и убивает бактерии.',
+        steps: [
+          'Натрите 2 см свежего имбиря на мелкой тёрке',
+          'Залейте 300 мл воды 80°C, настаивайте 10 мин',
+          'Процедите, добавьте сок ½ лимона',
+          'Остудите до 40°C, добавьте 1 ч.л. мёда'
+        ],
+        tags: ['safe', 'time:10 мин', 'курс:5–7 дней'],
+        warn: '⚠️ Не давать детям до 2 лет. При язве желудка — с осторожностью.'
+      },
+      {
+        emoji: '🌸',
+        name: 'Липовый цвет',
+        latin: 'Tilia cordata',
+        effect: 'Потогонное действие — снижает температуру естественным путём. Противовоспалительный, антибактериальный эффект.',
+        steps: [
+          'Возьмите 1 ст.л. сушёных цветов липы',
+          'Залейте 250 мл крутого кипятка',
+          'Настаивайте 15 минут под крышкой',
+          'Выпивайте горячим перед сном, хорошо укутавшись'
+        ],
+        tags: ['safe', 'time:15 мин', 'курс:3–5 дней'],
+        warn: null
       }
-      let ta = Math.atan2(dy, dx);
-      // Follow home pheromone + direct
-      ta = this.followHome(ta);
-      this.turnToward(ta);
-      this.move();
-    } else if(nearestPrey && nearestDist < 30) {
-      // Approach and eat
-      this.state = 'approach';
-      let dx = nearestPrey.x - this.x, dy = nearestPrey.y - this.y;
-      let ta = Math.atan2(dy, dx);
-      this.turnToward(ta);
-      this.speed = this.baseSpeed * 1.2;
-      this.move();
-      // Bite if very close
-      if(nearestDist < nearestPrey.radius + 4) {
-        this.state = 'eat';
-        this.speed = 0;
-        let bite = 0.5 + Math.random()*0.5;
-        nearestPrey.mass -= bite;
-        nearestPrey.health = nearestPrey.mass / nearestPrey.maxMass;
-        this.patience++;
-        if(this.patience > 30 + Math.random()*60) {
-          this.hasFood = true;
-          this.carryFood = 1;
-          this.patience = 0;
-          this.speed = this.baseSpeed * 0.75;
-          // Blood/juicy particle
-          if(Math.random()<0.4) particles.push({x:nearestPrey.x+(Math.random()-0.5)*10,y:nearestPrey.y+(Math.random()-0.5)*10,vx:(Math.random()-0.5)*2,vy:-Math.random()*1.5,life:30,color:'#8a1a00',size:1.5+Math.random()*2});
-        }
+    ]
+  },
+  {
+    id: 'cough',
+    cat: 'simple',
+    icon: '😮‍💨',
+    name: 'Кашель',
+    hint: 'Сухой, влажный, бронхит',
+    desc: 'Лечебные чаи смягчают слизистую, разжижают мокроту и облегчают кашель. Важно понимать вид кашля: сухой или влажный.',
+    teas: [
+      {
+        emoji: '🍯',
+        name: 'Мать-и-мачеха',
+        latin: 'Tussilago farfara',
+        effect: 'Обволакивает слизистую горла, смягчает сухой кашель, способствует отхождению мокроты при влажном.',
+        steps: [
+          'Возьмите 1 ст.л. листьев мать-и-мачехи',
+          'Залейте 250 мл кипятка',
+          'Настаивайте 20 минут, процедите',
+          'Пейте по ½ стакана 3 раза в день до еды'
+        ],
+        tags: ['caution', 'time:20 мин', 'курс:до 3 нед'],
+        warn: '⚠️ Не применять более 3 недель подряд, не давать детям до 2 лет, осторожно при заболеваниях печени.'
+      },
+      {
+        emoji: '💜',
+        name: 'Алтей лекарственный',
+        latin: 'Althaea officinalis',
+        effect: 'Слизистые вещества корня создают защитную плёнку на горле и бронхах. Идеален при сухом изнурительном кашле.',
+        steps: [
+          'Возьмите 2 ч.л. измельчённого корня алтея',
+          'Залейте 200 мл холодной воды (не кипятком!)',
+          'Настаивайте 30–45 минут при комнатной температуре',
+          'Процедите. Пейте по 100 мл 3–4 раза в день'
+        ],
+        tags: ['safe', 'time:45 мин', 'курс:2 нед'],
+        warn: null
+      },
+      {
+        emoji: '🌲',
+        name: 'Сосновые почки',
+        latin: 'Pinus sylvestris',
+        effect: 'Фитонциды сосны убивают бактерии, смолы разжижают мокроту. Хорошо при хроническом бронхите и кашле курильщика.',
+        steps: [
+          'Возьмите 1 ст.л. сосновых почек',
+          'Залейте 300 мл молока или воды',
+          'Варите на малом огне 20 минут',
+          'Остудите, процедите. Пейте по 100 мл 3 раза в день'
+        ],
+        tags: ['safe', 'time:20 мин', 'курс:2 нед'],
+        warn: null
       }
-    } else {
-      // Search
-      this.state = 'search';
-      this.speed = this.baseSpeed;
-      // Follow food pheromone
-      let ta = this.sniffFood();
-      if(ta !== null) {
-        this.turnToward(ta);
-      } else {
-        // Random walk with bias
-        this.angle += (Math.random()-0.5) * this.turnRate * 3;
+    ]
+  },
+  {
+    id: 'stomach',
+    cat: 'digest',
+    icon: '🤢',
+    name: 'Желудок / Гастрит',
+    hint: 'Изжога, боль, тяжесть',
+    desc: 'Воспаление слизистой желудка требует обволакивающих и противовоспалительных растений. Правильный чай снимает боль и ускоряет заживление.',
+    teas: [
+      {
+        emoji: '🌼',
+        name: 'Ромашка аптечная',
+        latin: 'Matricaria chamomilla',
+        effect: 'Снимает воспаление слизистой, спазмы, нейтрализует кислотность. Один из самых эффективных чаёв при гастрите.',
+        steps: [
+          'Возьмите 1 ст.л. сушёных цветков ромашки',
+          'Залейте 250 мл кипятка',
+          'Настаивайте 15–20 минут под крышкой',
+          'Пейте тёплым по 100 мл за 30 мин до еды, 3 раза/день'
+        ],
+        tags: ['safe', 'time:15 мин', 'курс:2–4 нед'],
+        warn: null
+      },
+      {
+        emoji: '🌱',
+        name: 'Семена льна',
+        latin: 'Linum usitatissimum',
+        effect: 'Слизь семян льна обволакивает стенки желудка лучше любого лекарства, защищает от кислоты и заживляет эрозии.',
+        steps: [
+          'Возьмите 1 ст.л. семян льна (целых)',
+          'Залейте 200 мл тёплой воды (60°C)',
+          'Настаивайте 2 часа, периодически помешивая',
+          'Выпивайте вместе с семенами натощак за час до завтрака'
+        ],
+        tags: ['safe', 'time:2 ч', 'курс:1 мес'],
+        warn: null
+      },
+      {
+        emoji: '🟡',
+        name: 'Календула',
+        latin: 'Calendula officinalis',
+        effect: 'Мощное противовоспалительное и заживляющее действие. Применяется при гастрите с повышенной кислотностью и язве желудка.',
+        steps: [
+          'Возьмите 1 ч.л. сухих цветков календулы',
+          'Залейте 200 мл кипятка',
+          'Настаивайте 20 минут',
+          'Процедите, пейте по 50 мл за 20 мин до еды'
+        ],
+        tags: ['safe', 'time:20 мин', 'курс:3 нед'],
+        warn: null
       }
-      this.move();
-      depositHome(this.x, this.y, 2);
-    }
-  }
-
-  sniffFood() {
-    let best = -1, bestA = null;
-    let samples = 5;
-    for(let i=0;i<samples;i++) {
-      let a = this.angle + (Math.random()-0.5)*1.2;
-      let sx = this.x + Math.cos(a)*this.senseRadius*0.6;
-      let sy = this.y + Math.sin(a)*this.senseRadius*0.6;
-      let v = sampleFood(sx,sy);
-      if(v > best) { best = v; bestA = a; }
-    }
-    return best > 2 ? bestA : null;
-  }
-
-  followHome(targetAngle) {
-    let best = -1, bestA = targetAngle;
-    for(let i=0;i<6;i++) {
-      let a = targetAngle + (Math.random()-0.5)*0.8;
-      let sx = this.x + Math.cos(a)*30;
-      let sy = this.y + Math.sin(a)*30;
-      let v = sampleHome(sx,sy);
-      if(v > best) { best = v; bestA = a; }
-    }
-    return bestA;
-  }
-
-  turnToward(target) {
-    let diff = target - this.angle;
-    while(diff > Math.PI) diff -= 2*Math.PI;
-    while(diff < -Math.PI) diff += 2*Math.PI;
-    this.angle += diff * this.turnRate;
-  }
-
-  move() {
-    let nx = this.x + Math.cos(this.angle) * this.speed;
-    let ny = this.y + Math.sin(this.angle) * this.speed;
-    // Bounce off walls
-    if(nx < 4) { nx = 4; this.angle = Math.PI - this.angle; }
-    if(nx > W-4) { nx = W-4; this.angle = Math.PI - this.angle; }
-    if(ny < 30) { ny = 30; this.angle = -this.angle; }
-    if(ny > GROUND_Y) { ny = GROUND_Y; this.angle = -this.angle; }
-    this.x = nx; this.y = ny;
-  }
-
-  draw() {
-    ctx.save();
-    ctx.translate(this.x, this.y);
-    ctx.rotate(this.angle + Math.PI/2);
-
-    const s = this.size;
-    const lp = this.legPhase;
-
-    // Legs
-    ctx.strokeStyle = '#1a0d00';
-    ctx.lineWidth = 0.8;
-    const legOffsets = [-0.5, 0, 0.5];
-    for(let i=0;i<3;i++) {
-      let ly = -s*0.2 + i*s*0.4 - s*0.4;
-      let lx = s * (this.state === 'eat' ? 1.4 : 1.2);
-      let wiggle = Math.sin(lp + i*1.2) * s*0.4;
-      // Left leg
-      ctx.beginPath();
-      ctx.moveTo(-s*0.3, ly);
-      ctx.lineTo(-lx + wiggle, ly + s*0.5);
-      ctx.stroke();
-      // Right leg
-      ctx.beginPath();
-      ctx.moveTo(s*0.3, ly);
-      ctx.lineTo(lx - wiggle, ly + s*0.5);
-      ctx.stroke();
-    }
-
-    // Abdomen (teardrop)
-    ctx.beginPath();
-    let abdW = this.abdomenSize * 0.7;
-    let abdH = this.abdomenSize;
-    ctx.ellipse(0, s*0.6 + abdH*0.5, abdW, abdH, 0, 0, Math.PI*2);
-    ctx.fillStyle = this.hasFood ? '#5a1a00' : '#0d0800';
-    ctx.fill();
-    // Abdomen sheen
-    ctx.beginPath();
-    ctx.ellipse(-abdW*0.2, s*0.5 + abdH*0.3, abdW*0.3, abdH*0.35, -0.3, 0, Math.PI*2);
-    ctx.fillStyle = 'rgba(255,180,80,0.06)';
-    ctx.fill();
-
-    // Thorax
-    ctx.beginPath();
-    ctx.ellipse(0, 0, s*0.5, s*0.55, 0, 0, Math.PI*2);
-    ctx.fillStyle = '#150a00';
-    ctx.fill();
-
-    // Head
-    ctx.beginPath();
-    ctx.ellipse(0, -s*0.75, this.headSize*0.65, this.headSize*0.7, 0, 0, Math.PI*2);
-    ctx.fillStyle = '#100800';
-    ctx.fill();
-
-    // Eyes
-    ctx.fillStyle = '#6a3a10';
-    ctx.beginPath(); ctx.arc(-s*0.18, -s*0.9, s*0.12, 0, Math.PI*2); ctx.fill();
-    ctx.beginPath(); ctx.arc(s*0.18, -s*0.9, s*0.12, 0, Math.PI*2); ctx.fill();
-
-    // Antennae
-    ctx.strokeStyle = '#1a0d00';
-    ctx.lineWidth = 0.7;
-    let aw = Math.sin(lp*0.5)*s*0.3;
-    ctx.beginPath();
-    ctx.moveTo(-s*0.15, -s*1.1);
-    ctx.quadraticCurveTo(-s*0.8+aw, -s*1.8, -s*0.9+aw, -s*2.1);
-    ctx.stroke();
-    ctx.beginPath();
-    ctx.moveTo(s*0.15, -s*1.1);
-    ctx.quadraticCurveTo(s*0.8-aw, -s*1.8, s*0.9-aw, -s*2.1);
-    ctx.stroke();
-    // Antenna tips
-    ctx.fillStyle = '#5a2a08';
-    ctx.beginPath(); ctx.arc(-s*0.9+aw, -s*2.1, s*0.15, 0, Math.PI*2); ctx.fill();
-    ctx.beginPath(); ctx.arc(s*0.9-aw, -s*2.1, s*0.15, 0, Math.PI*2); ctx.fill();
-
-    // Carrying food indicator
-    if(this.hasFood) {
-      ctx.beginPath();
-      ctx.arc(0, -s*0.75 - s*0.8, s*0.5, 0, Math.PI*2);
-      ctx.fillStyle = '#8a4010';
-      ctx.fill();
-    }
-
-    ctx.restore();
-  }
-}
-
-// ====== PREY ======
-class Prey {
-  constructor(type, x, y) {
-    const d = PREY_DATA[type];
-    this.type = type;
-    this.emoji = d.emoji;
-    this.mass = d.mass;
-    this.maxMass = d.mass;
-    this.health = 1.0;
-    this.radius = d.size;
-    this.x = x;
-    this.y = y;
-    this.vy = 0;
-    this.vx = (Math.random()-0.5)*2;
-    this.grounded = false;
-    this.eaten = false;
-    this.age = 0;
-    this.bones = []; // debris after eaten
-    // Struggle animation
-    this.struggle = 1.0;
-    this.struggleTimer = 0;
-    this.struggling = true;
-    this.deathFrames = 0;
-  }
-
-  update() {
-    this.age++;
-    // Physics
-    if(!this.grounded) {
-      this.vy += 0.3;
-      this.x += this.vx;
-      this.y += this.vy;
-      if(this.y + this.radius >= GROUND_Y) {
-        this.y = GROUND_Y - this.radius;
-        this.vy *= -0.3;
-        this.vx *= 0.8;
-        if(Math.abs(this.vy) < 1) { this.vy = 0; this.grounded = true; }
+    ]
+  },
+  {
+    id: 'bloating',
+    cat: 'digest',
+    icon: '💨',
+    name: 'Вздутие / Метеоризм',
+    hint: 'Газы, бурление, дискомфорт',
+    desc: 'Нарушение пищеварения и газообразование хорошо поддаются лечению карминативными (ветрогонными) травами.',
+    teas: [
+      {
+        emoji: '💚',
+        name: 'Укроп (семена)',
+        latin: 'Anethum graveolens',
+        effect: 'Быстро снимает спазмы кишечника и выводит газы. Действует уже через 20–30 минут. Безопасен для детей.',
+        steps: [
+          'Возьмите 1 ч.л. семян укропа',
+          'Раздавите слегка в ступке или ложкой',
+          'Залейте 200 мл кипятка',
+          'Настаивайте 15 минут, процедите — выпить тёплым'
+        ],
+        tags: ['safe', 'time:15 мин', 'с рождения'],
+        warn: null
+      },
+      {
+        emoji: '🌿',
+        name: 'Мята перечная',
+        latin: 'Mentha piperita',
+        effect: 'Ментол расслабляет гладкую мускулатуру кишечника, устраняет спазмы и вздутие. Улучшает выработку желчи.',
+        steps: [
+          'Возьмите 1 ст.л. свежей или 1 ч.л. сухой мяты',
+          'Залейте 200 мл горячей воды (не кипяток — 85°C)',
+          'Настаивайте 10 минут',
+          'Пейте после еды, 2–3 раза в день'
+        ],
+        tags: ['safe', 'time:10 мин', 'курс:по потребности'],
+        warn: '⚠️ При рефлюксе (ГЭРБ) мята может усилить симптомы — проконсультируйтесь с врачом.'
+      },
+      {
+        emoji: '🌻',
+        name: 'Тмин',
+        latin: 'Carum carvi',
+        effect: 'Стимулирует пищеварение, устраняет брожение и газообразование. Особенно эффективен при вздутии после бобовых.',
+        steps: [
+          'Возьмите 1 ч.л. семян тмина',
+          'Слегка подожгите на сухой сковороде 30 сек',
+          'Залейте 250 мл кипятка, настаивайте 15 мин',
+          'Пейте тёплым после приёма пищи'
+        ],
+        tags: ['safe', 'time:15 мин', 'курс:2 нед'],
+        warn: null
       }
-      if(this.x < this.radius) { this.x = this.radius; this.vx *= -0.7; }
-      if(this.x > W - this.radius) { this.x = W - this.radius; this.vx *= -0.7; }
-    }
-
-    // Struggle
-    if(this.grounded && this.struggling) {
-      this.struggleTimer++;
-      this.struggle = Math.max(0, 1 - this.health * 0.3);
-      if(this.health < 0.1) { this.struggling = false; this.struggle = 0; }
-    }
-
-    // Death / eaten check
-    if(this.mass <= 1) {
-      this.eaten = true;
-    }
-
-    // Deposit food pheromone around corpse
-    if(!this.eaten && this.grounded && frameCount % 3 === 0) {
-      let intensity = (this.mass / this.maxMass) * 30 + 5;
-      for(let i=0;i<3;i++) {
-        let ax = this.x + (Math.random()-0.5)*this.radius*3;
-        let ay = this.y + (Math.random()-0.5)*this.radius*2;
-        depositFood(ax, ay, intensity);
+    ]
+  },
+  {
+    id: 'stress',
+    cat: 'nerve',
+    icon: '😰',
+    name: 'Стресс / Тревога',
+    hint: 'Нервозность, беспокойство',
+    desc: 'Адаптогены и седативные травы нормализуют работу нервной системы без привыкания и побочных эффектов, характерных для лекарств.',
+    teas: [
+      {
+        emoji: '💙',
+        name: 'Валериана',
+        latin: 'Valeriana officinalis',
+        effect: 'Снижает тревожность, улучшает качество сна, расслабляет без ощущения "дурмана". Работает при курсовом приёме.',
+        steps: [
+          'Возьмите 1 ч.л. корня валерианы',
+          'Залейте 250 мл холодной воды',
+          'Доведите до кипения, варите 5 минут',
+          'Настаивайте 1 час, процедите. Пейте по 50 мл 3 раза/день'
+        ],
+        tags: ['safe', 'time:1 ч', 'курс:2–4 нед'],
+        warn: '⚠️ Не сочетать с алкоголем. При вождении соблюдать осторожность.'
+      },
+      {
+        emoji: '🟣',
+        name: 'Пустырник',
+        latin: 'Leonurus cardiaca',
+        effect: 'Успокаивает нервную систему и одновременно нормализует сердечный ритм. Идеален при "сердечном неврозе".',
+        steps: [
+          'Возьмите 1 ст.л. травы пустырника',
+          'Залейте 200 мл кипятка',
+          'Настаивайте 30 минут, процедите',
+          'Пейте по 1/3 стакана 3 раза в день до еды'
+        ],
+        tags: ['caution', 'time:30 мин', 'курс:1 мес'],
+        warn: '⚠️ Не применять при беременности. Осторожно при низком давлении.'
+      },
+      {
+        emoji: '🌸',
+        name: 'Мелисса лекарственная',
+        latin: 'Melissa officinalis',
+        effect: 'Мягко успокаивает, снимает нервное напряжение, улучшает настроение. Особенно хороша при стрессе с нарушением сна.',
+        steps: [
+          'Возьмите 2 ст.л. свежей или 1 ст.л. сухой мелиссы',
+          'Залейте 250 мл горячей воды (80°C)',
+          'Настаивайте 10 минут',
+          'Пейте тёплым вечером или при необходимости'
+        ],
+        tags: ['safe', 'time:10 мин', 'курс:по потребности'],
+        warn: null
       }
-    }
-  }
-
-  draw() {
-    if(this.eaten) return;
-    ctx.save();
-    ctx.translate(this.x, this.y);
-
-    // Struggle wobble
-    let wobble = this.struggling ? Math.sin(this.age*0.3)*this.struggle*3 : 0;
-    ctx.rotate(wobble * 0.1);
-
-    // Shadow
-    ctx.beginPath();
-    ctx.ellipse(0, this.radius*0.5, this.radius*0.8, this.radius*0.25, 0, 0, Math.PI*2);
-    ctx.fillStyle = 'rgba(0,0,0,0.4)';
-    ctx.fill();
-
-    // Decay overlay: show increasingly stripped look
-    let decay = 1 - this.health;
-
-    // Draw the body
-    let scale = 0.8 + this.health*0.2; // shrinks as eaten
-    ctx.scale(scale, scale);
-    ctx.rotate(wobble*0.05);
-
-    // Background flesh
-    if(this.health < 0.8) {
-      ctx.beginPath();
-      ctx.ellipse(0, 0, this.radius*0.9, this.radius*0.7, 0, 0, Math.PI*2);
-      ctx.fillStyle = `rgba(${Math.floor(150*this.health+60)},${Math.floor(40*this.health)},${Math.floor(30*this.health)},${0.6+decay*0.4})`;
-      ctx.fill();
-    }
-
-    // Emoji (fades as eaten)
-    ctx.globalAlpha = Math.min(1, this.health * 2);
-    ctx.font = `${this.radius * 1.6}px serif`;
-    ctx.textAlign = 'center';
-    ctx.textBaseline = 'middle';
-    // Decomposing tint
-    if(decay > 0.3) {
-      ctx.filter = `brightness(${0.3+this.health*0.7}) sepia(${decay*0.8})`;
-    }
-    ctx.fillText(this.emoji, 0, 0);
-    ctx.filter = 'none';
-    ctx.globalAlpha = 1;
-
-    // Bones / skeleton emerging
-    if(this.health < 0.35) {
-      ctx.strokeStyle = `rgba(220,200,160,${(0.35-this.health)*3})`;
-      ctx.lineWidth = 1;
-      for(let i=0;i<4;i++) {
-        ctx.beginPath();
-        ctx.moveTo(-this.radius*0.5+i*this.radius*0.3, -this.radius*0.2);
-        ctx.lineTo(-this.radius*0.5+i*this.radius*0.3, this.radius*0.2);
-        ctx.stroke();
+    ]
+  },
+  {
+    id: 'sleep',
+    cat: 'nerve',
+    icon: '😴',
+    name: 'Бессонница',
+    hint: 'Трудно засыпать, ночные пробуждения',
+    desc: 'Нарушения сна хорошо поддаются коррекции фитотерапией. Главное — принимать чай регулярно за 30–60 минут до сна.',
+    teas: [
+      {
+        emoji: '🌾',
+        name: 'Хмель обыкновенный',
+        latin: 'Humulus lupulus',
+        effect: 'Шишки хмеля содержат вещества, аналогичные мелатонину. Ускоряют засыпание и улучшают глубину сна.',
+        steps: [
+          'Возьмите 1 ч.л. шишек хмеля',
+          'Залейте 200 мл кипятка',
+          'Настаивайте 20–30 минут',
+          'Выпейте за 1 час до сна. Добавьте мёд по вкусу'
+        ],
+        tags: ['caution', 'time:30 мин', 'на ночь'],
+        warn: '⚠️ Не применять при депрессии. Не для детей до 12 лет.'
+      },
+      {
+        emoji: '💜',
+        name: 'Лаванда',
+        latin: 'Lavandula angustifolia',
+        effect: 'Аромат лаванды снижает уровень кортизола (гормона стресса) и вызывает сонливость. Также можно добавить в ванну.',
+        steps: [
+          'Возьмите 1 ч.л. сухих цветков лаванды',
+          'Залейте 200 мл воды 80°C',
+          'Настаивайте 10 минут под крышкой',
+          'Пейте медленно за 30 мин до сна, вдыхая аромат'
+        ],
+        tags: ['safe', 'time:10 мин', 'на ночь'],
+        warn: null
+      },
+      {
+        emoji: '🌿',
+        name: 'Сбор: Валериана + Мелисса + Хмель',
+        latin: 'Классический вечерний сбор',
+        effect: 'Синергетическое действие трёх трав даёт выраженный снотворный эффект без привыкания.',
+        steps: [
+          'Смешайте: 2 ч.л. мелиссы + 1 ч.л. валерианы + ½ ч.л. хмеля',
+          'Залейте 300 мл кипятка',
+          'Настаивайте 20–25 минут под крышкой',
+          'Процедите, выпейте тёплым за 45 мин до сна'
+        ],
+        tags: ['caution', 'time:25 мин', 'курс:2–3 нед'],
+        warn: '⚠️ Не сочетать со снотворными препаратами. Не водить авто после приёма.'
       }
-    }
-
-    // Blood pool
-    if(this.health < 0.7 && this.grounded) {
-      ctx.beginPath();
-      ctx.ellipse(0, this.radius*0.4, this.radius*(1-this.health)*0.8, this.radius*(1-this.health)*0.3, 0, 0, Math.PI*2);
-      ctx.fillStyle = `rgba(80,0,0,${(0.7-this.health)*0.6})`;
-      ctx.fill();
-    }
-
-    ctx.restore();
-  }
-}
-
-// ====== PARTICLES ======
-function updateParticles() {
-  for(let i=particles.length-1;i>=0;i--) {
-    let p = particles[i];
-    p.x += p.vx; p.y += p.vy;
-    p.vy += 0.05;
-    p.life--;
-    if(p.life <= 0) { particles.splice(i,1); continue; }
-    ctx.beginPath();
-    ctx.arc(p.x, p.y, p.size*(p.life/40), 0, Math.PI*2);
-    ctx.fillStyle = p.color;
-    ctx.globalAlpha = p.life/40;
-    ctx.fill();
-    ctx.globalAlpha = 1;
-  }
-}
-
-// ====== ENVIRONMENT ======
-function drawBox() {
-  // Light sandy soil gradient background
-  let grad = ctx.createLinearGradient(0, 0, 0, GROUND_Y);
-  grad.addColorStop(0, '#e8d5a0');
-  grad.addColorStop(0.4, '#d4bf85');
-  grad.addColorStop(1, '#c0a860');
-  ctx.fillStyle = grad;
-  ctx.fillRect(0, 0, W, GROUND_Y);
-
-  // Ground surface
-  ctx.beginPath();
-  ctx.moveTo(0, GROUND_Y);
-  ctx.lineTo(W, GROUND_Y);
-  ctx.strokeStyle = '#8a6a30';
-  ctx.lineWidth = 2;
-  ctx.stroke();
-
-  // Below ground (darker soil block)
-  ctx.fillStyle = '#a08040';
-  ctx.fillRect(0, GROUND_Y, W, H-GROUND_Y);
-
-  // Soil lines below
-  for(let i=1;i<4;i++) {
-    ctx.beginPath();
-    ctx.moveTo(0, GROUND_Y + i*8);
-    ctx.lineTo(W, GROUND_Y + i*8);
-    ctx.strokeStyle = `rgba(80,50,10,${0.25-i*0.05})`;
-    ctx.lineWidth = 1;
-    ctx.stroke();
-  }
-
-  // Wall borders (glass look)
-  ctx.strokeStyle = '#8a6020';
-  ctx.lineWidth = 3;
-  ctx.strokeRect(1, 1, W-2, GROUND_Y-1);
-
-  // Nest entrance hole
-  ctx.beginPath();
-  ctx.ellipse(nestX, GROUND_Y, 25, 8, 0, 0, Math.PI*2);
-  ctx.fillStyle = '#6a4010';
-  ctx.fill();
-  ctx.strokeStyle = '#4a2a05';
-  ctx.lineWidth = 1.5;
-  ctx.stroke();
-}
-
-function drawPheromones() {
-  // Subtle food trail visualization on light bg
-  ctx.globalAlpha = 0.07;
-  for(let gy=0;gy<gridH;gy++) {
-    for(let gx=0;gx<gridW;gx++) {
-      let v = pheroGrid[gy*gridW+gx];
-      if(v > 5) {
-        ctx.fillStyle = `rgb(${Math.floor(180-v*0.3)},${Math.floor(100-v*0.2)},0)`;
-        ctx.fillRect(gx*GRID, gy*GRID, GRID, GRID);
+    ]
+  },
+  {
+    id: 'immunity',
+    cat: 'immune',
+    icon: '🛡️',
+    name: 'Иммунитет / Слабость',
+    hint: 'Частые болезни, упадок сил',
+    desc: 'Адаптогены повышают сопротивляемость организма к инфекциям, стрессу и физическим нагрузкам. Принимаются курсами.',
+    teas: [
+      {
+        emoji: '🟠',
+        name: 'Эхинацея пурпурная',
+        latin: 'Echinacea purpurea',
+        effect: 'Активирует макрофаги и NK-клетки иммунитета. Доказанный эффект при профилактике ОРВИ — снижает частоту заболеваний на 35%.',
+        steps: [
+          'Возьмите 1 ч.л. сухой травы или корня эхинацеи',
+          'Залейте 250 мл кипятка',
+          'Настаивайте 15–20 минут',
+          'Пейте 2 раза в день. Курс — 10 дней, перерыв 20 дней'
+        ],
+        tags: ['safe', 'time:20 мин', 'курс: 10/20 дней'],
+        warn: '⚠️ Противопоказана при аутоиммунных заболеваниях (ревматоидный артрит, рассеянный склероз).'
+      },
+      {
+        emoji: '🔴',
+        name: 'Элеутерококк',
+        latin: 'Eleutherococcus senticosus',
+        effect: 'Адаптоген — повышает работоспособность, выносливость, иммунитет. Эффективен при хронической усталости.',
+        steps: [
+          'Возьмите 1 ч.л. корня элеутерококка',
+          'Залейте 250 мл кипятка',
+          'Настаивайте 30 минут или варите 10 минут',
+          'Пейте утром и в обед (не вечером!). Курс: 4 нед'
+        ],
+        tags: ['caution', 'time:30 мин', 'утро/обед'],
+        warn: '⚠️ Не принимать вечером — бодрит. Осторожно при гипертонии.'
+      },
+      {
+        emoji: '🍵',
+        name: 'Иван-чай (кипрей)',
+        latin: 'Epilobium angustifolium',
+        effect: 'Богат витаминами C, B, магнием и флавоноидами. Противовоспалительный, иммуномодулирующий эффект без кофеина.',
+        steps: [
+          'Возьмите 2 ч.л. ферментированного иван-чая',
+          'Залейте 400 мл воды 90°C',
+          'Настаивайте 5–7 минут',
+          'Можно заваривать повторно 2–3 раза. Пить как обычный чай'
+        ],
+        tags: ['safe', 'time:7 мин', 'без ограничений'],
+        warn: null
       }
-    }
-  }
-  ctx.globalAlpha = 1;
-}
-
-function drawNest() {
-  // Nest glow on light bg
-  let ng = ctx.createRadialGradient(nestX, nestY, 0, nestX, nestY, 40);
-  ng.addColorStop(0, 'rgba(100,60,10,0.2)');
-  ng.addColorStop(1, 'rgba(0,0,0,0)');
-  ctx.fillStyle = ng;
-  ctx.fillRect(nestX-40, nestY-20, 80, 40);
-}
-
-// ====== SOIL TEXTURE (pre-rendered) ======
-let soilCanvas = null;
-function buildSoilTexture() {
-  soilCanvas = document.createElement('canvas');
-  soilCanvas.width = W; soilCanvas.height = GROUND_Y;
-  let sc = soilCanvas.getContext('2d');
-  // Sandy soil dots
-  for(let i=0;i<1000;i++) {
-    let x = Math.random()*W;
-    let y = Math.random()*GROUND_Y;
-    let r = Math.random()*2;
-    sc.beginPath();
-    sc.arc(x, y, r, 0, Math.PI*2);
-    sc.fillStyle = `rgba(${100+Math.random()*60},${70+Math.random()*40},${20+Math.random()*20},${0.12+Math.random()*0.18})`;
-    sc.fill();
-  }
-  // Small pebbles
-  for(let i=0;i<80;i++) {
-    let x = Math.random()*W;
-    let y = Math.random()*GROUND_Y;
-    let r = 1.5+Math.random()*3.5;
-    sc.beginPath();
-    sc.ellipse(x,y,r,r*0.7,Math.random()*Math.PI,0,Math.PI*2);
-    sc.fillStyle = `rgba(${90+Math.random()*40},${60+Math.random()*30},${15+Math.random()*15},${0.15+Math.random()*0.12})`;
-    sc.fill();
-  }
-  // Grass/leaf fragments near top
-  for(let i=0;i<30;i++) {
-    let x = Math.random()*W;
-    let y = Math.random()*(GROUND_Y*0.3);
-    sc.beginPath();
-    sc.ellipse(x,y,3+Math.random()*4,1+Math.random()*2,Math.random()*Math.PI,0,Math.PI*2);
-    sc.fillStyle = `rgba(80,100,30,${0.06+Math.random()*0.08})`;
-    sc.fill();
-  }
-}
-
-// ====== INIT ======
-function init() {
-  resize();
-  buildSoilTexture();
-  ants = [];
-  for(let i=0;i<antCount;i++) {
-    setTimeout(() => ants.push(new Ant()), i*5);
-  }
-  depositHome(nestX, nestY, 255);
-}
-
-// ====== ADD PREY ======
-function addPrey(type) {
-  // Try to place near center of arena, avoiding overlap with existing prey
-  const centerX = W * 0.5;
-  const centerY = GROUND_Y * 0.45; // middle of the visible arena
-  const d = PREY_DATA[type];
-  const minDist = d.size * 2.5 + 20;
-
-  let x, y;
-  let attempts = 0;
-  let placed = false;
-
-  // Spiral outward from center to find free spot
-  const angles = [0, Math.PI/3, 2*Math.PI/3, Math.PI, 4*Math.PI/3, 5*Math.PI/3];
-  const rings = [0, 60, 110, 160, 210];
-
-  outer:
-  for(let r of rings) {
-    for(let a of angles) {
-      let cx = r === 0 ? centerX : centerX + Math.cos(a + r*0.01)*r;
-      let cy = r === 0 ? centerY : centerY + Math.sin(a + r*0.01)*r*(0.6);
-      // Clamp within arena
-      cx = Math.max(d.size*2, Math.min(W - d.size*2, cx));
-      cy = Math.max(50, Math.min(GROUND_Y - d.size*2, cy));
-      // Check distance from existing prey
-      let ok = true;
-      for(let p of preyList) {
-        if(p.eaten) continue;
-        let dx = p.x - cx, dy = p.y - cy;
-        let dist = Math.sqrt(dx*dx+dy*dy);
-        if(dist < minDist + p.radius) { ok = false; break; }
+    ]
+  },
+  {
+    id: 'pressure',
+    cat: 'immune',
+    icon: '❤️',
+    name: 'Давление / Сердце',
+    hint: 'Гипертония, сердцебиение',
+    desc: 'Травяные чаи могут мягко снижать давление и нормализовать сердечный ритм. Не отменяют назначенных лекарств.',
+    teas: [
+      {
+        emoji: '🌺',
+        name: 'Каркаде (гибискус)',
+        latin: 'Hibiscus sabdariffa',
+        effect: 'Антоцианы цветков гибискуса снижают систолическое давление на 10–15 мм рт.ст. при регулярном приёме.',
+        steps: [
+          'Возьмите 1–2 ч.л. сушёных чашечек гибискуса',
+          'Залейте 200–300 мл горячей воды 80–90°C',
+          'Настаивайте 5–10 минут',
+          'Пейте 2 раза в день. Можно горячим или холодным'
+        ],
+        tags: ['safe', 'time:10 мин', 'курс:1 мес'],
+        warn: '⚠️ Не сочетать с гипотензивными препаратами без контроля врача — суммарный эффект может быть слишком сильным.'
+      },
+      {
+        emoji: '🍃',
+        name: 'Боярышник',
+        latin: 'Crataegus monogyna',
+        effect: 'Улучшает коронарное кровообращение, снижает давление, нормализует сердечный ритм. Один из лучших кардиотоников.',
+        steps: [
+          'Возьмите 1 ст.л. плодов или цветков боярышника',
+          'Залейте 250 мл кипятка',
+          'Настаивайте 20–30 минут',
+          'Пейте по 100 мл 3 раза в день за 30 мин до еды'
+        ],
+        tags: ['caution', 'time:30 мин', 'курс:3–4 нед'],
+        warn: '⚠️ Осторожно при брадикардии. Проконсультируйтесь с кардиологом.'
       }
-      if(ok || r === rings[rings.length-1]) {
-        x = cx + (Math.random()-0.5)*10;
-        y = cy + (Math.random()-0.5)*10;
-        placed = true;
-        break outer;
+    ]
+  },
+  {
+    id: 'headache',
+    cat: 'pain',
+    icon: '🤕',
+    name: 'Головная боль',
+    hint: 'Мигрень, напряжение, спазм',
+    desc: 'Фитотерапия при головной боли направлена на расслабление сосудов, снятие спазма и воспаления. Эффект мягче таблеток, но без побочных действий.',
+    teas: [
+      {
+        emoji: '🌿',
+        name: 'Мята + Лаванда',
+        latin: 'Mentha + Lavandula',
+        effect: 'Ментол и линалоол расслабляют сосуды головного мозга. Снимают боль напряжения и лёгкую мигрень.',
+        steps: [
+          'Смешайте: 1 ч.л. мяты + ½ ч.л. лаванды',
+          'Залейте 250 мл горячей воды 80°C',
+          'Накройте, настаивайте 10 минут',
+          'Вдыхайте пар во время настаивания, затем пейте медленно'
+        ],
+        tags: ['safe', 'time:10 мин', 'по потребности'],
+        warn: null
+      },
+      {
+        emoji: '🌼',
+        name: 'Пижма / Ромашка + Имбирь',
+        latin: 'Tanacetum parthenium',
+        effect: 'Пиретрин пижмы блокирует выброс серотонина — одну из причин мигрени. Сочетание с имбирём усиливает эффект.',
+        steps: [
+          'Возьмите: 1 ч.л. ромашки + ½ ч.л. тёртого имбиря',
+          'Залейте 250 мл кипятка',
+          'Настаивайте 15 минут',
+          'Процедите. Пейте при первых признаках мигрени'
+        ],
+        tags: ['caution', 'time:15 мин', 'по потребности'],
+        warn: '⚠️ Пижма: не более 1–2 раз в неделю. Противопоказана при беременности и детям до 12 лет.'
       }
-    }
+    ]
+  },
+  {
+    id: 'joints',
+    cat: 'pain',
+    icon: '🦵',
+    name: 'Суставы / Ревматизм',
+    hint: 'Боль в суставах, воспаление',
+    desc: 'Противовоспалительные травы снижают синтез простагландинов и уменьшают боль при артрите и ревматизме.',
+    teas: [
+      {
+        emoji: '🌿',
+        name: 'Лист смородины + шиповник',
+        latin: 'Ribes nigrum + Rosa canina',
+        effect: 'Флавоноиды чёрной смородины блокируют воспалительные медиаторы. Витамин C шиповника укрепляет хрящевую ткань.',
+        steps: [
+          'Смешайте: 2 ч.л. листьев смородины + 1 ч.л. шиповника',
+          'Залейте 500 мл кипятка в термос',
+          'Настаивайте 2 часа',
+          'Пейте по 150 мл 3–4 раза в день после еды'
+        ],
+        tags: ['safe', 'time:2 ч', 'курс:1 мес'],
+        warn: null
+      },
+      {
+        emoji: '🟡',
+        name: 'Куркума + чёрный перец',
+        latin: 'Curcuma longa',
+        effect: 'Куркумин — один из сильнейших природных противовоспалительных агентов. Перец повышает его усвояемость в 20 раз.',
+        steps: [
+          'Возьмите ½ ч.л. куркумы + щепотку чёрного перца',
+          'Добавьте 200 мл горячего молока или воды',
+          'Хорошо размешайте, добавьте мёд',
+          'Пейте 1 раз в день (утром или вечером)'
+        ],
+        tags: ['safe', 'time:2 мин', 'курс:2–3 мес'],
+        warn: null
+      }
+    ]
+  },
+  {
+    id: 'acne',
+    cat: 'skin',
+    icon: '✨',
+    name: 'Кожа / Акне',
+    hint: 'Прыщи, воспаление, сыпь',
+    desc: 'Чаи очищают кровь от токсинов, снижают воспаление и нормализуют работу сальных желёз — изнутри.',
+    teas: [
+      {
+        emoji: '🌿',
+        name: 'Крапива двудомная',
+        latin: 'Urtica dioica',
+        effect: 'Очищает кровь, выводит токсины, нормализует обмен веществ. Один из лучших чаёв для кожи при акне.',
+        steps: [
+          'Возьмите 1 ст.л. сухих листьев крапивы',
+          'Залейте 250 мл кипятка',
+          'Настаивайте 10–15 минут',
+          'Пейте по 200 мл 2 раза в день до еды. Курс: 3–4 нед'
+        ],
+        tags: ['safe', 'time:15 мин', 'курс:4 нед'],
+        warn: null
+      },
+      {
+        emoji: '🟤',
+        name: 'Корень лопуха',
+        latin: 'Arctium lappa',
+        effect: 'Инулин корня лопуха нормализует микрофлору кишечника, очищает печень — что напрямую влияет на состояние кожи.',
+        steps: [
+          'Возьмите 1 ч.л. измельчённого корня лопуха',
+          'Залейте 250 мл воды, доведите до кипения',
+          'Варите 10 минут, настаивайте 30 минут',
+          'Пейте по 100 мл 3 раза в день'
+        ],
+        tags: ['safe', 'time:40 мин', 'курс:1 мес'],
+        warn: null
+      }
+    ]
   }
+];
 
-  if(!placed) {
-    x = centerX + (Math.random()-0.5)*W*0.5;
-    y = centerY + (Math.random()-0.5)*GROUND_Y*0.3;
-  }
+const TIPS = [
+  { icon: '🌡️', text: '<strong>Температура воды</strong> — критически важна. Нежные цветы и листья: 80–85°C. Корни и плоды: кипяток 95–100°C. Семена: часто холодная вода (лён, алтей).' },
+  { icon: '⏱️', text: '<strong>Время настаивания</strong>: чем дольше — тем крепче и горче. Для лечебного эффекта 10–20 мин достаточно. Перенастой может вызвать раздражение ЖКТ.' },
+  { icon: '🍯', text: '<strong>Мёд добавляйте</strong> только в остывший чай (до 40°C). При нагреве выше 60°C мёд теряет ферменты и выделяет оксиметилфурфурол.' },
+  { icon: '📅', text: '<strong>Курсы, а не постоянно</strong>. Большинство трав принимают курсами 2–4 недели с перерывом. Постоянный приём снижает эффект или даёт побочные эффекты.' },
+  { icon: '🫙', text: '<strong>Хранение</strong>: сухие травы — в герметичных стеклянных банках, в тёмном месте. Не в пластике. Срок годности: листья — 1–2 года, корни и плоды — 2–3 года.' },
+  { icon: '💧', text: '<strong>Количество воды</strong>: стандарт — 1 ч.л. на 200 мл. Лечебный чай обычно крепче обычного — 1 ст.л. на 200 мл. Всегда следуйте рецепту.' },
+  { icon: '🤰', text: '<strong>Беременность</strong>: большинство лечебных трав запрещены. Разрешены (умеренно): ромашка, имбирь, мята. Запрещены: полынь, пижма, алоэ, тысячелистник.' },
+  { icon: '👶', text: '<strong>Детям до 1 года</strong>: только укроп и ромашка. До 3 лет — с осторожностью. Детские дозы: ⅓ от взрослой.' },
+];
 
-  // Drop from above
-  let prey = new Prey(type, x, 40);
-  prey.vx = (x - W/2) * 0.02; // slight horizontal push toward target
-  preyList.push(prey);
+// ══════════════════════════════════════════════
+//  СОСТОЯНИЕ
+// ══════════════════════════════════════════════
+let currentTab = 'all';
+let currentDisease = null;
 
-  // Hide hint
-  if(hintVisible) {
-    hintVisible = false;
-    document.getElementById('hint').style.opacity = '0';
-  }
-  // Nearby ants get excited
-  let excited = 0;
-  for(let a of ants) {
-    if(Math.random() < 0.3 && excited < 30) {
-      a.state = 'search';
-      a.angle = Math.atan2(y - a.y, x - a.x) + (Math.random()-0.5)*0.5;
-      excited++;
-    }
+// ══════════════════════════════════════════════
+//  РЕНДЕР
+// ══════════════════════════════════════════════
+
+function render() {
+  const el = document.getElementById('mainContent');
+  if (currentDisease) {
+    el.innerHTML = renderDetail(currentDisease);
+  } else {
+    el.innerHTML = renderList();
   }
 }
 
-// ====== STATS ======
-function updateStats() {
-  document.getElementById('ant-count').textContent = `🐜 ${ants.length}`;
-  let fs = '';
-  for(let p of preyList) {
-    if(!p.eaten) {
-      let pct = Math.round(p.health*100);
-      fs += `${p.emoji} ${pct}%  `;
-    }
+function renderList() {
+  const search = document.getElementById('searchInput').value.trim().toLowerCase();
+
+  if (search.length >= 2) {
+    return renderSearch(search);
   }
-  document.getElementById('food-status').textContent = fs;
+
+  if (currentTab === 'tips') {
+    return renderTips();
+  }
+
+  let diseases = currentTab === 'all' ? DISEASES : DISEASES.filter(d => d.cat === currentTab);
+
+  return `
+    <div class="section-title">${diseases.length} состояний в базе</div>
+    <div class="disease-grid">
+      ${diseases.map(d => `
+        <div class="disease-card cat-${d.cat}" onclick="openDisease('${d.id}')">
+          <div class="disease-icon">${d.icon}</div>
+          <div class="disease-name">${d.name}</div>
+          <div class="disease-hint">${d.hint}</div>
+        </div>
+      `).join('')}
+    </div>
+  `;
 }
 
-// ====== MAIN LOOP ======
-function loop() {
-  frameCount++;
-  ctx.clearRect(0, 0, W, H);
-
-  drawBox();
-  if(soilCanvas) ctx.drawImage(soilCanvas, 0, 0);
-  drawPheromones();
-  drawNest();
-
-  // Update & draw prey
-  preyList = preyList.filter(p => {
-    p.update();
-    p.draw();
-    return p.age < 18000; // cleanup old
+function renderSearch(query) {
+  const results = [];
+  DISEASES.forEach(d => {
+    // поиск по болезни
+    if (d.name.toLowerCase().includes(query) || d.hint.toLowerCase().includes(query) || d.desc.toLowerCase().includes(query)) {
+      results.push({ type: 'disease', d });
+      return;
+    }
+    // поиск по названию чая
+    d.teas.forEach(t => {
+      if (t.name.toLowerCase().includes(query) || t.latin.toLowerCase().includes(query) || t.effect.toLowerCase().includes(query)) {
+        results.push({ type: 'tea', d, t });
+      }
+    });
   });
 
-  // Evaporate
-  if(frameCount % 2 === 0) evaporate();
-
-  // Update & draw ants
-  for(let a of ants) {
-    a.update();
-    a.draw();
+  if (!results.length) {
+    return `<div class="no-results"><div class="no-icon">🔍</div>Ничего не найдено по запросу «${query}»<br><br><small>Попробуйте: простуда, желудок, стресс, ромашка, имбирь...</small></div>`;
   }
 
-  updateParticles();
-
-  if(frameCount % 60 === 0) updateStats();
-
-  requestAnimationFrame(loop);
+  return `
+    <div class="section-title">${results.length} результатов</div>
+    <div class="disease-grid">
+      ${results.map(r => r.type === 'disease'
+        ? `<div class="disease-card cat-${r.d.cat}" onclick="openDisease('${r.d.id}')">
+            <div class="disease-icon">${r.d.icon}</div>
+            <div class="disease-name">${r.d.name}</div>
+            <div class="disease-hint">${r.d.hint}</div>
+           </div>`
+        : `<div class="disease-card cat-${r.d.cat}" onclick="openDisease('${r.d.id}')">
+            <div class="disease-icon">${r.t.emoji}</div>
+            <div class="disease-name">${r.t.name}</div>
+            <div class="disease-hint">${r.d.name}</div>
+           </div>`
+      ).join('')}
+    </div>
+  `;
 }
 
-window.addEventListener('resize', () => { resize(); buildSoilTexture(); });
-canvas.addEventListener('click', e => {
-  // Drop prey at tap location on canvas
-  // (buttons handle actual spawning)
-});
+function renderTips() {
+  return `
+    <div class="master-card">
+      <div class="master-title">📖 Основы чайного мастерства</div>
+      <div class="master-text">Знание правил заваривания — это половина успеха. Даже самая ценная трава не поможет, если её неправильно приготовить.</div>
+    </div>
+    ${TIPS.map(t => `
+      <div class="tip-row">
+        <div class="tip-icon">${t.icon}</div>
+        <div class="tip-text">${t.text}</div>
+      </div>
+    `).join('')}
+  `;
+}
 
-init();
-loop();
+function renderDetail(disease) {
+  return `
+    <div class="detail-view active">
+      <button class="back-btn" onclick="closeDisease()">← Назад</button>
+      <div class="detail-header">
+        <div class="detail-icon">${disease.icon}</div>
+        <div class="detail-title">${disease.name}</div>
+        <div class="detail-desc">${disease.desc}</div>
+      </div>
+      <div class="teas-title">🍵 Рекомендуемые чаи (${disease.teas.length})</div>
+      ${disease.teas.map(t => `
+        <div class="tea-card">
+          <div class="tea-card-header">
+            <div class="tea-emoji">${t.emoji}</div>
+            <div class="tea-info">
+              <div class="tea-name">${t.name}</div>
+              <div class="tea-latin">${t.latin}</div>
+            </div>
+          </div>
+          <div class="tea-effect">${t.effect}</div>
+          <div class="tea-recipe">
+            <div class="recipe-label">Рецепт приготовления</div>
+            <ul class="recipe-steps">
+              ${t.steps.map((s, i) => `
+                <li class="recipe-step">
+                  <div class="step-num">${i + 1}</div>
+                  <span>${s}</span>
+                </li>
+              `).join('')}
+            </ul>
+          </div>
+          <div class="tags-row">
+            ${t.tags.map(tag => {
+              if (tag === 'safe') return `<span class="tag tag-safe">✓ Безопасен</span>`;
+              if (tag === 'caution') return `<span class="tag tag-caution">⚠ Осторожно</span>`;
+              if (tag === 'warning') return `<span class="tag tag-warning">! Предупреждение</span>`;
+              return `<span class="tag tag-time">${tag}</span>`;
+            }).join('')}
+          </div>
+          ${t.warn ? `<div class="warn-box"><span>⚠️</span><span>${t.warn.replace('⚠️ ', '')}</span></div>` : ''}
+        </div>
+      `).join('')}
+    </div>
+  `;
+}
+
+// ══════════════════════════════════════════════
+//  ОБРАБОТЧИКИ
+// ══════════════════════════════════════════════
+
+function switchTab(tab, el) {
+  currentTab = tab;
+  currentDisease = null;
+  document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+  el.classList.add('active');
+  render();
+  document.getElementById('mainContent').scrollTop = 0;
+}
+
+function openDisease(id) {
+  currentDisease = DISEASES.find(d => d.id === id);
+  render();
+  document.getElementById('mainContent').scrollTop = 0;
+}
+
+function closeDisease() {
+  currentDisease = null;
+  render();
+  document.getElementById('mainContent').scrollTop = 0;
+}
+
+function onSearch(val) {
+  if (val.length >= 2) {
+    currentDisease = null;
+  }
+  render();
+}
+
+// ══════════════════════════════════════════════
+//  ИНИЦИАЛИЗАЦИЯ
+// ══════════════════════════════════════════════
+render();
 </script>
+
 </body>
 </html>
