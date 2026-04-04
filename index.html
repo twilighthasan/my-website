@@ -4,187 +4,792 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">
-<meta name="color-scheme" content="dark">
-<meta name="theme-color" content="#0f0f0f">
-<title>Чайный Гуру — Справочник лечебных чаёв</title>
+<title>НотПад — Совместные заметки</title>
 <style>
-*{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent}
-html,body{
-  height:100%;
-  font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,'Helvetica Neue',Arial,sans-serif;
-  background:#0f0f0f !important;
-  color:#e8e4dc !important;
-  overflow:hidden;
-  touch-action:manipulation;
-  -webkit-text-size-adjust:100%;
+* { margin:0; padding:0; box-sizing:border-box; -webkit-tap-highlight-color:transparent; }
+:root {
+  --bg: #0f0f14;
+  --surface: #1a1a24;
+  --surface2: #22223a;
+  --accent: #6c5ce7;
+  --accent2: #a29bfe;
+  --text: #e8e8f0;
+  --text2: #8888aa;
+  --danger: #e74c3c;
+  --success: #2ecc71;
+  --border: #2a2a44;
+  --radius: 14px;
 }
-#app{height:100%;display:flex;flex-direction:column;max-width:500px;margin:0 auto;position:relative;background:#0f0f0f}
-.header{padding:14px 16px 10px;text-align:center;flex-shrink:0;background:#151210;border-bottom:1px solid #2a2520}
-.header h1{font-size:24px;font-weight:700;color:#c8a45a;letter-spacing:1px;margin-bottom:2px}
-.header .sub{font-size:11px;color:#a09a8e;letter-spacing:3px;text-transform:uppercase}
-.search-wrap{padding:10px 16px;flex-shrink:0}
-.search-box{display:flex;align-items:center;background:#1a1a1a;border:1px solid #444;border-radius:12px;padding:0 14px}
-.search-box:focus-within{border-color:#c8a45a}
-.search-box svg{width:20px;height:20px;stroke:#888;flex-shrink:0}
-.search-box input{flex:1;background:transparent;border:none;color:#e8e4dc;font-size:16px;padding:12px 10px;outline:none;font-family:inherit;-webkit-appearance:none;appearance:none}
-.search-box input::placeholder{color:#666}
-.search-clear{background:none;border:none;color:#888;font-size:22px;padding:4px;cursor:pointer;display:none;line-height:1}
-.tabs{display:flex;padding:6px 16px 2px;gap:6px;flex-shrink:0;overflow-x:auto;-webkit-overflow-scrolling:touch;scrollbar-width:none}
-.tabs::-webkit-scrollbar{display:none}
-.tab{padding:9px 16px;border-radius:22px;font-size:14px;font-weight:600;white-space:nowrap;border:1px solid #444;background:#1a1a1a;color:#a09a8e;cursor:pointer;flex-shrink:0}
-.tab.active{background:#c8a45a;color:#111;border-color:#c8a45a}
-.content{flex:1;overflow-y:auto;padding:12px 16px 100px;-webkit-overflow-scrolling:touch}
-.content::-webkit-scrollbar{width:3px}
-.content::-webkit-scrollbar-thumb{background:#444;border-radius:3px}
-.tea-card{background:#1a1a1a;border-radius:16px;padding:16px 18px;margin-bottom:12px;border:1px solid #333;cursor:pointer;position:relative;overflow:hidden}
-.tea-card::before{content:'';position:absolute;top:0;left:0;width:5px;height:100%;border-radius:5px 0 0 5px}
-.tea-card:active{opacity:.85}
-.tea-card .emoji{font-size:32px;margin-bottom:8px;display:block}
-.tea-card .name{font-size:20px;font-weight:700;color:#e8c96a;margin-bottom:4px}
-.tea-card .form-tag{display:inline-block;font-size:11px;font-weight:700;padding:3px 10px;border-radius:8px;background:#2a2520;color:#c8a45a;margin-bottom:8px;text-transform:uppercase;letter-spacing:1.5px}
-.tea-card .desc{font-size:15px;color:#a09a8e;line-height:1.6;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
-.tea-card .tags{display:flex;flex-wrap:wrap;gap:6px;margin-top:10px}
-.tea-card .tag{font-size:12px;font-weight:500;padding:4px 10px;border-radius:8px;background:rgba(74,158,110,.15);color:#4a9e6e;border:1px solid rgba(74,158,110,.25)}
-.cat-single::before{background:#c8a45a}
-.cat-powder::before{background:#e07040}
-.cat-mix::before{background:#5a9ec8}
-.cat-spice::before{background:#c45ca0}
-.detail-overlay{position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,.92);z-index:1000;display:none;justify-content:center;align-items:flex-end}
-.detail-overlay.show{display:flex}
-.detail-sheet{width:100%;max-width:500px;max-height:90vh;background:#1a1a1a;border-radius:20px 20px 0 0;overflow-y:auto;-webkit-overflow-scrolling:touch;animation:slideUp .3s ease}
-@keyframes slideUp{from{transform:translateY(100%)}to{transform:translateY(0)}}
-.detail-handle{width:40px;height:5px;background:#555;border-radius:4px;margin:12px auto}
-.detail-header{padding:6px 20px 18px;text-align:center;border-bottom:1px solid #333}
-.detail-header .emoji{font-size:52px;margin-bottom:8px;display:block}
-.detail-header h2{font-size:26px;font-weight:700;color:#e8c96a}
-.detail-header .form{font-size:14px;color:#a09a8e;margin-top:4px}
-.detail-body{padding:20px 20px 36px}
-.detail-section{margin-bottom:22px}
-.detail-section h3{font-size:14px;font-weight:700;text-transform:uppercase;letter-spacing:2.5px;color:#c8a45a;margin-bottom:10px}
-.detail-section p{font-size:16px;line-height:1.7;color:#e8e4dc}
-.detail-section ul{list-style:none;padding:0}
-.detail-section ul li{padding:6px 0 6px 22px;position:relative;font-size:16px;line-height:1.6;color:#e8e4dc}
-.detail-section ul li::before{content:'•';position:absolute;left:0;color:#c8a45a;font-size:18px}
-.benefit-list li::before{content:'✦';color:#4a9e6e !important;font-size:14px}
-.warn-list li::before{content:'⚠';color:#c45c5c !important;font-size:14px}
-.brew-box{background:#252525;border-radius:14px;padding:16px;border:1px solid #444}
-.brew-row{display:flex;justify-content:space-between;align-items:center;padding:8px 0;font-size:15px;border-bottom:1px solid #333}
-.brew-row:last-child{border:none}
-.brew-label{color:#a09a8e;font-weight:500}
-.brew-val{color:#e8c96a;font-weight:600;text-align:right;max-width:55%}
-.sell-tip{background:#1f1a12;border-radius:14px;padding:16px;border:1px solid #3a3020;font-size:15px;line-height:1.7;color:#e8c96a}
-.close-btn{position:sticky;bottom:16px;display:block;width:100%;margin:20px 0 0;padding:16px;background:#c8a45a;color:#111;border:none;border-radius:14px;font-size:17px;font-weight:700;font-family:inherit;cursor:pointer}
-.symptom-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px}
-.symptom-btn{background:#1a1a1a;border:1px solid #444;border-radius:14px;padding:14px 10px;text-align:center;cursor:pointer}
-.symptom-btn:active{opacity:.8}
-.symptom-btn.active{border-color:#4a9e6e;background:rgba(74,158,110,.12)}
-.symptom-btn .sym-emoji{font-size:28px;margin-bottom:6px;display:block}
-.symptom-btn .sym-name{font-size:14px;color:#e8e4dc;font-weight:600}
-.empty{text-align:center;padding:40px 20px;color:#a09a8e}
-.empty .em-icon{font-size:52px;margin-bottom:14px}
-.empty p{font-size:16px;line-height:1.7}
-.bottom-nav{position:absolute;bottom:0;left:0;right:0;display:flex;background:linear-gradient(0deg,#0f0f0f 70%,transparent);padding:14px 16px 24px;gap:8px}
-.nav-btn{flex:1;padding:12px 8px;border-radius:14px;border:1px solid #444;background:#1a1a1a;color:#a09a8e;font-size:13px;font-family:inherit;font-weight:600;cursor:pointer;text-align:center}
-.nav-btn.active{background:#c8a45a;color:#111;border-color:#c8a45a}
-.nav-btn .nav-icon{font-size:20px;display:block;margin-bottom:3px}
-.disclaimer{font-size:12px;color:#666;text-align:center;padding:14px;line-height:1.6;border-top:1px solid #2a2a2a;margin-top:10px}
-.tip-card{background:#1a1a1a;border-radius:16px;padding:16px 18px;margin-bottom:12px;border:1px solid #333}
-.tip-emoji{font-size:28px;margin-bottom:8px;display:block}
-.tip-title{font-size:19px;font-weight:700;color:#e8c96a;margin-bottom:12px}
-.tip-item{font-size:15px;color:#e8e4dc;padding:8px 0 8px 22px;position:relative;line-height:1.7;border-bottom:1px solid #2a2a2a}
-.tip-item:last-child{border:none}
-.tip-item::before{content:'→';position:absolute;left:0;color:#c8a45a;font-weight:700}
-.match-card{background:#1a1a1a;border-radius:14px;padding:14px 16px;margin-bottom:10px;border:1px solid #333;cursor:pointer}
-.match-card:active{opacity:.85}
-.match-top{display:flex;justify-content:space-between;align-items:center}
-.match-name{font-size:18px;font-weight:700;color:#e8c96a}
-.match-badge{font-size:12px;font-weight:600;color:#4a9e6e;background:rgba(74,158,110,.15);padding:4px 10px;border-radius:10px}
-.match-desc{font-size:14px;color:#a09a8e;margin-top:8px;line-height:1.5}
+body {
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  background: var(--bg);
+  color: var(--text);
+  width: 100%; height: 100vh; overflow: hidden;
+  display: flex; flex-direction: column;
+  touch-action: manipulation;
+}
+
+/* Header */
+.header {
+display: flex; align-items: center; justify-content: space-between;
+padding: 12px 16px;
+background: var(–surface);
+border-bottom: 1px solid var(–border);
+min-height: 56px;
+flex-shrink: 0;
+}
+.header-title {
+font-size: 18px; font-weight: 700;
+background: linear-gradient(135deg, var(–accent), var(–accent2));
+-webkit-background-clip: text; -webkit-text-fill-color: transparent;
+}
+.header-room {
+font-size: 12px; color: var(–text2); margin-top: 2px;
+}
+.header-actions { display: flex; gap: 8px; }
+.icon-btn {
+width: 44px; height: 44px;
+border: none; border-radius: 12px;
+background: var(–surface2);
+color: var(–text);
+font-size: 20px;
+display: flex; align-items: center; justify-content: center;
+cursor: pointer;
+transition: all .15s;
+position: relative;
+}
+.icon-btn:active { transform: scale(0.92); background: var(–accent); }
+.icon-btn .badge {
+position: absolute; top: 4px; right: 4px;
+width: 8px; height: 8px;
+background: var(–success);
+border-radius: 50%;
+}
+
+/* Status bar */
+.status-bar {
+display: flex; align-items: center; gap: 8px;
+padding: 6px 16px;
+background: var(–surface);
+font-size: 12px; color: var(–text2);
+flex-shrink: 0;
+}
+.status-dot {
+width: 8px; height: 8px; border-radius: 50%;
+background: var(–success);
+flex-shrink: 0;
+}
+.status-dot.offline { background: var(–danger); }
+.status-dot.syncing { background: #f39c12; animation: pulse 1s infinite; }
+@keyframes pulse { 0%,100% { opacity: 1; } 50% { opacity: 0.3; } }
+
+/* Tabs */
+.tabs {
+display: flex;
+background: var(–surface);
+border-bottom: 1px solid var(–border);
+flex-shrink: 0;
+}
+.tab {
+flex: 1;
+padding: 12px;
+text-align: center;
+font-size: 14px; font-weight: 600;
+color: var(–text2);
+border: none; background: none;
+cursor: pointer;
+position: relative;
+transition: color .2s;
+}
+.tab.active { color: var(–accent2); }
+.tab.active::after {
+content: ‘’;
+position: absolute; bottom: 0; left: 20%; right: 20%;
+height: 3px; border-radius: 3px;
+background: linear-gradient(90deg, var(–accent), var(–accent2));
+}
+
+/* Content area */
+.content { flex: 1; overflow: hidden; position: relative; }
+
+/* Editor panel */
+.panel { display: none; width: 100%; height: 100%; flex-direction: column; }
+.panel.active { display: flex; }
+
+#editor {
+flex: 1;
+width: 100%;
+padding: 16px;
+background: var(–bg);
+border: none;
+color: var(–text);
+font-size: 16px;
+line-height: 1.6;
+resize: none;
+outline: none;
+font-family: inherit;
+}
+
+/* Bottom bar */
+.bottom-bar {
+display: flex; align-items: center; gap: 8px;
+padding: 10px 16px;
+background: var(–surface);
+border-top: 1px solid var(–border);
+flex-shrink: 0;
+}
+.save-btn {
+flex: 1; height: 48px;
+border: none; border-radius: 12px;
+background: linear-gradient(135deg, var(–accent), var(–accent2));
+color: #fff;
+font-size: 16px; font-weight: 700;
+cursor: pointer;
+transition: all .15s;
+}
+.save-btn:active { transform: scale(0.96); opacity: 0.85; }
+
+/* History panel */
+.history-list {
+flex: 1; overflow-y: auto; padding: 12px 16px;
+-webkit-overflow-scrolling: touch;
+}
+.history-item {
+background: var(–surface);
+border: 1px solid var(–border);
+border-radius: var(–radius);
+padding: 14px;
+margin-bottom: 10px;
+cursor: pointer;
+transition: all .15s;
+}
+.history-item:active { background: var(–surface2); transform: scale(0.98); }
+.history-meta {
+display: flex; justify-content: space-between; align-items: center;
+margin-bottom: 8px;
+}
+.history-author {
+font-size: 14px; font-weight: 600; color: var(–accent2);
+}
+.history-date {
+font-size: 12px; color: var(–text2);
+}
+.history-preview {
+font-size: 13px; color: var(–text2);
+line-height: 1.4;
+max-height: 42px; overflow: hidden;
+text-overflow: ellipsis;
+}
+.history-empty {
+text-align: center; color: var(–text2);
+padding: 60px 20px; font-size: 15px;
+}
+
+/* Users panel */
+.users-panel { padding: 16px; overflow-y: auto; }
+.user-card {
+background: var(–surface);
+border: 1px solid var(–border);
+border-radius: var(–radius);
+padding: 14px;
+margin-bottom: 10px;
+display: flex; align-items: center; gap: 12px;
+}
+.user-avatar {
+width: 44px; height: 44px;
+border-radius: 50%;
+display: flex; align-items: center; justify-content: center;
+font-size: 20px; font-weight: 700;
+color: #fff;
+flex-shrink: 0;
+}
+.user-info { flex: 1; }
+.user-name { font-size: 15px; font-weight: 600; }
+.user-status { font-size: 12px; color: var(–text2); margin-top: 2px; }
+
+/* Login screen */
+.login-screen {
+position: absolute; inset: 0;
+background: var(–bg);
+display: flex; flex-direction: column;
+justify-content: center; align-items: center;
+padding: 24px;
+z-index: 100;
+}
+.login-screen.hidden { display: none; }
+.login-logo {
+font-size: 48px; margin-bottom: 8px;
+}
+.login-title {
+font-size: 28px; font-weight: 800;
+background: linear-gradient(135deg, var(–accent), var(–accent2));
+-webkit-background-clip: text; -webkit-text-fill-color: transparent;
+margin-bottom: 6px;
+}
+.login-sub {
+font-size: 14px; color: var(–text2);
+margin-bottom: 32px; text-align: center;
+}
+.input-group {
+width: 100%; max-width: 340px; margin-bottom: 14px;
+}
+.input-label {
+font-size: 13px; color: var(–text2);
+margin-bottom: 6px; display: block;
+}
+.input-field {
+width: 100%; height: 52px;
+padding: 0 16px;
+background: var(–surface);
+border: 2px solid var(–border);
+border-radius: 12px;
+color: var(–text);
+font-size: 16px;
+outline: none;
+transition: border-color .2s;
+}
+.input-field:focus { border-color: var(–accent); }
+.login-btn {
+width: 100%; max-width: 340px; height: 52px;
+border: none; border-radius: 12px;
+background: linear-gradient(135deg, var(–accent), var(–accent2));
+color: #fff;
+font-size: 17px; font-weight: 700;
+cursor: pointer;
+margin-top: 10px;
+transition: all .15s;
+}
+.login-btn:active { transform: scale(0.96); }
+
+/* Version detail modal */
+.modal-overlay {
+position: fixed; inset: 0;
+background: rgba(0,0,0,0.7);
+display: flex; align-items: flex-end;
+z-index: 200;
+opacity: 0; pointer-events: none;
+transition: opacity .2s;
+}
+.modal-overlay.active { opacity: 1; pointer-events: auto; }
+.modal-content {
+width: 100%;
+max-height: 75vh;
+background: var(–surface);
+border-radius: 20px 20px 0 0;
+padding: 20px 16px 30px;
+transform: translateY(100%);
+transition: transform .3s ease;
+display: flex; flex-direction: column;
+}
+.modal-overlay.active .modal-content { transform: translateY(0); }
+.modal-handle {
+width: 40px; height: 4px;
+background: var(–border);
+border-radius: 2px;
+margin: 0 auto 16px;
+}
+.modal-title {
+font-size: 18px; font-weight: 700; margin-bottom: 4px;
+}
+.modal-date {
+font-size: 13px; color: var(–text2); margin-bottom: 14px;
+}
+.modal-text {
+flex: 1; overflow-y: auto;
+background: var(–bg);
+border-radius: 12px;
+padding: 14px;
+font-size: 14px; line-height: 1.6;
+color: var(–text2);
+margin-bottom: 14px;
+white-space: pre-wrap; word-break: break-word;
+-webkit-overflow-scrolling: touch;
+}
+.modal-actions { display: flex; gap: 10px; }
+.modal-actions button {
+flex: 1; height: 48px;
+border: none; border-radius: 12px;
+font-size: 15px; font-weight: 700;
+cursor: pointer;
+transition: all .15s;
+}
+.modal-actions button:active { transform: scale(0.96); }
+.btn-restore {
+background: linear-gradient(135deg, var(–accent), var(–accent2));
+color: #fff;
+}
+.btn-close-modal {
+background: var(–surface2);
+color: var(–text);
+}
+
+/* Toast */
+.toast {
+position: fixed; top: 70px; left: 50%; transform: translateX(-50%) translateY(-20px);
+padding: 10px 20px;
+border-radius: 12px;
+font-size: 14px; font-weight: 600;
+opacity: 0; pointer-events: none;
+transition: all .3s;
+z-index: 300;
+white-space: nowrap;
+}
+.toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
+.toast.success { background: var(–success); color: #fff; }
+.toast.info { background: var(–accent); color: #fff; }
+.toast.error { background: var(–danger); color: #fff; }
 </style>
+
 </head>
 <body>
-<div id="app">
-  <div class="header">
-    <h1>☕ Чайный Гуру</h1>
-    <div class="sub">Справочник лечебных чаёв</div>
+
+<!-- Login -->
+
+<div class="login-screen" id="loginScreen">
+  <div class="login-logo">📝</div>
+  <div class="login-title">НотПад</div>
+  <div class="login-sub">Совместные заметки с историей версий</div>
+  <div class="input-group">
+    <label class="input-label">Ваше имя</label>
+    <input class="input-field" id="inputName" placeholder="Например: Хасан" autocomplete="off">
   </div>
-  <div class="search-wrap">
-    <div class="search-box">
-      <svg viewBox="0 0 24 24" fill="none" stroke-width="2"><circle cx="11" cy="11" r="8"/><path d="M21 21l-4.35-4.35"/></svg>
-      <input id="searchInput" type="text" placeholder="Поиск по чаю или симптому...">
-      <button class="search-clear" id="clearBtn" onclick="clearSearch()">✕</button>
+  <div class="input-group">
+    <label class="input-label">Код комнаты</label>
+    <input class="input-field" id="inputRoom" placeholder="Например: семья" autocomplete="off">
+  </div>
+  <button class="login-btn" id="loginBtn">Войти</button>
+</div>
+
+<!-- Main app -->
+
+<div class="header">
+  <div>
+    <div class="header-title">📝 НотПад</div>
+    <div class="header-room" id="roomLabel"></div>
+  </div>
+  <div class="header-actions">
+    <button class="icon-btn" id="shareBtn" title="Поделиться">🔗</button>
+    <button class="icon-btn" id="logoutBtn" title="Выйти">🚪</button>
+  </div>
+</div>
+
+<div class="status-bar">
+  <div class="status-dot" id="statusDot"></div>
+  <span id="statusText">Подключение...</span>
+</div>
+
+<div class="tabs">
+  <button class="tab active" data-tab="editor">📄 Заметка</button>
+  <button class="tab" data-tab="history">🕐 История</button>
+  <button class="tab" data-tab="users">👥 Участники</button>
+</div>
+
+<div class="content">
+  <!-- Editor -->
+  <div class="panel active" id="panelEditor">
+    <textarea id="editor" placeholder="Начните печатать..."></textarea>
+    <div class="bottom-bar">
+      <button class="save-btn" id="saveBtn">💾 Сохранить в историю</button>
     </div>
   </div>
-  <div class="tabs" id="tabs"></div>
-  <div class="content" id="content"></div>
-  <div class="bottom-nav">
-    <button class="nav-btn active" onclick="setMode('catalog')"><span class="nav-icon">🍵</span>Каталог</button>
-    <button class="nav-btn" onclick="setMode('symptoms')"><span class="nav-icon">💊</span>По симптому</button>
-    <button class="nav-btn" onclick="setMode('tips')"><span class="nav-icon">💡</span>Продавцу</button>
+
+  <!-- History -->
+
+  <div class="panel" id="panelHistory">
+    <div class="history-list" id="historyList">
+      <div class="history-empty">Пока нет сохранённых версий</div>
+    </div>
+  </div>
+
+  <!-- Users -->
+
+  <div class="panel" id="panelUsers">
+    <div class="users-panel" id="usersList"></div>
   </div>
 </div>
-<div class="detail-overlay" id="detailOverlay" onclick="closeDetail(event)">
-  <div class="detail-sheet" id="detailSheet"></div>
+
+<!-- Version detail modal -->
+
+<div class="modal-overlay" id="modalOverlay">
+  <div class="modal-content">
+    <div class="modal-handle"></div>
+    <div class="modal-title" id="modalAuthor"></div>
+    <div class="modal-date" id="modalDate"></div>
+    <div class="modal-text" id="modalText"></div>
+    <div class="modal-actions">
+      <button class="btn-close-modal" id="modalClose">Закрыть</button>
+      <button class="btn-restore" id="modalRestore">♻️ Восстановить</button>
+    </div>
+  </div>
 </div>
+
+<div class="toast" id="toast"></div>
+
 <script>
-const TEAS=[{id:1,name:"Имбирь",emoji:"🫚",form:"Целый корень",cat:"single",desc:"Мощный природный антиоксидант и противовоспалительное средство. Согревает, ускоряет метаболизм, поддерживает иммунитет.",benefits:["Укрепление иммунитета","Противовоспалительное действие","Помощь при тошноте и укачивании","Улучшение пищеварения","Ускорение метаболизма","Облегчение при простуде и гриппе","Снижение мышечных болей"],symptoms:["простуда","тошнота","пищеварение","иммунитет","метаболизм","боль"],brew:{temp:"90-100°C",amount:"2-3 ломтика (5г) на 250мл",time:"5-10 мин",reuse:"Можно повторно"},contra:["Язва желудка","Желчнокаменная болезнь","Температура >38.5°C","Перед операцией (разжижает кровь)","Беременность — осторожно"],combos:["+ мёд + лимон = при простуде","+ куркума = противовоспалительное ×2","+ корица = контроль сахара"],sell:"Хит продаж зимой. Говори: «Один кусочек имбиря заменяет горсть таблеток при первых признаках простуды». Идеальный подарок."},{id:2,name:"Корица",emoji:"🪵",form:"Целая палочка",cat:"single",desc:"Сладковатая пряность с мощным антибактериальным эффектом. Регулирует сахар в крови, согревает, улучшает настроение.",benefits:["Регуляция сахара в крови","Антибактериальный эффект","Улучшение кровообращения","Антиоксидантная защита","Помощь при вздутии","Согревающее действие","Поддержка при диабете 2 типа"],symptoms:["сахар","диабет","кровообращение","вздутие","простуда"],brew:{temp:"100°C",amount:"1 палочка (3-4г) на 300мл",time:"7-12 мин",reuse:"2-3 заварки"},contra:["Беременность (большие дозы)","Заболевания печени","Антикоагулянты","Аллергия на коричный альдегид"],combos:["+ имбирь = контроль сахара","+ мёд = антибактериальный","+ яблоко = десертный чай"],sell:"Подчёркивай сахар: «Палочка корицы в чае каждый день — и сахар под контролем естественным путём»."},{id:3,name:"Шалфей",emoji:"🌿",form:"Целый лист",cat:"single",desc:"«Священная трава» — мощное антисептическое, противовоспалительное и вяжущее средство. Незаменим при болезнях горла.",benefits:["Антисептик для горла","Уменьшение потоотделения","Улучшение памяти","Помощь при менопаузе","Противовоспалительное","Антиоксидантная защита","Помощь при расстройстве желудка"],symptoms:["горло","потоотделение","память","менопауза","воспаление","пищеварение"],brew:{temp:"90°C",amount:"1 ч.л. (2г) на 250мл",time:"5-7 мин (не более!)",reuse:"Только первая заварка"},contra:["Беременность и лактация","Эпилепсия","Тяжёлая гипертония","Не более 3-4 чашек/день","Дети до 6 лет"],combos:["+ мёд = лечение горла","+ лимон = антисептик","+ ромашка = успокаивающий"],sell:"Природный антисептик: «Полоскание шалфеем — то что делают при больном горле в Средиземноморье 2000 лет»."},{id:4,name:"Шиповник",emoji:"🌹",form:"Порошок",cat:"powder",desc:"Рекордсмен по витамину С — в 50 раз больше чем в лимоне. Укрепляет сосуды, поддерживает иммунитет.",benefits:["Витамин С в высокой концентрации","Укрепление сосудов","Мягкий мочегонный эффект","Поддержка иммунитета","Улучшение кожи","Помощь при анемии","Желчегонный эффект"],symptoms:["иммунитет","сосуды","кожа","анемия","мочегонное","витамины"],brew:{temp:"80-85°C (не кипяток!)",amount:"1 ст.л. (10г) на 300мл",time:"15-20 мин в термосе",reuse:"Нет — отдаёт всё сразу"},contra:["Тромбофлебит","Эндокардит","Гастрит с высокой кислотностью","Прополоскать рот после (кислота)"],combos:["+ мёд = витаминная бомба","+ имбирь = при простуде","+ каркаде = двойной витамин С"],sell:"«В одной ложке шиповника витамина С больше, чем в килограмме лимонов. Не таблетка — природа». Порошок удобнее ягод."},{id:5,name:"Гранатовый цветок",emoji:"🌺",form:"Целые цветки",cat:"single",desc:"Редкий и ценный продукт. Антиоксидант, помогает при воспалениях, поддерживает сердце и сосуды.",benefits:["Мощный антиоксидант","Поддержка сердца и сосудов","Противовоспалительное","Снижение давления","Улучшение кожи","Помощь при анемии","Вяжущий эффект при диарее"],symptoms:["сердце","давление","кожа","анемия","воспаление","диарея"],brew:{temp:"90°C",amount:"1-2 ч.л. на 250мл",time:"5-8 мин",reuse:"1-2 заварки"},contra:["Гипотония","Запоры (вяжущий)","Аллергия на гранат"],combos:["+ каркаде = рубиновый чай для сосудов","+ мята = летний освежающий","+ корица = согревающий сердечный"],sell:"Премиум: «Гранатовые цветки — самая ценная часть граната. Такой чай пьют в дорогих спа-отелях»."},{id:6,name:"Каркаде",emoji:"🌸",form:"Целые цветки",cat:"single",desc:"Цветки гибискуса — натуральный витамин С и антоцианы. Регулирует давление, освежает.",benefits:["Регуляция давления","Витамин С и антоцианы","Мягкий слабительный","Снижение холестерина","Освежает в жару","Поддержка печени","При похмелье"],symptoms:["давление","витамины","запор","холестерин","печень","жажда"],brew:{temp:"Горячий: 95°C / Холодный: комнатная",amount:"2 ч.л. (5г) на 300мл",time:"5-7 мин / холодный 2-4ч",reuse:"1 повторная"},contra:["Гастрит с высокой кислотностью","Язва","Гипотония (горячий)","Беременность — умеренно"],combos:["+ мята = летний напиток","+ шиповник = двойной витамин С","+ имбирь = пряный кисло-пряный"],sell:"Два лайфхака: горячий снижает давление, холодный повышает. «Натуральный спортивный напиток»."},{id:7,name:"Универсальный Микс",emoji:"🫖",form:"Целые компоненты",cat:"mix",desc:"Имбирь + корица + шалфей + шиповник + гранатовый цветок + каркаде. Комплексная поддержка.",benefits:["Комплексный иммунитет","Витамины + антиоксиданты","Противовоспалительный","Пищеварение","Сердце и сосуды","Согревание и тонус","Общеукрепляющее"],symptoms:["иммунитет","простуда","пищеварение","общее укрепление","витамины","сосуды"],brew:{temp:"90-95°C",amount:"1.5 ст.л. на 350мл",time:"7-10 мин",reuse:"Можно 1 раз"},contra:["Смотри каждый компонент","Аллергия — пробуй по отдельности","Беременность — нет"],combos:["+ мёд = вкуснее и полезнее","+ лимон = доп. витамин С"],sell:"Бестселлер: «Не нужно разбираться в 20 травах — всё смешано идеально. Одна ложка = всё сразу». Подарок!"},{id:8,name:"Эвкалипт + Гранат + Мята",emoji:"🍃",form:"Порошок",cat:"mix",desc:"Тройная свежесть: эвкалипт для дыхания, гранат для антиоксидантов, мята для пищеварения.",benefits:["Облегчение дыхания","Прочищение носа","Антиоксидантная защита","Успокоение пищеварения","Свежее дыхание","При головной боли","Антибактериальное"],symptoms:["простуда","дыхание","нос","головная боль","пищеварение","свежесть"],brew:{temp:"85-90°C",amount:"1 ч.л. на 250мл",time:"3-5 мин",reuse:"Нет"},contra:["Астма","Дети до 3 лет","ГЭРБ (мята)","Желчнокаменная болезнь"],combos:["+ мёд = мягче для горла","+ лимон = экстра витамин С"],sell:"«Скорая помощь при простуде»: «Заложен нос? Одна чашка — дышишь свободно через 10 минут». Мгновенно."},{id:9,name:"Эвкалипт",emoji:"🌲",form:"Порошок",cat:"powder",desc:"Природный антисептик дыхательных путей. Очищает бронхи, облегчает дыхание.",benefits:["Облегчение дыхания","Антисептик для бронхов","Снятие заложенности","Жаропонижающий","Обезболивание","Отхаркивающее","Антибактериальное"],symptoms:["дыхание","кашель","нос","температура","бронхит","простуда"],brew:{temp:"85°C",amount:"0.5-1 ч.л. на 250мл",time:"3-5 мин",reuse:"Нет"},contra:["Астма (спазм)","Коклюш","Дети до 3 лет","Болезни печени","Не с препаратами от диабета"],combos:["+ мёд = смягчение горла","+ имбирь = двойной удар","+ мята = максимум свежести"],sell:"«Помнишь как дышали над картошкой? Эвкалипт — то же самое, только в чашке. Дышишь паром и пьёшь»."},{id:10,name:"Энерджи Чай",emoji:"⚡",form:"Порошок",cat:"powder",desc:"Натуральный энергетик без кофеиновых скачков. Бодрость, концентрация, выносливость.",benefits:["Бодрость без кофеина","Улучшение концентрации","Повышение выносливости","Ускорение метаболизма","Поддержка при нагрузках","Улучшение настроения","Антиоксиданты"],symptoms:["усталость","концентрация","энергия","метаболизм","настроение","тренировка"],brew:{temp:"85-90°C",amount:"1-1.5 ч.л. на 250мл",time:"3-5 мин",reuse:"Нет"},contra:["Гипертония","Тахикардия","Не после 16:00","Беременность","Тревожные расстройства"],combos:["+ лимон = освежающий тоник","+ мёд = доп. энергия"],sell:"Спортсменам и офисным: «Забудь химические энергетики. Природная энергия — 3-4 часа без скачков»."},{id:11,name:"Имбирь + Куркума + Перец",emoji:"🔥",form:"Микс с приправами",cat:"spice",desc:"Золотой противовоспалительный чай. Перец увеличивает усвоение куркумина в 20 раз.",benefits:["Мощное противовоспалительное","Обезболивание суставов","Усвоение куркумина ×20","Укрепление иммунитета","Антиоксиданты","Детокс печени","Пищеварение"],symptoms:["суставы","воспаление","иммунитет","печень","пищеварение","боль"],brew:{temp:"95°C",amount:"Имбирь 3г + куркума ½ ч.л. + щепотка перца",time:"7-10 мин",reuse:"Нет"},contra:["Желчнокаменная болезнь","Антикоагулянты","Перед операцией","Гастрит/язва","Беременность"],combos:["+ кокосовое молоко = Golden Milk","+ мёд + лимон = противопростудный"],sell:"«Чёрный перец увеличивает усвоение куркумина в 20 раз. Без перца куркума просто проходит мимо». Чай для 40+."},{id:12,name:"Корица + Гвоздика + Кардамон",emoji:"🎄",form:"Микс с приправами",cat:"spice",desc:"Восточный согревающий сбор. Пряный аромат, нормализует сахар, улучшает пищеварение.",benefits:["Регуляция сахара","Пищеварение","Антибактериальный","Согревание","Вздутие и газы","Свежее дыхание","Зубная боль (гвоздика)"],symptoms:["сахар","диабет","вздутие","газы","зубная боль","пищеварение","холод"],brew:{temp:"100°C",amount:"1 палочка + 2 гвоздики + 2 кардамона",time:"8-12 мин",reuse:"1-2 заварки"},contra:["Беременность","Язва","Аллергия на специи","Гипотония"],combos:["+ чёрный чай = масала","+ молоко = масала-чай","+ мёд = десертный вечерний"],sell:"«Восточный рецепт долголетия»: «На Ближнем Востоке пьют после еды уже 1000 лет». Зимний хит."},{id:13,name:"Имбирь + Лемонграсс + Мята",emoji:"🌿",form:"Микс с приправами",cat:"spice",desc:"Детокс-чай. Выводит токсины, уменьшает отёки, поддерживает почки.",benefits:["Мягкая детоксикация","Уменьшение отёков","Поддержка почек","Лимфодренаж","Успокоение пищеварения","Антиспазматический","Освежающий вкус"],symptoms:["отёки","детокс","почки","пищеварение","спазмы","очищение"],brew:{temp:"90°C",amount:"Имбирь 3г + лемонграсс 1 ч.л. + мята 1 ч.л.",time:"5-7 мин",reuse:"1 раз"},contra:["Низкое давление","Мочекаменная болезнь","ГЭРБ","Беременность — осторожно"],combos:["+ огурец холодный = спа-напиток","+ мёд = мягче"],sell:"Для женщин: «Спа изнутри. Выводит воду, убирает отёки, очищает кожу». Можно холодным летом."},{id:14,name:"Корица + Фенхель + Анис",emoji:"🌙",form:"Микс с приправами",cat:"spice",desc:"Вечерний пищеварительный чай. Снимает вздутие, помогает при запорах.",benefits:["Вздутие и газы","Помощь при запорах","Спазмолитический","Перистальтика","Мягкий слабительный","Колики","Аппетит"],symptoms:["запор","вздутие","газы","колики","пищеварение","аппетит"],brew:{temp:"95°C",amount:"Корица 1 палочка + фенхель 1 ч.л. + анис ½ ч.л.",time:"8-10 мин под крышкой",reuse:"1 раз"},contra:["Аллергия на анетол","Эстрогензависимые болезни","Беременность (анис)","Грудным — с врачом"],combos:["+ мёд = мягче и приятнее","+ мята = усиление спазмолитика"],sell:"После ужина: «Вместо таблеток — чашка этого чая. 20 минут — вздутие проходит»."},{id:15,name:"Каркаде + Шиповник + Имбирь",emoji:"❤️‍🔥",form:"Витаминный микс",cat:"mix",desc:"Тройной витаминный удар. Максимум витамина С + согревающий имбирь.",benefits:["Максимум витамина С","Иммунитет","Противовирусный","Согревание","Антиоксиданты","Сосуды","Лёгкий тонус"],symptoms:["иммунитет","простуда","витамины","сосуды","грипп"],brew:{temp:"85-90°C",amount:"Каркаде 2 ч.л. + шиповник 1 ст.л. + имбирь 3г",time:"10-15 мин",reuse:"Нет"},contra:["Гастрит с высокой кислотностью","Тромбофлебит","Язва","Камни в желчном"],combos:["+ мёд + лимон = макс. защита","+ корица = пряный витаминный"],sell:"Сезонный хит: «Три богатыря для иммунитета. Профилактика каждый день в сезон простуд»."},{id:16,name:"Шалфей + Ромашка + Лаванда",emoji:"😴",form:"Успокаивающий микс",cat:"mix",desc:"Вечерний сбор. Снимает стресс, готовит ко сну, расслабляет.",benefits:["Снятие стресса","Улучшение сна","Расслабление мышц","Успокоение нервов","Головные боли","При ПМС","Антиспазматический"],symptoms:["бессонница","стресс","тревога","головная боль","ПМС","спазмы","нервы"],brew:{temp:"85°C",amount:"1.5 ч.л. на 250мл",time:"5-8 мин",reuse:"Нет"},contra:["Транспорт (сонливость)","Беременность","Седативные","Низкое давление"],combos:["+ мёд = вечерний ритуал","+ тёплое молоко = макс. расслабление"],sell:"Против снотворных: «Чашка за час до сна — засыпаешь как ребёнок. Без зависимости, без химии»."}];
+// ========== CONFIG ==========
+const SYNC_INTERVAL = 5000;    // Poll every 5s
+const AUTOSAVE_DELAY = 3000;   // After typing stops
+const COLORS = ['#6c5ce7','#e74c3c','#2ecc71','#f39c12','#e84393','#00cec9','#fd79a8','#636e72'];
 
-const SYMPTOMS=[{id:“простуда”,name:“Простуда / Грипп”,emoji:“🤧”},{id:“пищеварение”,name:“Пищеварение”,emoji:“🫃”},{id:“иммунитет”,name:“Иммунитет”,emoji:“🛡️”},{id:“давление”,name:“Давление”,emoji:“💓”},{id:“стресс”,name:“Стресс / Сон”,emoji:“😴”},{id:“боль”,name:“Боль / Суставы”,emoji:“🦴”},{id:“дыхание”,name:“Дыхание / Нос”,emoji:“👃”},{id:“запор”,name:“Запор / Вздутие”,emoji:“💨”},{id:“сахар”,name:“Сахар / Диабет”,emoji:“🩸”},{id:“кожа”,name:“Кожа / Красота”,emoji:“✨”},{id:“энергия”,name:“Энергия / Тонус”,emoji:“⚡”},{id:“детокс”,name:“Детокс / Отёки”,emoji:“💧”}];
+// ========== STATE ==========
+let userName = '';
+let roomCode = '';
+let currentText = '';
+let lastSyncedText = '';
+let autosaveTimer = null;
+let syncTimer = null;
+let selectedVersion = null;
+let isOnline = true;
 
-const SELL_TIPS=[{title:“Золотые правила продажи”,emoji:“🏆”,tips:[“Слушай клиента — спроси «Что вас беспокоит?» перед предложением”,“Расскажи историю, а не характеристики — люди покупают эмоции”,“Дай понюхать или попробовать — сенсорный опыт продаёт”,“Комбо: «К этому чаю идеально подходит этот мёд»”,“Происхождение: «Этот шалфей из Средиземноморья»”]},{title:“Фразы-триггеры”,emoji:“💬”,tips:[”«Натуральная альтернатива таблеткам»”,”«Его пьют в дорогих спа-отелях»”,”«Исследования подтверждают»”,”«Один пакет на месяц — дешевле кофе»”,”«Идеальный подарок»”,”«Попробуйте — не понравится, подберу другое»”]},{title:“Подбор чая клиенту”,emoji:“🎯”,tips:[“Турист с простудой → Эвкалипт-Гранат-Мята или Имбирь”,“Женщина 40+ → Шалфей или Детокс-микс”,“Спортсмен → Энерджи Чай или Имбирь-Куркума”,“Пожилая пара → Корица (сахар) + Каркаде (давление)”,“Молодая мама → Успокаивающий сбор”,“Подарок → Универсальный Микс”]},{title:“Апселл и кросс-селл”,emoji:“📈”,tips:[“К любому чаю → мёд”,“Набор 3 чаёв: утренний, дневной, вечерний”,“Комплементарный: «К имбирю идеально корица»”,“Сезонные наборы”,“Подарки — красивая обёртка + карточка”]},{title:“Важно помнить!”,emoji:“⚠️”,tips:[“Ты НЕ врач — не ставь диагнозы”,”«Помогает при…» а не «лечит от…»”,“Спрашивай об аллергиях и беременности”,“Серьёзные лекарства → консультация врача”,“Чай — дополнение, не замена”]}];
-
-let currentMode=‘catalog’,currentCat=‘all’,searchQuery=’’,activeSymptoms=[];
-
-function setMode(m){currentMode=m;document.querySelectorAll(’.nav-btn’).forEach((b,i)=>{b.classList.toggle(‘active’,[‘catalog’,‘symptoms’,‘tips’][i]===m)});render()}
-function setCat(c){currentCat=c;render()}
-
-function render(){
-const content=document.getElementById(‘content’),tabs=document.getElementById(‘tabs’);
-if(currentMode===‘catalog’){
-const cats={all:‘Все’,single:‘Моно’,powder:‘Порошки’,mix:‘Миксы’,spice:‘С приправами’};
-tabs.innerHTML=Object.entries(cats).map(([k,v])=>`<div class="tab ${currentCat===k?'active':''}" onclick="setCat('${k}')">${v}</div>`).join(’’);
-tabs.style.display=‘flex’;
-renderCatalog(content);
-}else if(currentMode===‘symptoms’){tabs.style.display=‘none’;renderSymptoms(content)}
-else{tabs.style.display=‘none’;renderTips(content)}
+// ========== STORAGE HELPERS ==========
+function roomKey(suffix) {
+  return `notepad:${roomCode}:${suffix}`;
 }
 
-function renderCatalog(el){
-let teas=TEAS;
-if(currentCat!==‘all’)teas=teas.filter(t=>t.cat===currentCat);
-if(searchQuery){const q=searchQuery.toLowerCase();teas=teas.filter(t=>t.name.toLowerCase().includes(q)||t.desc.toLowerCase().includes(q)||t.symptoms.some(s=>s.includes(q))||t.benefits.some(b=>b.toLowerCase().includes(q)))}
-if(!teas.length){el.innerHTML=’<div class="empty"><div class="em-icon">🔍</div><p>Ничего не найдено.<br>Попробуй другой запрос.</p></div>’;return}
-el.innerHTML=teas.map(t=>`<div class="tea-card cat-${t.cat}" onclick="openDetail(${t.id})"><span class="emoji">${t.emoji}</span><div class="name">${t.name}</div><span class="form-tag">${t.form}</span><div class="desc">${t.desc}</div><div class="tags">${t.symptoms.slice(0,4).map(s=>`<span class="tag">${s}</span>`).join('')}</div></div>`).join(’’)+’<div class="disclaimer">⚠️ Чай — дополнение к лечению, не замена. Консультируйтесь с врачом.</div>’;
+async function storageGet(key, shared = true) {
+  try {
+    const r = await window.storage.get(key, shared);
+    return r ? r.value : null;
+  } catch { return null; }
 }
 
-function renderSymptoms(el){
-let h=’<div class="symptom-grid">’+SYMPTOMS.map(s=>`<div class="symptom-btn ${activeSymptoms.includes(s.id)?'active':''}" onclick="toggleSymptom('${s.id}')"><span class="sym-emoji">${s.emoji}</span><div class="sym-name">${s.name}</div></div>`).join(’’)+’</div>’;
-if(activeSymptoms.length){
-const matched=TEAS.filter(t=>t.symptoms.some(s=>activeSymptoms.includes(s))).sort((a,b)=>b.symptoms.filter(s=>activeSymptoms.includes(s)).length-a.symptoms.filter(s=>activeSymptoms.includes(s)).length);
-if(matched.length){h+=’<div style="margin-top:14px">’+matched.map(t=>{const mc=t.symptoms.filter(s=>activeSymptoms.includes(s)).length;return`<div class="match-card" onclick="openDetail(${t.id})"><div class="match-top"><span class="match-name">${t.emoji} ${t.name}</span><span class="match-badge">${mc} совпад.</span></div><div class="match-desc">${t.desc}</div></div>`}).join(’’)+’</div>’}
-}else{h+=’<div class="empty" style="padding:24px"><p>Выбери симптом —<br>подберу подходящий чай</p></div>’}
-el.innerHTML=h;
+async function storageSet(key, value, shared = true) {
+  try {
+    await window.storage.set(key, value, shared);
+    return true;
+  } catch { return false; }
 }
 
-function toggleSymptom(id){const i=activeSymptoms.indexOf(id);if(i>-1)activeSymptoms.splice(i,1);else activeSymptoms.push(id);render()}
-
-function renderTips(el){
-el.innerHTML=SELL_TIPS.map(s=>`<div class="tip-card"><span class="tip-emoji">${s.emoji}</span><div class="tip-title">${s.title}</div>${s.tips.map(t=>`<div class="tip-item">${t}</div>`).join('')}</div>`).join(’’)+’<div class="disclaimer">Помни: ты продавец, не врач!</div>’;
+// ========== INIT ==========
+function init() {
+  const saved = localStorage.getItem('notepad_session');
+  if (saved) {
+    try {
+      const s = JSON.parse(saved);
+      if (s.name && s.room) {
+        userName = s.name;
+        roomCode = s.room;
+        enterRoom();
+        return;
+      }
+    } catch {}
+  }
+  document.getElementById('loginScreen').classList.remove('hidden');
 }
 
-function openDetail(id){
-const t=TEAS.find(x=>x.id===id);if(!t)return;
-document.getElementById(‘detailSheet’).innerHTML=` <div class="detail-handle"></div> <div class="detail-header"><span class="emoji">${t.emoji}</span><h2>${t.name}</h2><div class="form">${t.form}</div></div> <div class="detail-body"> <div class="detail-section"><h3>Описание</h3><p>${t.desc}</p></div> <div class="detail-section"><h3>✦ Полезные свойства</h3><ul class="benefit-list">${t.benefits.map(b=>`<li>${b}</li>`).join('')}</ul></div> <div class="detail-section"><h3>☕ Как заваривать</h3><div class="brew-box"><div class="brew-row"><span class="brew-label">Температура</span><span class="brew-val">${t.brew.temp}</span></div><div class="brew-row"><span class="brew-label">Дозировка</span><span class="brew-val">${t.brew.amount}</span></div><div class="brew-row"><span class="brew-label">Время</span><span class="brew-val">${t.brew.time}</span></div><div class="brew-row"><span class="brew-label">Повтор</span><span class="brew-val">${t.brew.reuse}</span></div></div></div> <div class="detail-section"><h3>🔗 Сочетания</h3><ul>${t.combos.map(c=>`<li>${c}</li>`).join('')}</ul></div> <div class="detail-section"><h3>⚠️ Противопоказания</h3><ul class="warn-list">${t.contra.map(c=>`<li>${c}</li>`).join('')}</ul></div> <div class="detail-section"><h3>💰 Совет продавцу</h3><div class="sell-tip">${t.sell}</div></div> <button class="close-btn" onclick="closeDetail()">Закрыть</button> </div>`;
-document.getElementById(‘detailOverlay’).classList.add(‘show’);
-document.getElementById(‘detailSheet’).scrollTop=0;
+// ========== LOGIN ==========
+document.getElementById('loginBtn').addEventListener('click', () => {
+  const name = document.getElementById('inputName').value.trim();
+  const room = document.getElementById('inputRoom').value.trim().toLowerCase();
+  if (!name) { showToast('Введите имя', 'error'); return; }
+  if (!room) { showToast('Введите код комнаты', 'error'); return; }
+  userName = name;
+  roomCode = room;
+  localStorage.setItem('notepad_session', JSON.stringify({ name, room }));
+  enterRoom();
+});
+
+async function enterRoom() {
+  document.getElementById('loginScreen').classList.add('hidden');
+  document.getElementById('roomLabel').textContent = `Комната: ${roomCode}`;
+  setStatus('syncing', 'Синхронизация...');
+
+  // Load current text
+  const text = await storageGet(roomKey('text'));
+  if (text !== null) {
+    try {
+      const data = JSON.parse(text);
+      currentText = data.text || '';
+    } catch {
+      currentText = text;
+    }
+  } else {
+    currentText = '';
+  }
+  lastSyncedText = currentText;
+  document.getElementById('editor').value = currentText;
+
+  // Register user presence
+  await registerPresence();
+
+  setStatus('online', 'Подключено');
+  showToast('Вы в комнате «' + roomCode + '»', 'success');
+
+  // Start sync loop
+  startSync();
+  loadHistory();
+  loadUsers();
 }
 
-function closeDetail(e){if(e&&e.target!==document.getElementById(‘detailOverlay’))return;document.getElementById(‘detailOverlay’).classList.remove(‘show’)}
+// ========== PRESENCE ==========
+async function registerPresence() {
+  const key = roomKey('users');
+  let users = {};
+  const raw = await storageGet(key);
+  if (raw) { try { users = JSON.parse(raw); } catch {} }
+  users[userName] = {
+    name: userName,
+    lastSeen: Date.now(),
+    color: COLORS[userName.length % COLORS.length]
+  };
+  await storageSet(key, JSON.stringify(users));
+}
 
-document.getElementById(‘searchInput’).addEventListener(‘input’,function(e){searchQuery=e.target.value.trim();document.getElementById(‘clearBtn’).style.display=searchQuery?‘block’:‘none’;if(currentMode===‘catalog’)render()});
-function clearSearch(){document.getElementById(‘searchInput’).value=’’;searchQuery=’’;document.getElementById(‘clearBtn’).style.display=‘none’;render()}
-document.addEventListener(‘dblclick’,e=>e.preventDefault());
-render();
+// ========== SYNC ==========
+function startSync() {
+  if (syncTimer) clearInterval(syncTimer);
+  syncTimer = setInterval(async () => {
+    await registerPresence();
+    await pullText();
+    await loadHistory();
+    await loadUsers();
+  }, SYNC_INTERVAL);
+}
+
+async function pullText() {
+  const raw = await storageGet(roomKey('text'));
+  if (raw === null) return;
+  let remoteText = '';
+  let remoteTime = 0;
+  try {
+    const data = JSON.parse(raw);
+    remoteText = data.text || '';
+    remoteTime = data.time || 0;
+  } catch {
+    remoteText = raw;
+  }
+
+  const editor = document.getElementById('editor');
+  const localText = editor.value;
+
+  // If remote changed and local hasn't been edited since last sync
+  if (remoteText !== lastSyncedText && localText === lastSyncedText) {
+    editor.value = remoteText;
+    currentText = remoteText;
+    lastSyncedText = remoteText;
+    setStatus('online', 'Обновлено');
+  } else if (localText !== lastSyncedText && remoteText !== lastSyncedText) {
+    // Conflict — local wins, but we show a notice
+    setStatus('online', '⚠️ Конфликт — ваш текст сохранён');
+  } else {
+    lastSyncedText = remoteText;
+  }
+}
+
+async function pushText(text) {
+  const data = JSON.stringify({ text, time: Date.now(), author: userName });
+  const ok = await storageSet(roomKey('text'), data);
+  if (ok) {
+    lastSyncedText = text;
+    setStatus('online', 'Сохранено');
+  } else {
+    setStatus('offline', 'Ошибка сохранения');
+  }
+}
+
+// ========== EDITOR ==========
+const editor = document.getElementById('editor');
+editor.addEventListener('input', () => {
+  currentText = editor.value;
+  setStatus('syncing', 'Печатает...');
+  if (autosaveTimer) clearTimeout(autosaveTimer);
+  autosaveTimer = setTimeout(async () => {
+    await pushText(currentText);
+  }, AUTOSAVE_DELAY);
+});
+
+// ========== SAVE TO HISTORY ==========
+document.getElementById('saveBtn').addEventListener('click', async () => {
+  const text = editor.value.trim();
+  if (!text) { showToast('Нечего сохранять', 'error'); return; }
+  await saveVersion(text);
+  await pushText(text);
+  showToast('Версия сохранена ✓', 'success');
+  loadHistory();
+});
+
+async function saveVersion(text) {
+  const key = roomKey('history');
+  let history = [];
+  const raw = await storageGet(key);
+  if (raw) { try { history = JSON.parse(raw); } catch {} }
+
+  history.unshift({
+    id: Date.now(),
+    author: userName,
+    text: text,
+    time: Date.now()
+  });
+
+  // Keep max 50 versions
+  if (history.length > 50) history = history.slice(0, 50);
+  await storageSet(key, JSON.stringify(history));
+}
+
+// ========== HISTORY ==========
+async function loadHistory() {
+  const key = roomKey('history');
+  const raw = await storageGet(key);
+  let history = [];
+  if (raw) { try { history = JSON.parse(raw); } catch {} }
+
+  const list = document.getElementById('historyList');
+  if (history.length === 0) {
+    list.innerHTML = '<div class="history-empty">Пока нет сохранённых версий<br><br>Нажмите 💾 чтобы сохранить текущую версию</div>';
+    return;
+  }
+
+  list.innerHTML = history.map((v, i) => {
+    const d = new Date(v.time);
+    const dateStr = d.toLocaleDateString('ru-RU', { day:'numeric', month:'short' }) + ' ' +
+                    d.toLocaleTimeString('ru-RU', { hour:'2-digit', minute:'2-digit' });
+    const preview = (v.text || '').substring(0, 100).replace(/\n/g, ' ');
+    return `<div class="history-item" data-idx="${i}">
+      <div class="history-meta">
+        <span class="history-author">${escapeHtml(v.author)}</span>
+        <span class="history-date">${dateStr}</span>
+      </div>
+      <div class="history-preview">${escapeHtml(preview)}${v.text.length > 100 ? '...' : ''}</div>
+    </div>`;
+  }).join('');
+
+  // Store for modal
+  list._history = history;
+
+  list.querySelectorAll('.history-item').forEach(el => {
+    el.addEventListener('click', () => {
+      const idx = parseInt(el.dataset.idx);
+      const v = list._history[idx];
+      if (v) openModal(v);
+    });
+  });
+}
+
+// ========== USERS ==========
+async function loadUsers() {
+  const key = roomKey('users');
+  const raw = await storageGet(key);
+  let users = {};
+  if (raw) { try { users = JSON.parse(raw); } catch {} }
+
+  const container = document.getElementById('usersList');
+  const entries = Object.values(users).sort((a, b) => b.lastSeen - a.lastSeen);
+
+  if (entries.length === 0) {
+    container.innerHTML = '<div class="history-empty">Нет участников</div>';
+    return;
+  }
+
+  const now = Date.now();
+  container.innerHTML = entries.map(u => {
+    const ago = now - u.lastSeen;
+    const online = ago < 15000;
+    const statusTxt = online ? 'Онлайн' :
+      ago < 60000 ? 'Был(а) только что' :
+      ago < 3600000 ? `Был(а) ${Math.floor(ago/60000)} мин. назад` :
+      `Был(а) ${Math.floor(ago/3600000)} ч. назад`;
+    const initial = (u.name || '?')[0].toUpperCase();
+    return `<div class="user-card">
+      <div class="user-avatar" style="background:${u.color || '#6c5ce7'}">${initial}</div>
+      <div class="user-info">
+        <div class="user-name">${escapeHtml(u.name)}${u.name === userName ? ' (вы)' : ''}</div>
+        <div class="user-status">${online ? '🟢' : '⚪'} ${statusTxt}</div>
+      </div>
+    </div>`;
+  }).join('');
+}
+
+// ========== MODAL ==========
+function openModal(version) {
+  selectedVersion = version;
+  document.getElementById('modalAuthor').textContent = version.author;
+  const d = new Date(version.time);
+  document.getElementById('modalDate').textContent =
+    d.toLocaleDateString('ru-RU', { day:'numeric', month:'long', year:'numeric' }) + ', ' +
+    d.toLocaleTimeString('ru-RU', { hour:'2-digit', minute:'2-digit' });
+  document.getElementById('modalText').textContent = version.text;
+  document.getElementById('modalOverlay').classList.add('active');
+}
+
+document.getElementById('modalClose').addEventListener('click', () => {
+  document.getElementById('modalOverlay').classList.remove('active');
+});
+
+document.getElementById('modalRestore').addEventListener('click', async () => {
+  if (!selectedVersion) return;
+  editor.value = selectedVersion.text;
+  currentText = selectedVersion.text;
+  await pushText(currentText);
+  document.getElementById('modalOverlay').classList.remove('active');
+  switchTab('editor');
+  showToast('Версия восстановлена ✓', 'success');
+});
+
+document.getElementById('modalOverlay').addEventListener('click', (e) => {
+  if (e.target === e.currentTarget) {
+    document.getElementById('modalOverlay').classList.remove('active');
+  }
+});
+
+// ========== TABS ==========
+document.querySelectorAll('.tab').forEach(tab => {
+  tab.addEventListener('click', () => switchTab(tab.dataset.tab));
+});
+
+function switchTab(name) {
+  document.querySelectorAll('.tab').forEach(t => t.classList.toggle('active', t.dataset.tab === name));
+  document.querySelectorAll('.panel').forEach(p => p.classList.toggle('active', p.id === 'panel' + name.charAt(0).toUpperCase() + name.slice(1)));
+  if (name === 'history') loadHistory();
+  if (name === 'users') loadUsers();
+}
+
+// ========== SHARE ==========
+document.getElementById('shareBtn').addEventListener('click', () => {
+  const text = `Присоединяйся к заметке!\nКод комнаты: ${roomCode}\nОткрой НотПад и введи этот код.`;
+  if (navigator.share) {
+    navigator.share({ title: 'НотПад', text }).catch(() => {});
+  } else {
+    navigator.clipboard.writeText(text).then(() => showToast('Скопировано!', 'info'));
+  }
+});
+
+// ========== LOGOUT ==========
+document.getElementById('logoutBtn').addEventListener('click', () => {
+  if (syncTimer) clearInterval(syncTimer);
+  if (autosaveTimer) clearTimeout(autosaveTimer);
+  localStorage.removeItem('notepad_session');
+  userName = '';
+  roomCode = '';
+  editor.value = '';
+  currentText = '';
+  lastSyncedText = '';
+  document.getElementById('loginScreen').classList.remove('hidden');
+  switchTab('editor');
+});
+
+// ========== UTILS ==========
+function setStatus(state, text) {
+  const dot = document.getElementById('statusDot');
+  dot.className = 'status-dot ' + (state === 'syncing' ? 'syncing' : state === 'offline' ? 'offline' : '');
+  document.getElementById('statusText').textContent = text;
+  isOnline = state !== 'offline';
+}
+
+function showToast(msg, type = 'info') {
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.className = 'toast ' + type + ' show';
+  setTimeout(() => t.classList.remove('show'), 2500);
+}
+
+function escapeHtml(str) {
+  const div = document.createElement('div');
+  div.textContent = str;
+  return div.innerHTML;
+}
+
+// ========== START ==========
+init();
 </script>
 
 </body>
