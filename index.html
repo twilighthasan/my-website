@@ -1,414 +1,289 @@
 <!DOCTYPE html>
 
-<html lang="ru">
+<html lang="tr">
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">
-<title>НотПад — Совместные заметки</title>
+<title>İçecekler — Fiyat Listesi</title>
 <style>
-*{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent}
-:root{--bg:#0f0f14;--surface:#1a1a24;--surface2:#22223a;--accent:#6c5ce7;--accent2:#a29bfe;--text:#e8e8f0;--text2:#8888aa;--danger:#e74c3c;--success:#2ecc71;--border:#2a2a44;--radius:14px}
-body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;background:var(--bg);color:var(--text);width:100%;height:100vh;height:100dvh;overflow:hidden;display:flex;flex-direction:column;touch-action:manipulation}
-.header{display:flex;align-items:center;justify-content:space-between;padding:10px 16px;background:var(--surface);border-bottom:1px solid var(--border);flex-shrink:0}
-.header-title{font-size:18px;font-weight:700;background:linear-gradient(135deg,var(--accent),var(--accent2));-webkit-background-clip:text;-webkit-text-fill-color:transparent}
-.header-room{font-size:12px;color:var(--text2);margin-top:1px}
-.header-actions{display:flex;gap:8px}
-.icon-btn{width:44px;height:44px;border:none;border-radius:12px;background:var(--surface2);color:var(--text);font-size:20px;display:flex;align-items:center;justify-content:center;cursor:pointer}
-.icon-btn:active{transform:scale(0.92);background:var(--accent)}
-.status-bar{display:flex;align-items:center;gap:8px;padding:5px 16px;background:var(--surface);font-size:12px;color:var(--text2);flex-shrink:0}
-.status-dot{width:8px;height:8px;border-radius:50%;background:var(--success);flex-shrink:0}
-.status-dot.offline{background:var(--danger)}
-.status-dot.syncing{background:#f39c12;animation:pulse 1s infinite}
-@keyframes pulse{0%,100%{opacity:1}50%{opacity:.3}}
-.tabs{display:flex;background:var(--surface);border-bottom:1px solid var(--border);flex-shrink:0}
-.tab{flex:1;padding:11px;text-align:center;font-size:14px;font-weight:600;color:var(--text2);border:none;background:none;cursor:pointer;position:relative}
-.tab.active{color:var(--accent2)}
-.tab.active::after{content:'';position:absolute;bottom:0;left:20%;right:20%;height:3px;border-radius:3px;background:linear-gradient(90deg,var(--accent),var(--accent2))}
-.content{flex:1;overflow:hidden;position:relative}
-.panel{display:none;width:100%;height:100%;flex-direction:column}
-.panel.active{display:flex}
-#editor{flex:1;width:100%;padding:16px;background:var(--bg);border:none;color:var(--text);font-size:16px;line-height:1.6;resize:none;outline:none;font-family:inherit}
-.bottom-bar{display:flex;align-items:center;gap:8px;padding:10px 16px;background:var(--surface);border-top:1px solid var(--border);flex-shrink:0}
-.save-btn{flex:1;height:48px;border:none;border-radius:12px;background:linear-gradient(135deg,var(--accent),var(--accent2));color:#fff;font-size:16px;font-weight:700;cursor:pointer}
-.save-btn:active{transform:scale(.96);opacity:.85}
-.history-list{flex:1;overflow-y:auto;padding:12px 16px;-webkit-overflow-scrolling:touch}
-.history-item{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:14px;margin-bottom:10px;cursor:pointer}
-.history-item:active{background:var(--surface2);transform:scale(.98)}
-.history-meta{display:flex;justify-content:space-between;align-items:center;margin-bottom:8px}
-.history-author{font-size:14px;font-weight:600;color:var(--accent2)}
-.history-date{font-size:12px;color:var(--text2)}
-.history-preview{font-size:13px;color:var(--text2);line-height:1.4;max-height:42px;overflow:hidden}
-.history-empty{text-align:center;color:var(--text2);padding:60px 20px;font-size:15px}
-.users-panel{padding:16px;overflow-y:auto}
-.user-card{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:14px;margin-bottom:10px;display:flex;align-items:center;gap:12px}
-.user-avatar{width:44px;height:44px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:20px;font-weight:700;color:#fff;flex-shrink:0}
-.user-info{flex:1}
-.user-name{font-size:15px;font-weight:600}
-.user-status{font-size:12px;color:var(--text2);margin-top:2px}
-.login-screen{position:absolute;inset:0;background:var(--bg);display:flex;flex-direction:column;justify-content:center;align-items:center;padding:24px;z-index:100}
-.login-screen.hidden{display:none}
-.login-logo{font-size:48px;margin-bottom:8px}
-.login-title{font-size:28px;font-weight:800;background:linear-gradient(135deg,var(--accent),var(--accent2));-webkit-background-clip:text;-webkit-text-fill-color:transparent;margin-bottom:6px}
-.login-sub{font-size:14px;color:var(--text2);margin-bottom:32px;text-align:center}
-.input-group{width:100%;max-width:340px;margin-bottom:14px}
-.input-label{font-size:13px;color:var(--text2);margin-bottom:6px;display:block}
-.input-field{width:100%;height:52px;padding:0 16px;background:var(--surface);border:2px solid var(--border);border-radius:12px;color:var(--text);font-size:16px;outline:none}
-.input-field:focus{border-color:var(--accent)}
-.login-btn{width:100%;max-width:340px;height:52px;border:none;border-radius:12px;background:linear-gradient(135deg,var(--accent),var(--accent2));color:#fff;font-size:17px;font-weight:700;cursor:pointer;margin-top:10px}
-.login-btn:active{transform:scale(.96)}
-.modal-overlay{position:fixed;inset:0;background:rgba(0,0,0,.7);display:flex;align-items:flex-end;z-index:200;opacity:0;pointer-events:none;transition:opacity .2s}
-.modal-overlay.active{opacity:1;pointer-events:auto}
-.modal-content{width:100%;max-height:75vh;background:var(--surface);border-radius:20px 20px 0 0;padding:20px 16px 30px;transform:translateY(100%);transition:transform .3s ease;display:flex;flex-direction:column}
-.modal-overlay.active .modal-content{transform:translateY(0)}
-.modal-handle{width:40px;height:4px;background:var(--border);border-radius:2px;margin:0 auto 16px}
-.modal-title{font-size:18px;font-weight:700;margin-bottom:4px}
-.modal-date{font-size:13px;color:var(--text2);margin-bottom:14px}
-.modal-text{flex:1;overflow-y:auto;background:var(--bg);border-radius:12px;padding:14px;font-size:14px;line-height:1.6;color:var(--text2);margin-bottom:14px;white-space:pre-wrap;word-break:break-word;-webkit-overflow-scrolling:touch}
-.modal-actions{display:flex;gap:10px}
-.modal-actions button{flex:1;height:48px;border:none;border-radius:12px;font-size:15px;font-weight:700;cursor:pointer}
-.modal-actions button:active{transform:scale(.96)}
-.btn-restore{background:linear-gradient(135deg,var(--accent),var(--accent2));color:#fff}
-.btn-close-modal{background:var(--surface2);color:var(--text)}
-.toast{position:fixed;top:70px;left:50%;transform:translateX(-50%) translateY(-20px);padding:10px 20px;border-radius:12px;font-size:14px;font-weight:600;opacity:0;pointer-events:none;transition:all .3s;z-index:300;white-space:nowrap}
-.toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
-.toast.success{background:var(--success);color:#fff}
-.toast.info{background:var(--accent);color:#fff}
-.toast.error{background:var(--danger);color:#fff}
+  @import url('https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;800&display=swap');
+
+- { margin:0; padding:0; box-sizing:border-box; }
+
+:root {
+–bg: #f0f4f8;
+–card: #ffffff;
+–card-hover: #f7f9fb;
+–accent: #2d6a4f;
+–text: #1a1a2e;
+–text-dim: #6b7a8d;
+–price: #d4451a;
+–border: rgba(0,0,0,0.06);
+–shadow: 0 2px 12px rgba(0,0,0,0.06);
+–cat-bg: #e8f0e9;
+–cat-text: #2d6a4f;
+}
+
+body {
+font-family: ‘Nunito’, sans-serif;
+background: var(–bg);
+color: var(–text);
+min-height: 100vh;
+min-height: 100dvh;
+padding: 0;
+overflow-x: hidden;
+-webkit-tap-highlight-color: transparent;
+}
+
+.header {
+position: sticky;
+top: 0;
+z-index: 10;
+background: linear-gradient(135deg, #ffffff 0%, #f0f4f8 100%);
+padding: 20px 20px 16px;
+border-bottom: 1px solid var(–border);
+backdrop-filter: blur(10px);
+}
+
+.header h1 {
+font-size: 22px;
+font-weight: 800;
+letter-spacing: 0.5px;
+color: var(–accent);
+text-align: center;
+}
+
+.header p {
+text-align: center;
+color: var(–text-dim);
+font-size: 13px;
+margin-top: 4px;
+}
+
+.list {
+padding: 12px 16px 100px;
+display: flex;
+flex-direction: column;
+gap: 8px;
+}
+
+.item {
+display: flex;
+align-items: center;
+justify-content: space-between;
+background: var(–card);
+border: 1px solid var(–border);
+border-radius: 14px;
+padding: 14px 16px;
+box-shadow: var(–shadow);
+transition: background 0.2s, transform 0.15s;
+animation: fadeUp 0.4s ease both;
+}
+
+.item:active {
+background: var(–card-hover);
+transform: scale(0.98);
+}
+
+.item:nth-child(1) { animation-delay: 0.03s; }
+.item:nth-child(2) { animation-delay: 0.06s; }
+.item:nth-child(3) { animation-delay: 0.09s; }
+.item:nth-child(4) { animation-delay: 0.12s; }
+.item:nth-child(5) { animation-delay: 0.15s; }
+.item:nth-child(6) { animation-delay: 0.18s; }
+.item:nth-child(7) { animation-delay: 0.21s; }
+.item:nth-child(8) { animation-delay: 0.24s; }
+.item:nth-child(9) { animation-delay: 0.27s; }
+
+.item-left {
+display: flex;
+align-items: center;
+gap: 12px;
+flex: 1;
+min-width: 0;
+}
+
+.emoji {
+font-size: 26px;
+width: 42px;
+height: 42px;
+display: flex;
+align-items: center;
+justify-content: center;
+background: var(–bg);
+border-radius: 11px;
+flex-shrink: 0;
+}
+
+.info {
+display: flex;
+flex-direction: column;
+min-width: 0;
+}
+
+.name {
+font-size: 15px;
+font-weight: 700;
+color: var(–text);
+white-space: nowrap;
+overflow: hidden;
+text-overflow: ellipsis;
+}
+
+.volume {
+font-size: 12px;
+color: var(–text-dim);
+font-weight: 600;
+margin-top: 2px;
+}
+
+.price {
+font-size: 18px;
+font-weight: 800;
+color: var(–price);
+white-space: nowrap;
+padding-left: 12px;
+flex-shrink: 0;
+}
+
+@keyframes fadeUp {
+from {
+opacity: 0;
+transform: translateY(12px);
+}
+to {
+opacity: 1;
+transform: translateY(0);
+}
+}
+
+.category {
+font-size: 11px;
+font-weight: 700;
+text-transform: uppercase;
+letter-spacing: 1.5px;
+color: var(–cat-text);
+background: var(–cat-bg);
+padding: 6px 12px;
+border-radius: 8px;
+margin-top: 8px;
+display: inline-block;
+}
 </style>
+
 </head>
 <body>
 
-<div class="login-screen" id="loginScreen">
-  <div class="login-logo">📝</div>
-  <div class="login-title">НотПад</div>
-  <div class="login-sub">Совместные заметки с историей версий</div>
-  <div class="input-group">
-    <label class="input-label">Ваше имя</label>
-    <input class="input-field" id="inputName" placeholder="Например: Хасан" autocomplete="off">
-  </div>
-  <div class="input-group">
-    <label class="input-label">Код комнаты</label>
-    <input class="input-field" id="inputRoom" placeholder="Например: семья" autocomplete="off">
-  </div>
-  <button class="login-btn" id="loginBtn">Войти</button>
-</div>
-
 <div class="header">
-  <div>
-    <div class="header-title">📝 НотПад</div>
-    <div class="header-room" id="roomLabel"></div>
-  </div>
-  <div class="header-actions">
-    <button class="icon-btn" id="shareBtn">🔗</button>
-    <button class="icon-btn" id="logoutBtn">🚪</button>
-  </div>
+  <h1>🥤 İçecekler</h1>
+  <p>Alara Grand Bazaar</p>
 </div>
-<div class="status-bar">
-  <div class="status-dot" id="statusDot"></div>
-  <span id="statusText">Подключение...</span>
-</div>
-<div class="tabs">
-  <button class="tab active" data-tab="editor">📄 Заметка</button>
-  <button class="tab" data-tab="history">🕐 История</button>
-  <button class="tab" data-tab="users">👥 Участники</button>
-</div>
-<div class="content">
-  <div class="panel active" id="panelEditor">
-    <textarea id="editor" placeholder="Начните печатать..."></textarea>
-    <div class="bottom-bar">
-      <button class="save-btn" id="saveBtn">💾 Сохранить в историю</button>
+
+<div class="list">
+
+  <div class="category">Su</div>
+  <div class="item">
+    <div class="item-left">
+      <div class="emoji">💧</div>
+      <div class="info">
+        <div class="name">Damla</div>
+        <div class="volume">0.5 lt</div>
+      </div>
     </div>
+    <div class="price">₺15</div>
   </div>
-  <div class="panel" id="panelHistory">
-    <div class="history-list" id="historyList">
-      <div class="history-empty">Пока нет сохранённых версий</div>
+
+  <div class="category">Kahve</div>
+  <div class="item">
+    <div class="item-left">
+      <div class="emoji">☕</div>
+      <div class="info">
+        <div class="name">Nescafe Xpress</div>
+        <div class="volume">250 ml</div>
+      </div>
     </div>
+    <div class="price">₺80</div>
   </div>
-  <div class="panel" id="panelUsers">
-    <div class="users-panel" id="usersList"></div>
-  </div>
-</div>
 
-<div class="modal-overlay" id="modalOverlay">
-  <div class="modal-content">
-    <div class="modal-handle"></div>
-    <div class="modal-title" id="modalAuthor"></div>
-    <div class="modal-date" id="modalDate"></div>
-    <div class="modal-text" id="modalText"></div>
-    <div class="modal-actions">
-      <button class="btn-close-modal" id="modalClose">Закрыть</button>
-      <button class="btn-restore" id="modalRestore">♻️ Восстановить</button>
+  <div class="category">Meyve Suyu & Gazlı İçecek</div>
+  <div class="item">
+    <div class="item-left">
+      <div class="emoji">🧃</div>
+      <div class="info">
+        <div class="name">Capri-Sun</div>
+        <div class="volume">200 ml</div>
+      </div>
     </div>
+    <div class="price">₺30</div>
   </div>
+
+  <div class="item">
+    <div class="item-left">
+      <div class="emoji">🥤</div>
+      <div class="info">
+        <div class="name">Pepsi</div>
+        <div class="volume">330 ml</div>
+      </div>
+    </div>
+    <div class="price">₺60</div>
+  </div>
+
+  <div class="item">
+    <div class="item-left">
+      <div class="emoji">🍊</div>
+      <div class="info">
+        <div class="name">Yedigün</div>
+        <div class="volume">330 ml</div>
+      </div>
+    </div>
+    <div class="price">₺60</div>
+  </div>
+
+  <div class="item">
+    <div class="item-left">
+      <div class="emoji">🍑</div>
+      <div class="info">
+        <div class="name">Lipton Soğuk Çay</div>
+        <div class="volume">330 ml</div>
+      </div>
+    </div>
+    <div class="price">₺60</div>
+  </div>
+
+  <div class="item">
+    <div class="item-left">
+      <div class="emoji">🍑</div>
+      <div class="info">
+        <div class="name">Lipton</div>
+        <div class="volume">1 lt</div>
+      </div>
+    </div>
+    <div class="price">₺70</div>
+  </div>
+
+  <div class="item">
+    <div class="item-left">
+      <div class="emoji">⚡</div>
+      <div class="info">
+        <div class="name">Sting</div>
+        <div class="volume">500 ml</div>
+      </div>
+    </div>
+    <div class="price">₺55</div>
+  </div>
+
+  <div class="item">
+    <div class="item-left">
+      <div class="emoji">🥤</div>
+      <div class="info">
+        <div class="name">Pepsi Cola</div>
+        <div class="volume">1 lt</div>
+      </div>
+    </div>
+    <div class="price">₺70</div>
+  </div>
+
 </div>
-<div class="toast" id="toast"></div>
-
-<script>
-const SYNC_INTERVAL = 5000;
-const AUTOSAVE_DELAY = 3000;
-const COLORS = ['#6c5ce7','#e74c3c','#2ecc71','#f39c12','#e84393','#00cec9','#fd79a8','#636e72'];
-
-let userName = '';
-let roomCode = '';
-let currentText = '';
-let lastSyncedText = '';
-let autosaveTimer = null;
-let syncTimer = null;
-let selectedVersion = null;
-let useShared = false;
-
-// ===== SAFE STORAGE =====
-async function sGet(key) {
-  // Try shared storage first
-  if (useShared) {
-    try {
-      const r = await window.storage.get(key, true);
-      if (r && r.value != null) return r.value;
-    } catch(e) { /* key not found or error */ }
-  }
-  // Fallback to localStorage
-  try { return localStorage.getItem(key); } catch(e) { return null; }
-}
-
-async function sSet(key, value) {
-  let sharedOk = false;
-  if (useShared) {
-    try {
-      const r = await window.storage.set(key, value, true);
-      sharedOk = (r != null);
-    } catch(e) { sharedOk = false; }
-  }
-  // Always backup to localStorage
-  try { localStorage.setItem(key, value); } catch(e) {}
-  return sharedOk || !useShared;
-}
-
-function rk(s) { return 'np_' + roomCode + '_' + s; }
-
-// ===== INIT =====
-async function init() {
-  // Check if shared storage works
-  if (window.storage) {
-    try {
-      const r = await window.storage.set('_test_ping', 'ok', true);
-      useShared = (r != null);
-    } catch(e) { useShared = false; }
-  }
-  console.log('Shared storage:', useShared);
-
-  const saved = localStorage.getItem('np_sess');
-  if (saved) {
-    try {
-      const s = JSON.parse(saved);
-      if (s.n && s.r) { userName = s.n; roomCode = s.r; enterRoom(); return; }
-    } catch {}
-  }
-  document.getElementById('loginScreen').classList.remove('hidden');
-}
-
-// ===== LOGIN =====
-document.getElementById('loginBtn').onclick = () => {
-  const n = document.getElementById('inputName').value.trim();
-  const r = document.getElementById('inputRoom').value.trim().toLowerCase().replace(/[\s\/\\'":]/g, '_');
-  if (!n) { toast('Введите имя','error'); return; }
-  if (!r) { toast('Введите код комнаты','error'); return; }
-  userName = n; roomCode = r;
-  localStorage.setItem('np_sess', JSON.stringify({n,r}));
-  enterRoom();
-};
-
-async function enterRoom() {
-  document.getElementById('loginScreen').classList.add('hidden');
-  document.getElementById('roomLabel').textContent = 'Комната: ' + roomCode;
-  setStatus('syncing','Синхронизация...');
-
-  // Load text
-  const raw = await sGet(rk('text'));
-  let t = '';
-  if (raw) { try { t = JSON.parse(raw).text || ''; } catch { t = raw; } }
-  currentText = t; lastSyncedText = t;
-  document.getElementById('editor').value = t;
-
-  await regPresence();
-  setStatus('online', useShared ? 'Подключено (облако)' : 'Локальный режим');
-  toast('Комната «' + roomCode + '»', 'success');
-  startSync();
-  loadHistory();
-  loadUsers();
-}
-
-// ===== PRESENCE =====
-async function regPresence() {
-  const k = rk('users');
-  let u = {};
-  const raw = await sGet(k);
-  if (raw) { try { u = JSON.parse(raw); } catch {} }
-  u[userName] = { name: userName, lastSeen: Date.now(), color: COLORS[userName.length % COLORS.length] };
-  await sSet(k, JSON.stringify(u));
-}
-
-// ===== SYNC =====
-function startSync() {
-  if (syncTimer) clearInterval(syncTimer);
-  syncTimer = setInterval(async () => {
-    await regPresence();
-    await pullText();
-  }, SYNC_INTERVAL);
-}
-
-async function pullText() {
-  const raw = await sGet(rk('text'));
-  if (!raw) return;
-  let remote = '';
-  try { remote = JSON.parse(raw).text || ''; } catch { remote = raw; }
-  const ed = document.getElementById('editor');
-  const local = ed.value;
-  if (remote !== lastSyncedText && local === lastSyncedText) {
-    ed.value = remote; currentText = remote; lastSyncedText = remote;
-    setStatus('online','Обновлено');
-  } else if (remote !== lastSyncedText && local !== lastSyncedText) {
-    setStatus('online','⚠️ Конфликт — ваш текст');
-  } else {
-    lastSyncedText = remote;
-  }
-}
-
-async function pushText(text) {
-  const ok = await sSet(rk('text'), JSON.stringify({text, time:Date.now(), author:userName}));
-  lastSyncedText = text;
-  setStatus('online', ok ? 'Сохранено ✓' : 'Сохранено локально');
-}
-
-// ===== EDITOR =====
-const editor = document.getElementById('editor');
-editor.oninput = () => {
-  currentText = editor.value;
-  setStatus('syncing','Печатает...');
-  if (autosaveTimer) clearTimeout(autosaveTimer);
-  autosaveTimer = setTimeout(() => pushText(currentText), AUTOSAVE_DELAY);
-};
-
-// ===== HISTORY =====
-document.getElementById('saveBtn').onclick = async () => {
-  const t = editor.value.trim();
-  if (!t) { toast('Нечего сохранять','error'); return; }
-  await saveVer(t);
-  await pushText(t);
-  toast('Версия сохранена ✓','success');
-  loadHistory();
-};
-
-async function saveVer(text) {
-  const k = rk('hist');
-  let h = [];
-  const raw = await sGet(k);
-  if (raw) { try { h = JSON.parse(raw); } catch {} }
-  h.unshift({id:Date.now(), author:userName, text, time:Date.now()});
-  if (h.length > 50) h = h.slice(0,50);
-  await sSet(k, JSON.stringify(h));
-}
-
-async function loadHistory() {
-  const k = rk('hist');
-  let h = [];
-  const raw = await sGet(k);
-  if (raw) { try { h = JSON.parse(raw); } catch {} }
-
-  const list = document.getElementById('historyList');
-  if (!h.length) { list.innerHTML = '<div class="history-empty">Пока нет версий<br><br>Нажмите 💾</div>'; return; }
-
-  list.innerHTML = h.map((v,i) => {
-    const d = new Date(v.time);
-    const ds = d.toLocaleDateString('ru-RU',{day:'numeric',month:'short'})+' '+d.toLocaleTimeString('ru-RU',{hour:'2-digit',minute:'2-digit'});
-    const p = (v.text||'').substring(0,100).replace(/\n/g,' ');
-    return `<div class="history-item" data-i="${i}"><div class="history-meta"><span class="history-author">${esc(v.author)}</span><span class="history-date">${ds}</span></div><div class="history-preview">${esc(p)}${v.text.length>100?'...':''}</div></div>`;
-  }).join('');
-
-  list._d = h;
-  list.querySelectorAll('.history-item').forEach(el => {
-    el.onclick = () => { const v = list._d[+el.dataset.i]; if(v) openModal(v); };
-  });
-}
-
-// ===== USERS =====
-async function loadUsers() {
-  const k = rk('users');
-  let u = {};
-  const raw = await sGet(k);
-  if (raw) { try { u = JSON.parse(raw); } catch {} }
-  const c = document.getElementById('usersList');
-  const arr = Object.values(u).sort((a,b)=>b.lastSeen-a.lastSeen);
-  if (!arr.length) { c.innerHTML = '<div class="history-empty">Нет участников</div>'; return; }
-  const now = Date.now();
-  c.innerHTML = arr.map(x => {
-    const ago = now - x.lastSeen;
-    const on = ago < 15000;
-    const st = on?'Онлайн':ago<60000?'Только что':ago<3600000?Math.floor(ago/60000)+' мин. назад':Math.floor(ago/3600000)+' ч. назад';
-    return `<div class="user-card"><div class="user-avatar" style="background:${x.color||'#6c5ce7'}">${(x.name||'?')[0].toUpperCase()}</div><div class="user-info"><div class="user-name">${esc(x.name)}${x.name===userName?' (вы)':''}</div><div class="user-status">${on?'🟢':'⚪'} ${st}</div></div></div>`;
-  }).join('');
-}
-
-// ===== MODAL =====
-function openModal(v) {
-  selectedVersion = v;
-  document.getElementById('modalAuthor').textContent = v.author;
-  const d = new Date(v.time);
-  document.getElementById('modalDate').textContent = d.toLocaleDateString('ru-RU',{day:'numeric',month:'long',year:'numeric'})+', '+d.toLocaleTimeString('ru-RU',{hour:'2-digit',minute:'2-digit'});
-  document.getElementById('modalText').textContent = v.text;
-  document.getElementById('modalOverlay').classList.add('active');
-}
-document.getElementById('modalClose').onclick = () => document.getElementById('modalOverlay').classList.remove('active');
-document.getElementById('modalRestore').onclick = async () => {
-  if (!selectedVersion) return;
-  editor.value = selectedVersion.text;
-  currentText = selectedVersion.text;
-  await pushText(currentText);
-  document.getElementById('modalOverlay').classList.remove('active');
-  switchTab('editor');
-  toast('Восстановлено ✓','success');
-};
-document.getElementById('modalOverlay').onclick = e => { if(e.target===e.currentTarget) e.target.classList.remove('active'); };
-
-// ===== TABS =====
-document.querySelectorAll('.tab').forEach(t => { t.onclick = () => switchTab(t.dataset.tab); });
-function switchTab(name) {
-  document.querySelectorAll('.tab').forEach(t=>t.classList.toggle('active',t.dataset.tab===name));
-  document.querySelectorAll('.panel').forEach(p=>p.classList.toggle('active',p.id==='panel'+name[0].toUpperCase()+name.slice(1)));
-  if(name==='history') loadHistory();
-  if(name==='users') loadUsers();
-}
-
-// ===== SHARE =====
-document.getElementById('shareBtn').onclick = () => {
-  const t = 'Код комнаты: '+roomCode;
-  if(navigator.share) navigator.share({title:'НотПад',text:t}).catch(()=>{});
-  else navigator.clipboard.writeText(t).then(()=>toast('Скопировано!','info')).catch(()=>{});
-};
-
-// ===== LOGOUT =====
-document.getElementById('logoutBtn').onclick = () => {
-  if(syncTimer)clearInterval(syncTimer);
-  if(autosaveTimer)clearTimeout(autosaveTimer);
-  localStorage.removeItem('np_sess');
-  userName='';roomCode='';editor.value='';currentText='';lastSyncedText='';
-  document.getElementById('loginScreen').classList.remove('hidden');
-  switchTab('editor');
-};
-
-// ===== UTILS =====
-function setStatus(s,t) {
-  document.getElementById('statusDot').className='status-dot'+(s==='syncing'?' syncing':s==='offline'?' offline':'');
-  document.getElementById('statusText').textContent=t;
-}
-function toast(m,type='info') {
-  const t=document.getElementById('toast');
-  t.textContent=m; t.className='toast '+type+' show';
-  setTimeout(()=>t.classList.remove('show'),2500);
-}
-function esc(s) { const d=document.createElement('div'); d.textContent=s; return d.innerHTML; }
-
-init();
-</script>
 
 </body>
 </html>
