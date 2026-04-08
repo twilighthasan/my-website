@@ -51,8 +51,25 @@ flex-direction: column;
 gap: 0;
 }
 
+.fridge-title {
+font-size: 16px;
+font-weight: 800;
+text-align: center;
+padding: 14px 16px 10px;
+margin-top: 16px;
+border-radius: 12px 12px 0 0;
+letter-spacing: 0.5px;
+}
+
+.fridge-coca { background: #e8231d; color: #fff; }
+.fridge-pepsi { background: #004B93; color: #fff; }
+
+.fridge-bar { height: 3px; }
+.fridge-bar-coca { background: #c41e1a; }
+.fridge-bar-pepsi { background: #003570; }
+
 .category {
-font-size: 12px;
+font-size: 11px;
 font-weight: 700;
 text-transform: uppercase;
 letter-spacing: 1.5px;
@@ -69,22 +86,25 @@ display: flex;
 align-items: center;
 justify-content: space-between;
 background: #fff;
-border: 1.5px solid #d8d8d8;
-border-bottom: none;
-padding: 14px 16px;
+border-left: 1.5px solid #d8d8d8;
+border-right: 1.5px solid #d8d8d8;
+border-top: 1.5px solid #d8d8d8;
+padding: 12px 16px;
 }
 
-.item:first-of-type,
-.category + .item {
-border-top-left-radius: 12px;
-border-top-right-radius: 12px;
-}
+.item.first { border-top-left-radius: 12px; border-top-right-radius: 12px; }
 
-.item:last-child,
-.item.last-in-group {
+.item.last {
 border-bottom: 1.5px solid #d8d8d8;
 border-bottom-left-radius: 12px;
 border-bottom-right-radius: 12px;
+margin-bottom: 6px;
+}
+
+.item.single {
+border-radius: 12px;
+border: 1.5px solid #d8d8d8;
+margin-bottom: 6px;
 }
 
 .item-left {
@@ -96,9 +116,9 @@ min-width: 0;
 }
 
 .emoji {
-font-size: 26px;
-width: 42px;
-height: 42px;
+font-size: 24px;
+width: 40px;
+height: 40px;
 display: flex;
 align-items: center;
 justify-content: center;
@@ -107,27 +127,12 @@ border-radius: 10px;
 flex-shrink: 0;
 }
 
-.info {
-display: flex;
-flex-direction: column;
-min-width: 0;
-}
-
-.name {
-font-size: 15px;
-font-weight: 700;
-color: #1a1a2e;
-}
-
-.volume {
-font-size: 12px;
-color: #888;
-font-weight: 600;
-margin-top: 2px;
-}
+.info { display: flex; flex-direction: column; min-width: 0; }
+.name { font-size: 14px; font-weight: 700; color: #1a1a2e; }
+.volume { font-size: 12px; color: #888; font-weight: 600; margin-top: 1px; }
 
 .price {
-font-size: 18px;
+font-size: 17px;
 font-weight: 800;
 color: #d4451a;
 white-space: nowrap;
@@ -135,13 +140,7 @@ padding-left: 12px;
 flex-shrink: 0;
 }
 
-.separator {
-height: 0;
-border: none;
-border-top: 1px solid #e8e8e8;
-margin: 0 12px;
-background: #fff;
-}
+.price.unknown { color: #aaa; font-size: 13px; font-weight: 700; }
 </style>
 
 </head>
@@ -154,8 +153,14 @@ background: #fff;
 
 <div class="list">
 
+  <!-- ===== COCA-COLA DOLABI ===== -->
+
+  <div class="fridge-title fridge-coca">🔴 Coca-Cola Dolabı</div>
+  <div class="fridge-bar fridge-bar-coca"></div>
+
   <div class="category">Su</div>
-  <div class="item last-in-group" style="border-radius:12px; border-bottom:1.5px solid #d8d8d8;">
+
+  <div class="item first">
     <div class="item-left">
       <div class="emoji">💧</div>
       <div class="info">
@@ -166,8 +171,158 @@ background: #fff;
     <div class="price">₺15</div>
   </div>
 
+  <div class="item">
+    <div class="item-left">
+      <div class="emoji">🍋</div>
+      <div class="info">
+        <div class="name">Damla Limon</div>
+        <div class="volume">0.5 lt</div>
+      </div>
+    </div>
+    <div class="price">₺30</div>
+  </div>
+
+  <div class="item last">
+    <div class="item-left">
+      <div class="emoji">💧</div>
+      <div class="info">
+        <div class="name">Damla Sade Soda</div>
+        <div class="volume">0.5 lt</div>
+      </div>
+    </div>
+    <div class="price">₺25</div>
+  </div>
+
+  <div class="category">Soğuk Çay</div>
+
+  <div class="item single">
+    <div class="item-left">
+      <div class="emoji">🍑</div>
+      <div class="info">
+        <div class="name">Fuse Tea</div>
+        <div class="volume">330 ml</div>
+      </div>
+    </div>
+    <div class="price">₺60</div>
+  </div>
+
+  <div class="category">Gazlı İçecek — 330 ml</div>
+
+  <div class="item first">
+    <div class="item-left">
+      <div class="emoji">🥤</div>
+      <div class="info">
+        <div class="name">Cola</div>
+        <div class="volume">330 ml</div>
+      </div>
+    </div>
+    <div class="price">₺60</div>
+  </div>
+
+  <div class="item">
+    <div class="item-left">
+      <div class="emoji">💚</div>
+      <div class="info">
+        <div class="name">Sprite</div>
+        <div class="volume">330 ml</div>
+      </div>
+    </div>
+    <div class="price">₺60</div>
+  </div>
+
+  <div class="item last">
+    <div class="item-left">
+      <div class="emoji">🍊</div>
+      <div class="info">
+        <div class="name">Fanta</div>
+        <div class="volume">330 ml</div>
+      </div>
+    </div>
+    <div class="price">₺60</div>
+  </div>
+
+  <div class="category">Enerji İçeceği</div>
+
+  <div class="item single">
+    <div class="item-left">
+      <div class="emoji">🟢</div>
+      <div class="info">
+        <div class="name">Monster</div>
+        <div class="volume">500 ml</div>
+      </div>
+    </div>
+    <div class="price unknown">— TL</div>
+  </div>
+
+  <div class="category">Gazlı İçecek — 500 ml</div>
+
+  <div class="item single">
+    <div class="item-left">
+      <div class="emoji">🥤</div>
+      <div class="info">
+        <div class="name">Cola</div>
+        <div class="volume">500 ml</div>
+      </div>
+    </div>
+    <div class="price">₺60</div>
+  </div>
+
+  <div class="category">Spor İçeceği</div>
+
+  <div class="item single">
+    <div class="item-left">
+      <div class="emoji">🔵</div>
+      <div class="info">
+        <div class="name">Powerade</div>
+        <div class="volume">500 ml</div>
+      </div>
+    </div>
+    <div class="price">₺75</div>
+  </div>
+
+  <div class="category">Gazlı İçecek — 1 lt</div>
+
+  <div class="item first">
+    <div class="item-left">
+      <div class="emoji">🥤</div>
+      <div class="info">
+        <div class="name">Cola</div>
+        <div class="volume">1 lt</div>
+      </div>
+    </div>
+    <div class="price">₺70</div>
+  </div>
+
+  <div class="item">
+    <div class="item-left">
+      <div class="emoji">💚</div>
+      <div class="info">
+        <div class="name">Sprite</div>
+        <div class="volume">1 lt</div>
+      </div>
+    </div>
+    <div class="price">₺70</div>
+  </div>
+
+  <div class="item last">
+    <div class="item-left">
+      <div class="emoji">🍊</div>
+      <div class="info">
+        <div class="name">Fanta</div>
+        <div class="volume">1 lt</div>
+      </div>
+    </div>
+    <div class="price">₺70</div>
+  </div>
+
+  <!-- ===== PEPSI DOLABI ===== -->
+
+  <div class="fridge-title fridge-pepsi" style="margin-top:24px;">🔵 Pepsi Dolabı</div>
+  <div class="fridge-bar fridge-bar-pepsi"></div>
+
   <div class="category">Kahve</div>
-  <div class="item last-in-group" style="border-radius:12px; border-bottom:1.5px solid #d8d8d8;">
+
+  <div class="item single">
     <div class="item-left">
       <div class="emoji">☕</div>
       <div class="info">
@@ -178,9 +333,9 @@ background: #fff;
     <div class="price">₺80</div>
   </div>
 
-  <div class="category">Meyve Suyu & Gazlı İçecek</div>
+  <div class="category">Meyve Suyu</div>
 
-  <div class="item" style="border-top-left-radius:12px; border-top-right-radius:12px;">
+  <div class="item single">
     <div class="item-left">
       <div class="emoji">🧃</div>
       <div class="info">
@@ -191,7 +346,9 @@ background: #fff;
     <div class="price">₺30</div>
   </div>
 
-  <div class="item">
+  <div class="category">Gazlı İçecek — 330 ml</div>
+
+  <div class="item first">
     <div class="item-left">
       <div class="emoji">🥤</div>
       <div class="info">
@@ -202,7 +359,7 @@ background: #fff;
     <div class="price">₺60</div>
   </div>
 
-  <div class="item">
+  <div class="item last">
     <div class="item-left">
       <div class="emoji">🍊</div>
       <div class="info">
@@ -213,7 +370,9 @@ background: #fff;
     <div class="price">₺60</div>
   </div>
 
-  <div class="item">
+  <div class="category">Soğuk Çay — 330 ml</div>
+
+  <div class="item single">
     <div class="item-left">
       <div class="emoji">🍑</div>
       <div class="info">
@@ -224,18 +383,9 @@ background: #fff;
     <div class="price">₺60</div>
   </div>
 
-  <div class="item">
-    <div class="item-left">
-      <div class="emoji">🍑</div>
-      <div class="info">
-        <div class="name">Lipton</div>
-        <div class="volume">1 lt</div>
-      </div>
-    </div>
-    <div class="price">₺70</div>
-  </div>
+  <div class="category">Enerji İçeceği</div>
 
-  <div class="item">
+  <div class="item single">
     <div class="item-left">
       <div class="emoji">⚡</div>
       <div class="info">
@@ -246,7 +396,20 @@ background: #fff;
     <div class="price">₺55</div>
   </div>
 
-  <div class="item last-in-group" style="border-bottom:1.5px solid #d8d8d8; border-bottom-left-radius:12px; border-bottom-right-radius:12px;">
+  <div class="category">Büyük Boy — 1 lt</div>
+
+  <div class="item first">
+    <div class="item-left">
+      <div class="emoji">🍑</div>
+      <div class="info">
+        <div class="name">Lipton</div>
+        <div class="volume">1 lt</div>
+      </div>
+    </div>
+    <div class="price">₺70</div>
+  </div>
+
+  <div class="item last">
     <div class="item-left">
       <div class="emoji">🥤</div>
       <div class="info">
